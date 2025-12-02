@@ -1,0 +1,94 @@
+labels:
+  - name: bug
+    color: "#d73a4a"
+    description: Something isn't working
+
+  - name: feature
+    color: "#a2eeef"
+    description: New feature or meaningful behavior change
+    aliases: [enhancement]
+
+  - name: docs
+    color: "#0075ca"
+    description: Improvements or additions to documentation and learning materials
+    aliases: [documentation]
+
+  - name: question
+    color: "#d876e3"
+    description: Further information is requested
+
+  - name: duplicate
+    color: "#cfd3d7"
+    description: This issue or pull request already exists
+
+  - name: invalid
+    color: "#e4e669"
+    description: This doesn't seem right
+
+  - name: wontfix
+    color: "#ffffff"
+    description: This will not be worked on
+
+  - name: good first issue
+    color: "#7057ff"
+    description: Good for newcomers
+
+  - name: help wanted
+    color: "#008672"
+    description: Extra attention is needed
+
+  - name: refactor
+    color: "#c2e0c6"
+    description: Internal code cleanup with no behavior change
+
+  - name: perf
+    color: "#fef2c0"
+    description: Performance or memory improvements
+
+  - name: chore
+    color: "#c5def5"
+    description: Tooling, CI, or configuration changes
+
+  - name: "P0: critical"
+    color: "#b60205"
+    description: Broken core flows, must fix ASAP
+
+  - name: "P1: high"
+    color: "#d93f0b"
+    description: High-impact issues with workarounds
+
+  - name: "P2: normal"
+    color: "#fbca04"
+    description: Standard priority work
+
+  - name: "P3: low"
+    color: "#0e8a16"
+    description: Nice-to-have, polish, or low impact
+
+  - name: "area: core-vm"
+    color: "#1d76db"
+    description: VM, opcodes, execution engine, runtime internals
+
+  - name: "area: ui"
+    color: "#0052cc"
+    description: General UI/UX, layout, navigation, theming
+
+  - name: "area: labs"
+    color: "#5319e7"
+    description: Mutation Lab, demos, evolution labs, GA experiments
+
+  - name: "area: dashboards"
+    color: "#006b75"
+    description: Teacher dashboard, research metrics, analytics views
+
+  - name: "area: content"
+    color: "#f9d0c4"
+    description: Worksheets, examples, copy, and learning content
+
+  - name: blocked
+    color: "#bdb76b"
+    description: Work cannot proceed due to an external dependency
+
+delete:
+  - dependencies
+  - javascript

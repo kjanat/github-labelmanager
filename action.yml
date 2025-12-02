@@ -1,0 +1,29 @@
+name: github-labelmanager
+description: Manage GitHub labels
+author: Kaj Kowalski
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  env:
+    GITHUB_TOKEN: ${{ inputs.token }}
+    REPO: ${{ inputs.repository }}
+    DRY_RUN: ${{ inputs.dry-run }}
+    CONFIG_PATH: ${{ inputs.config-path }}
+
+inputs:
+  token:
+    required: true
+    description: GitHub Personal Access Token
+  repository:
+    required: false
+    description: Repository in 'owner/repo' format
+    default: "${{ github.repository }}"
+  dry-run:
+    required: false
+    description: Run without making changes to GitHub
+    default: "false"
+  config-path:
+    required: false
+    description: Path to the configuration file
+    default: ".github/labels.yml"
