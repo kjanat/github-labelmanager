@@ -3,6 +3,7 @@
 [![CI](https://github.com/kjanat/github-labelmanager/actions/workflows/ci.yml/badge.svg)](https://github.com/kjanat/github-labelmanager/actions/workflows/ci.yml)
 [![Docker](https://github.com/kjanat/github-labelmanager/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/kjanat/github-labelmanager/actions/workflows/docker-publish.yml)
 [![JSR](https://jsr.io/badges/@kjanat/github-labelmanager)](https://jsr.io/@kjanat/github-labelmanager)
+[![JSR Score](https://jsr.io/badges/@kjanat/github-labelmanager/score)](https://jsr.io/@kjanat/github-labelmanager)
 [![NPM](https://img.shields.io/npm/v/@kjanat/github-labelmanager)](https://www.npmjs.com/package/@kjanat/github-labelmanager)
 
 Declaratively sync GitHub issue labels from a YAML config file.
@@ -20,18 +21,22 @@ Declaratively sync GitHub issue labels from a YAML config file.
 
 ## Install
 
-### Deno (Coming Soon)
+### Deno
 
 ```sh
-# Not yet published to JSR
-deno install -A jsr:@kjanat/github-labelmanager
+deno install -Agn github-labelmanager jsr:@kjanat/github-labelmanager/cli
 ```
 
-### npm (Coming Soon)
+### npm
 
 ```sh
-# Not yet published to npm
-npm install @kjanat/github-labelmanager
+npm install -g @kjanat/github-labelmanager
+```
+
+### Docker
+
+```sh
+docker pull ghcr.io/kjanat/github-labelmanager:latest
 ```
 
 ---
@@ -39,14 +44,37 @@ npm install @kjanat/github-labelmanager
 ## Use as CLI
 
 ```sh
-GITHUB_TOKEN=ghp_xxx deno task labels owner/repo
+GITHUB_TOKEN=ghp_xxx github-labelmanager owner/repo
 ```
 
 Preview changes without applying:
 
 ```sh
-deno task labels owner/repo --dry-run
+github-labelmanager owner/repo --dry-run
 ```
+
+<details>
+<summary>Alternative ways to run</summary>
+
+**npx (without installing)**
+
+```sh
+GITHUB_TOKEN=ghp_xxx npx @kjanat/github-labelmanager owner/repo
+```
+
+**Deno (without installing)**
+
+```sh
+GITHUB_TOKEN=ghp_xxx deno run -A jsr:@kjanat/github-labelmanager/cli owner/repo
+```
+
+**Docker**
+
+```sh
+docker run --rm -e GITHUB_TOKEN=ghp_xxx -v $(pwd)/.github:/app/.github ghcr.io/kjanat/github-labelmanager owner/repo
+```
+
+</details>
 
 ---
 

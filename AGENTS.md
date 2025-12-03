@@ -22,12 +22,10 @@
 
 ## Provides
 
-- GitHub Action (`action.yml`): # - uses:
-  `kjanat/github-labelmanager@v\d+(\.\d+){0,2}`
-- In future:
-  - CLI tool: `github-labelmanager`
-  - JSR package: `jsr:@kjanat/github-labelmanager`
-  - NPM package: `npm:@kjanat/github-labelmanager`
+- GitHub Action: `kjanat/github-labelmanager@v1`
+- JSR package: `jsr:@kjanat/github-labelmanager`
+- NPM package: `npm:@kjanat/github-labelmanager`
+- Docker image: `ghcr.io/kjanat/github-labelmanager`
 
 ## Config
 
