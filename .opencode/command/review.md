@@ -24,9 +24,6 @@ command:
 
 <message>
 
-<!-- I have tried passing `$ARGUMENTS` to the command, but it haven't gotten it to work -->
-<!-- Docs here: https://opencode.ai/docs/commands#file-references -->
-
 !`./.opencode/command/review.sh $ARGUMENTS`
 
 </message>
