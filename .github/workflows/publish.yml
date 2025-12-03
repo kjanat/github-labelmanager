@@ -156,10 +156,9 @@ jobs:
   update-tags:
     name: Update version tags
     needs: [validate, release]
-    if: needs.validate.outputs.is_tag == 'true'
+    if: needs.validate.outputs.is_tag == 'true' && needs.validate.outputs.prerelease != 'true'
     uses: ./.github/workflows/update-tags.yml
     with:
       version: ${{ needs.validate.outputs.version }}
-      is_prerelease: ${{ needs.validate.outputs.prerelease == 'true' }}
     permissions:
       contents: write

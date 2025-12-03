@@ -4,64 +4,21 @@ on:
   workflow_call:
     inputs:
       version:
-        description: "Semver version (e.g., 1.0.0, 2.0.0-beta.1)"
+        description: "Semver version (e.g., 1.0.0)"
         required: true
         type: string
-      is_prerelease:
-        description: "Whether this is a prerelease"
-        required: true
-        type: boolean
-    outputs:
-      major_tag:
-        description: "Major version tag (e.g., v1) - empty if prerelease"
-        value: ${{ jobs.update-tags.outputs.major_tag }}
-      beta_tag:
-        description: "Beta tag (always 'beta')"
-        value: ${{ jobs.update-tags.outputs.beta_tag }}
 
 jobs:
   update-tags:
     name: Update version tags
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: write
-    outputs:
-      major_tag: ${{ steps.tags.outputs.major_tag }}
-      beta_tag: ${{ steps.tags.outputs.beta_tag }}
     steps:
-      - uses: actions/checkout@v6
+      - name: Update Tags
+        uses: cssnr/update-version-tags-action@1ff20ac5555f024f5e72b7ccdf165b867878f953 # v2
         with:
-          fetch-depth: 0
-
-      - name: Update tags
-        id: tags
-        run: |
-          # Strip leading 'v' if present, then extract major version
-          VERSION="${{ inputs.version }}"
-          VERSION="${VERSION#v}"
-          MAJOR="v$(echo "$VERSION" | cut -d. -f1)"
-
-          git config user.name "${{ github.actor }}[bot]"
-          git config user.email "${{ github.actor_id }}+${{ github.actor }}[bot]@users.noreply.github.com"
-
-          if [ "${{ inputs.is_prerelease }}" == "true" ]; then
-            echo "Prerelease: updating beta tag only"
-            git tag -fa beta -m "Update beta tag to v${{ inputs.version }}"
-            git push origin beta --force
-
-            echo "major_tag=" >> "$GITHUB_OUTPUT"
-            echo "beta_tag=beta" >> "$GITHUB_OUTPUT"
-          else
-            echo "Stable release: updating ${MAJOR} and beta tags"
-
-            # Update major version tag
-            git tag -fa "${MAJOR}" -m "Update ${MAJOR} tag to v${{ inputs.version }}"
-            git push origin "${MAJOR}" --force
-
-            # Update beta tag (becomes alias to stable)
-            git tag -fa beta -m "Update beta tag to v${{ inputs.version }}"
-            git push origin beta --force
-
-            echo "major_tag=${MAJOR}" >> "$GITHUB_OUTPUT"
-            echo "beta_tag=beta" >> "$GITHUB_OUTPUT"
-          fi
+          tag: v${{ inputs.version }}
+          major: true
+          minor: true
