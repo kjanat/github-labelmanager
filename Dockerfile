@@ -7,6 +7,7 @@ RUN deno cache main.ts
 # Production stage
 FROM denoland/deno:2.5.6
 WORKDIR /app
+COPY --from=builder /deno-dir /deno-dir
 COPY --from=builder /app .
 # Run as non-root (Distroless has no adduser, use numeric UID)
 USER 1000
