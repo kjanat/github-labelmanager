@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       version:
-        description: "Semver version (e.g., 1.0.0)"
+        description: "Git tag with v prefix (e.g., v1.0.0)"
         required: true
         type: string
 
@@ -19,6 +19,6 @@ jobs:
       - name: Update Tags
         uses: cssnr/update-version-tags-action@1ff20ac5555f024f5e72b7ccdf165b867878f953 # v2
         with:
-          tag: v${{ inputs.version }}
+          tag: ${{ inputs.version }}
           major: true
           minor: true

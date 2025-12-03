@@ -26,32 +26,27 @@ jobs:
       - name: Extract and validate version
         id: version
         run: |
+          JSON_VERSION=$(jq -r '.version' deno.json)
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            # PR: just extract version from deno.json
-            JSON_VERSION=$(jq -r '.version' deno.json)
+            # PR: use version from deno.json
             echo "PR mode: version from deno.json: $JSON_VERSION"
-            echo "version=$JSON_VERSION" >> "$GITHUB_OUTPUT"
-            if [[ "$JSON_VERSION" == *-* ]]; then
-              echo "prerelease=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "prerelease=false" >> "$GITHUB_OUTPUT"
-            fi
+            VERSION="v$JSON_VERSION"
           else
             # Tag push: validate tag matches deno.json
-            TAG_VERSION="${GITHUB_REF_NAME#v}"
-            JSON_VERSION=$(jq -r '.version' deno.json)
-            echo "Tag version: $TAG_VERSION"
+            VERSION="$GITHUB_REF_NAME"
+            SEMVER="${VERSION#v}"
+            echo "Tag version: $SEMVER"
             echo "deno.json version: $JSON_VERSION"
-            if [ "$TAG_VERSION" != "$JSON_VERSION" ]; then
-              echo "::error::Version mismatch: tag=$TAG_VERSION, deno.json=$JSON_VERSION"
+            if [ "$SEMVER" != "$JSON_VERSION" ]; then
+              echo "::error::Version mismatch: tag=$SEMVER, deno.json=$JSON_VERSION"
               exit 1
             fi
-            echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
-            if [[ "$TAG_VERSION" == *-* ]]; then
-              echo "prerelease=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "prerelease=false" >> "$GITHUB_OUTPUT"
-            fi
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [[ "$VERSION" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
           fi
 
   build:
@@ -120,13 +115,16 @@ jobs:
       - name: Publish to NPM
         if: matrix.target == 'npm' && needs.validate.outputs.is_tag == 'true'
         working-directory: ./npm
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
         run: |
+          SEMVER="${VERSION#v}"
           if [ "${{ needs.validate.outputs.prerelease }}" == "true" ]; then
             npm publish --access public --provenance --tag beta
           else
             npm publish --access public --provenance
             # Update beta dist-tag to point to stable (beta becomes alias)
-            npm dist-tag add @kjanat/github-labelmanager@${{ needs.validate.outputs.version }} beta || echo "::warning::Failed to update beta dist-tag"
+            npm dist-tag add "@kjanat/github-labelmanager@$SEMVER" beta || echo "::warning::Failed to update beta dist-tag"
           fi
       - name: NPM dry-run
         if: matrix.target == 'npm' && needs.validate.outputs.is_tag != 'true'
