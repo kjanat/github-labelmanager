@@ -1,0 +1,25 @@
+name: Update Labels
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - ".github/labels.yml"
+  pull_request:
+    branches: [master]
+    paths:
+      - ".github/labels.yml"
+  workflow_dispatch:
+
+jobs:
+  sync-labels:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          dry-run: ${{ github.event_name == 'pull_request' }}
