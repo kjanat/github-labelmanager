@@ -1,6 +1,6 @@
 {
   "name": "@kjanat/github-labelmanager",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Easily manage GitHub labels",
   "keywords": [
     "github-labelmanager",
@@ -10,7 +10,7 @@
     "labels"
   ],
   "bugs": "https://github.com/kjanat/github-labelmanager/issues",
-  "repository": "github.com:kjanat/github-labelmanager",
+  "repository": "https://github.com/kjanat/github-labelmanager",
   "license": "MIT",
   "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
   "imports": {
