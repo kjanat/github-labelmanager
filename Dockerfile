@@ -8,11 +8,7 @@ RUN deno cache main.ts
 FROM denoland/deno:2.5.6
 WORKDIR /app
 COPY --from=builder /app .
-# Create deno user
-RUN addgroup --system deno && \
-    adduser --system --ingroup deno deno
-
-# Switch to deno user
-USER deno
+# Run as non-root (Distroless has no adduser, use numeric UID)
+USER 1000
 ENTRYPOINT ["deno", "run", "--allow-net=api.github.com", "--allow-read", "--allow-env", "main.ts"]
 CMD []
