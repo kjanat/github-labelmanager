@@ -15,4 +15,4 @@ pre-commit:
       run: deno check --all {staged_files}
     test:
       glob: "*.ts"
-      run: deno test -RW {staged_files}
+      run: deno test -RWE {staged_files}
