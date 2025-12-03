@@ -1,5 +1,5 @@
 {
-  "name": "github-labelmanager",
+  "name": "@kjanat/github-labelmanager",
   "version": "1.0.0-dev",
   "description": "Easily manage GitHub labels",
   "keywords": [

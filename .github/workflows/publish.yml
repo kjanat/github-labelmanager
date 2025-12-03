@@ -1,0 +1,90 @@
+name: Publish
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  validate:
+    name: Validate version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Extract and validate version
+        id: version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          JSON_VERSION=$(jq -r '.version' deno.json)
+          echo "Tag version: $TAG_VERSION"
+          echo "deno.json version: $JSON_VERSION"
+          if [ "$TAG_VERSION" != "$JSON_VERSION" ]; then
+            echo "::error::Version mismatch: tag=$TAG_VERSION, deno.json=$JSON_VERSION"
+            exit 1
+          fi
+          echo "version=$TAG_VERSION" >> "$GITHUB_OUTPUT"
+          # Check if prerelease (contains hyphen, e.g., 1.0.0-beta.1)
+          if [[ "$TAG_VERSION" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  jsr:
+    name: Publish to JSR
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        with: { deno-version: v2.x }
+      - run: deno publish
+
+  npm:
+    name: Publish to NPM
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        with: { deno-version: v2.x }
+      - uses: actions/setup-node@v6
+        with:
+          node-version: latest
+          registry-url: https://registry.npmjs.org
+      - run: npm install -g npm@latest
+      - run: deno task build
+      - name: Publish to NPM
+        working-directory: ./npm
+        run: |
+          if [ "${{ needs.validate.outputs.prerelease }}" == "true" ]; then
+            npm publish --access public --provenance --tag beta
+          else
+            npm publish --access public --provenance
+          fi
+
+  release:
+    name: Create GitHub Release
+    needs: [validate, jsr, npm]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Create GitHub Release
+        run: |
+          if [ "${{ needs.validate.outputs.prerelease }}" == "true" ]; then
+            gh release create ${{ github.ref_name }} --generate-notes --prerelease
+          else
+            gh release create ${{ github.ref_name }} --generate-notes
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
