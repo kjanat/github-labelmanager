@@ -1,0 +1,217 @@
+/**
+ * Configuration loading and validation
+ * @module
+ */
+
+import { parse } from "@std/yaml";
+import type { EnvConfig, LabelConfig, LabelDefinition } from "./types.ts";
+
+/** Default config file path */
+const DEFAULT_CONFIG_PATH = ".github/labels.yml";
+
+/** Flags that expect a value argument */
+const FLAGS_WITH_VALUES = ["--config"] as const;
+
+/**
+ * Custom error for configuration issues
+ */
+export class ConfigError extends Error {
+  constructor(message: string, public showHelp = false) {
+    super(message);
+    this.name = "ConfigError";
+  }
+}
+
+/**
+ * Print help message
+ */
+export function printHelp(): void {
+  console.log(`
+Usage: github-labelmanager [OWNER/REPO] [OPTIONS]
+
+Options:
+  --dry-run           Run without making changes to GitHub
+  --config <path>     Path to labels.yml config file
+  --config=<path>     Path to labels.yml config file (alternate syntax)
+  --help, -h          Show this help message
+
+Environment Variables:
+  GITHUB_TOKEN        Required. GitHub Personal Access Token
+  REPO                Optional. Repository in 'owner/repo' format
+  CONFIG_PATH         Optional. Path to config file (default: .github/labels.yml)
+  DRY_RUN             Optional. Set to 'true' for dry run mode
+`);
+}
+
+/**
+ * Type guard for LabelDefinition
+ */
+function isLabelDefinition(obj: unknown): obj is LabelDefinition {
+  if (!obj || typeof obj !== "object") return false;
+  const o = obj as Record<string, unknown>;
+  return (
+    typeof o.name === "string" &&
+    typeof o.color === "string" &&
+    typeof o.description === "string" &&
+    (o.aliases === undefined ||
+      (Array.isArray(o.aliases) &&
+        o.aliases.every((a) => typeof a === "string")))
+  );
+}
+
+/**
+ * Type guard to validate LabelConfig schema
+ */
+export function isLabelConfig(obj: unknown): obj is LabelConfig {
+  if (!obj || typeof obj !== "object") return false;
+  const o = obj as Record<string, unknown>;
+  if (!Array.isArray(o.labels)) return false;
+  if (!o.labels.every(isLabelDefinition)) return false;
+  if (o.delete !== undefined) {
+    if (!Array.isArray(o.delete)) return false;
+    if (!o.delete.every((d) => typeof d === "string")) return false;
+  }
+  return true;
+}
+
+/**
+ * Parse a flag value from args, supporting both --flag value and --flag=value
+ */
+function parseFlagValue(
+  args: string[],
+  flag: string,
+  defaultValue: string,
+): string {
+  // Check --flag=value format
+  const eqArg = args.find((a) => a.startsWith(`${flag}=`));
+  if (eqArg) {
+    return eqArg.slice(flag.length + 1);
+  }
+
+  // Check --flag value format
+  const idx = args.indexOf(flag);
+  if (idx !== -1) {
+    const next = args[idx + 1];
+    if (next && !next.startsWith("-")) {
+      return next;
+    }
+  }
+
+  return defaultValue;
+}
+
+/**
+ * Extract positional arguments (excluding flags and their values)
+ */
+function getPositionalArgs(args: string[]): string[] {
+  const positional: string[] = [];
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    // Skip --flag=value format
+    if (arg.includes("=") && arg.startsWith("-")) {
+      continue;
+    }
+
+    // Skip flags
+    if (arg.startsWith("-")) {
+      // Skip next arg if this flag expects a value
+      if (
+        FLAGS_WITH_VALUES.includes(arg as (typeof FLAGS_WITH_VALUES)[number])
+      ) {
+        i++;
+      }
+      continue;
+    }
+
+    positional.push(arg);
+  }
+
+  return positional;
+}
+
+/**
+ * Parse command line arguments and environment variables
+ * @throws {ConfigError} If required configuration is missing or invalid
+ */
+export function getEnv(): EnvConfig {
+  // Handle help flag (exit is acceptable here)
+  if (Deno.args.includes("--help") || Deno.args.includes("-h")) {
+    printHelp();
+    Deno.exit(0);
+  }
+
+  // Token is required
+  const token = Deno.env.get("GITHUB_TOKEN");
+  if (!token) {
+    throw new ConfigError("GITHUB_TOKEN is required");
+  }
+
+  // Config path: CLI flag > env > default
+  const configPath = parseFlagValue(
+    Deno.args,
+    "--config",
+    Deno.env.get("CONFIG_PATH") ?? DEFAULT_CONFIG_PATH,
+  );
+
+  // Get positional arguments
+  const positional = getPositionalArgs(Deno.args);
+  const repoArg = positional[0] ?? Deno.env.get("REPO");
+
+  // Validate repo
+  if (!repoArg) {
+    throw new ConfigError(
+      "Repository required. Usage: github-labelmanager OWNER/REPO",
+      true,
+    );
+  }
+
+  const parts = repoArg.split("/");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    throw new ConfigError("Invalid repository format. Expected: owner/repo");
+  }
+  const [owner, repo] = parts;
+
+  // Dry run mode
+  const dryRun = Deno.env.get("DRY_RUN") === "true" ||
+    Deno.args.includes("--dry-run");
+
+  return {
+    token,
+    owner,
+    repo,
+    dryRun,
+    configPath,
+  };
+}
+
+/**
+ * Load and validate labels config from YAML file
+ * @param path - Path to config file (optional, uses CONFIG_PATH env or default)
+ * @throws {Deno.errors.NotFound} If config file not found
+ * @throws {Error} If config file is invalid
+ */
+export async function loadConfig(path?: string): Promise<LabelConfig> {
+  const configPath = path ?? Deno.env.get("CONFIG_PATH") ?? DEFAULT_CONFIG_PATH;
+
+  let configContent: string;
+  try {
+    configContent = await Deno.readTextFile(configPath);
+  } catch (err) {
+    if (err instanceof Deno.errors.NotFound) {
+      throw new Deno.errors.NotFound(`Config file not found: ${configPath}`);
+    }
+    throw new Error(`Failed to read config file: ${configPath}: ${err}`);
+  }
+
+  const parsed = parse(configContent);
+
+  if (!isLabelConfig(parsed)) {
+    throw new Deno.errors.InvalidData(
+      `Invalid labels.yml schema. Expected { labels: [{ name, color, description }], delete?: string[] }`,
+    );
+  }
+
+  return parsed;
+}

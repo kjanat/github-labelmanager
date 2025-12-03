@@ -21,10 +21,14 @@
     "lefthook": "npm:lefthook@^2.0.5",
     "~/": "./"
   },
-  "exports": "./main.ts",
+  "exports": {
+    ".": "./src/mod.ts",
+    "./cli": "./main.ts"
+  },
   "nodeModulesDir": "auto",
   "publish": {
     "include": [
+      "src/**/*.ts",
       "main.ts",
       "deno.json",
       "README.md",
@@ -37,7 +41,8 @@
     "build": "deno run -A scripts/build_npm.ts",
     "compile": "deno compile --allow-net --allow-read --allow-env --output labels main.ts",
     "hooks": "lefthook install",
-    "labels": "deno run --allow-net --allow-read --allow-env main.ts kjanat/github-labelmanager",
-    "labels:dry-run": "deno run --allow-net --allow-read --allow-env main.ts kjanat/github-labelmanager --dry-run"
+    "labels": "deno run --allow-net=api.github.com --allow-read --allow-env main.ts",
+    "labels:dry-run": "deno run --allow-net=api.github.com --allow-read --allow-env main.ts --dry-run",
+    "test": "deno test --allow-read --allow-env src/"
   }
 }

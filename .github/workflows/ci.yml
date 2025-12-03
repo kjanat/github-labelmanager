@@ -19,7 +19,6 @@ jobs:
       - uses: denoland/setup-deno@v2
         with: { deno-version: v2.x }
       - run: deno fmt --check
-        continue-on-error: true
       - run: deno lint
 
   test:

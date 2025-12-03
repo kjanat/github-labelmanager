@@ -15,15 +15,17 @@ Declaratively sync GitHub issue labels from a YAML config file.
 
 ## Install
 
-### Deno
+### Deno (Coming Soon)
 
 ```sh
+# Not yet published to JSR
 deno install -A jsr:@kjanat/github-labelmanager
 ```
 
-### npm
+### npm (Coming Soon)
 
 ```sh
+# Not yet published to npm
 npm install @kjanat/github-labelmanager
 ```
 
