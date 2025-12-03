@@ -48,8 +48,7 @@ export {
 } from "./config.ts";
 
 // Client
-export { LabelManager, withRetry } from "./client.ts";
-export type { RetryOptions } from "./client.ts";
+export { LabelManager } from "./client.ts";
 
 // Sync
 export { syncLabels } from "./sync.ts";

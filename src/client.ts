@@ -3,62 +3,100 @@
  * @module
  */
 
-import { Octokit } from "@octokit/core";
+import { Octokit } from "@octokit/rest";
+import { throttling } from "@octokit/plugin-throttling";
+import { createActionAuth } from "@octokit/auth-action";
+import type { EndpointDefaults } from "@octokit/types";
+import type { components } from "@octokit/openapi-types";
 import type { EnvConfig, GitHubLabel, LabelOptions } from "./types.ts";
 import { logger } from "./logger.ts";
 
-/** Retry options for API calls */
-export interface RetryOptions {
-  maxRetries?: number;
-  baseDelayMs?: number;
-}
+// Create throttled Octokit class
+const ThrottledOctokit = Octokit.plugin(throttling);
+
+// Type for throttle handler options
+type ThrottleHandlerOptions = Required<EndpointDefaults>;
+
+// Type for GitHub label from API response
+type GitHubLabelSchema = components["schemas"]["label"];
 
 /**
- * Retry wrapper with exponential backoff for rate limiting
+ * Correct type for rate limit handlers.
+ * Note: The official LimitHandler type returns `void` but the implementation
+ * actually uses the boolean return value to determine retry behavior.
+ * See: https://github.com/octokit/plugin-throttling.js#readme
  */
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  options: RetryOptions = {},
-): Promise<T> {
-  const { maxRetries = 3, baseDelayMs = 1000 } = options;
-
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (err) {
-      const isRetryable = err &&
-        typeof err === "object" &&
-        "status" in err &&
-        (err.status === 429 || err.status === 503);
-
-      if (!isRetryable || attempt === maxRetries - 1) {
-        throw err;
-      }
-
-      const delay = baseDelayMs * Math.pow(2, attempt);
-      logger.warn(`Rate limited, retrying in ${delay}ms...`);
-      await new Promise((r) => setTimeout(r, delay));
-    }
-  }
-
-  throw new Error("Unreachable");
-}
+type RateLimitHandler = (
+  retryAfter: number,
+  options: ThrottleHandlerOptions,
+  octokit: unknown,
+  retryCount: number,
+) => boolean | void;
 
 /**
  * GitHub label manager client
+ *
+ * Uses @octokit/rest with:
+ * - Built-in pagination via `octokit.paginate()`
+ * - Automatic rate limit handling via @octokit/plugin-throttling
+ * - GitHub Actions auth via @octokit/auth-action when in Actions context
  */
 export class LabelManager {
-  private octokit: Octokit;
+  private octokit: InstanceType<typeof ThrottledOctokit>;
   private env: EnvConfig;
 
   constructor(env: EnvConfig) {
     this.env = env;
-    this.octokit = new Octokit({
-      auth: env.token,
+
+    // Detect if running in GitHub Actions
+    const isGitHubAction = Deno.env.get("GITHUB_ACTIONS") === "true";
+
+    this.octokit = new ThrottledOctokit({
+      // When in GitHub Actions, let createActionAuth handle auth from GITHUB_TOKEN env
+      // Otherwise use the token passed in config
+      auth: isGitHubAction ? undefined : env.token,
+      authStrategy: isGitHubAction ? createActionAuth : undefined,
       request: {
         headers: {
           "X-GitHub-Api-Version": "2022-11-28",
         },
+      },
+      throttle: {
+        onRateLimit: ((
+          retryAfter: number,
+          options: ThrottleHandlerOptions,
+          _octokit: unknown,
+          retryCount: number,
+        ) => {
+          logger.warn(
+            `Rate limit hit for ${options.method} ${options.url}`,
+          );
+          // Retry twice after hitting rate limit
+          if (retryCount < 2) {
+            logger.info(`Retrying after ${retryAfter} seconds...`);
+            return true;
+          }
+          logger.error("Rate limit retries exhausted");
+          return false;
+        }) as RateLimitHandler,
+        onSecondaryRateLimit: ((
+          retryAfter: number,
+          options: ThrottleHandlerOptions,
+          _octokit: unknown,
+          retryCount: number,
+        ) => {
+          logger.warn(
+            `Secondary rate limit hit for ${options.method} ${options.url}, ` +
+              `retry after ${retryAfter}s`,
+          );
+          // Allow 1 retry on secondary rate limits (abuse detection)
+          if (retryCount < 1) {
+            logger.info(`Retrying after ${retryAfter} seconds...`);
+            return true;
+          }
+          logger.error("Secondary rate limit retry exhausted");
+          return false;
+        }) as RateLimitHandler,
       },
     });
   }
@@ -74,32 +112,24 @@ export class LabelManager {
   }
 
   /**
-   * List all labels in the repository
-   * @throws Error on API failure (does not swallow errors)
+   * List all labels in the repository using built-in pagination
+   * @throws Error on API failure
    */
-  async list(page = 1): Promise<GitHubLabel[]> {
-    const { data } = await withRetry(() =>
-      this.octokit.request("GET /repos/{owner}/{repo}/labels", {
+  async list(): Promise<GitHubLabel[]> {
+    const labels = await this.octokit.paginate(
+      "GET /repos/{owner}/{repo}/labels",
+      {
         owner: this.env.owner,
         repo: this.env.repo,
         per_page: 100,
-        page,
-      })
+      },
     );
 
-    const pageLabels = data.map((l) => ({
+    return labels.map((l: GitHubLabelSchema) => ({
       name: l.name,
       color: l.color,
       description: l.description,
     }));
-
-    // Paginate if there might be more results
-    if (pageLabels.length >= 100) {
-      const nextPage = await this.list(page + 1);
-      return [...pageLabels, ...nextPage];
-    }
-
-    return pageLabels;
   }
 
   /**
@@ -107,12 +137,13 @@ export class LabelManager {
    */
   async get(name: string): Promise<GitHubLabel | null> {
     try {
-      const { data } = await withRetry(() =>
-        this.octokit.request("GET /repos/{owner}/{repo}/labels/{name}", {
+      const { data } = await this.octokit.request(
+        "GET /repos/{owner}/{repo}/labels/{name}",
+        {
           owner: this.env.owner,
           repo: this.env.repo,
           name,
-        })
+        },
       );
       return {
         name: data.name,
@@ -135,8 +166,9 @@ export class LabelManager {
       return null;
     }
 
-    const { data } = await withRetry(() =>
-      this.octokit.request("POST /repos/{owner}/{repo}/labels", {
+    const { data } = await this.octokit.request(
+      "POST /repos/{owner}/{repo}/labels",
+      {
         owner: this.env.owner,
         repo: this.env.repo,
         name: options.name,
@@ -144,7 +176,7 @@ export class LabelManager {
           ? String(options.color).replace(/^#/, "")
           : undefined,
         description: options.description,
-      })
+      },
     );
 
     return {
@@ -165,8 +197,9 @@ export class LabelManager {
       return null;
     }
 
-    const { data } = await withRetry(() =>
-      this.octokit.request("PATCH /repos/{owner}/{repo}/labels/{name}", {
+    const { data } = await this.octokit.request(
+      "PATCH /repos/{owner}/{repo}/labels/{name}",
+      {
         owner: this.env.owner,
         repo: this.env.repo,
         name: currentName,
@@ -175,7 +208,7 @@ export class LabelManager {
           ? String(options.color).replace(/^#/, "")
           : undefined,
         description: options.description,
-      })
+      },
     );
 
     return {
@@ -193,13 +226,11 @@ export class LabelManager {
       return;
     }
 
-    await withRetry(() =>
-      this.octokit.request("DELETE /repos/{owner}/{repo}/labels/{name}", {
-        owner: this.env.owner,
-        repo: this.env.repo,
-        name,
-      })
-    );
+    await this.octokit.request("DELETE /repos/{owner}/{repo}/labels/{name}", {
+      owner: this.env.owner,
+      repo: this.env.repo,
+      name,
+    });
   }
 
   /**
