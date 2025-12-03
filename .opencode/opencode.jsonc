@@ -1,0 +1,90 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "formatter": {
+    "dprint": {
+      "command": ["deno", "fmt", "$FILE"],
+      "extensions": [
+        ".js",
+        ".cjs",
+        ".mjs",
+        ".ts",
+        ".mts",
+        ".cts",
+        ".jsx",
+        ".tsx",
+        ".md",
+        ".mkd",
+        ".mkdn",
+        ".mdwn",
+        ".mdown",
+        ".markdown",
+        ".json",
+        ".jsonc",
+        ".css",
+        ".html",
+        ".njk",
+        ".vto",
+        ".yml",
+        ".yaml",
+        ".sass",
+        ".scss",
+        ".less",
+        ".ipynb"
+      ]
+    },
+    "shfmt": {
+      "command": [
+        "shfmt",
+        "--indent",
+        "2",
+        "--language-dialect",
+        "bash",
+        "--simplify",
+        "--binary-next-line",
+        "--case-indent",
+        "--keep-padding",
+        "--write",
+        "$FILE"
+      ],
+      "extensions": ["sh"]
+    }
+  },
+  "mcp": {
+    "perplexity": {
+      "type": "local",
+      "command": ["bunx", "server-perplexity-ask@latest"],
+      "environment": { "PERPLEXITY_API_KEY": "{env:PERPLEXITY_API_KEY}" },
+      "enabled": false
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": { "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}" },
+      "enabled": false
+    },
+    "morphllm": {
+      "type": "local",
+      "command": ["bunx", "@morphllm/morphmcp"],
+      "environment": {
+        "MORPH_API_KEY": "{env:MORPH_API_KEY}",
+        "ENABLED_TOOLS": "read_file,read_multiple_files,list_directory,list_directory_with_sizes,directory_tree,create_directory,search_files,move_file,get_file_info,list_allowed_directories"
+      },
+      "enabled": false
+    },
+    "gh_grep": {
+      "type": "remote",
+      "url": "https://mcp.grep.app",
+      "enabled": true
+    }
+  },
+  "model": "anthropic/claude-opus-4-5",
+  "small_model": "anthropic/claude-haiku-4-5",
+  "share": "manual",
+  "autoupdate": true,
+  // "instructions": [],
+  "experimental": {
+    "chatMaxRetries": 1,
+    "batch_tool": true
+  },
+  "username": "kjanat"
+}
