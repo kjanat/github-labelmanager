@@ -73,6 +73,11 @@ await build({
     Deno.copyFileSync("README.md", "npm/README.md");
     Deno.copyFileSync("LICENSE", "npm/LICENSE");
 
+    // Add Node.js shebang to bin entry for npx compatibility
+    const binPath = "npm/esm/main.js";
+    const binContent = Deno.readTextFileSync(binPath);
+    Deno.writeTextFileSync(binPath, `#!/usr/bin/env node\n${binContent}`);
+
     // Restore original main.ts with shebang
     if (hasShebang) {
       Deno.writeTextFileSync(mainPath, originalMain);

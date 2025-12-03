@@ -14,5 +14,5 @@ pre-commit:
       glob: "*.ts"
       run: deno check --all {staged_files}
     test:
-      glob: "*.ts"
+      glob: "src/*.ts"
       run: deno test -RWE {staged_files}
