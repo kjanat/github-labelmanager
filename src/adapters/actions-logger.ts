@@ -4,7 +4,7 @@
  */
 
 import * as core from "@actions/core";
-import type { AnnotationProperties, ILogger } from "../interfaces/logger.ts";
+import type { AnnotationProperties, ILogger } from "@/interfaces/logger.ts";
 
 /**
  * Convert our annotation properties to @actions/core format

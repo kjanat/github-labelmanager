@@ -5,10 +5,10 @@
  * @module
  */
 
-import { ConfigError, getEnv, loadConfig, printHelp } from "./src/config.ts";
-import { LabelManager } from "./src/client.ts";
-import { syncLabels } from "./src/sync.ts";
-import { logger } from "./src/logger.ts";
+import { ConfigError, getEnv, loadConfig, printHelp } from "@/config.ts";
+import { LabelManager } from "@/client.ts";
+import { syncLabels } from "@/sync.ts";
+import { logger } from "@/logger.ts";
 
 async function main(): Promise<void> {
   const env = getEnv();

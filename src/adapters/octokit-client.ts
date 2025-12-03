@@ -9,9 +9,9 @@ import type { components } from "@octokit/openapi-types";
 import type {
   GitHubClientConfig,
   IGitHubClient,
-} from "../interfaces/github-client.ts";
-import type { GitHubLabel, LabelOptions } from "../types.ts";
-import type { ILogger } from "../interfaces/logger.ts";
+} from "@/interfaces/github-client.ts";
+import type { GitHubLabel, LabelOptions } from "@/types.ts";
+import type { ILogger } from "@/interfaces/logger.ts";
 
 /**
  * Throttle handler options from octokit

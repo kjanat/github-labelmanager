@@ -36,14 +36,14 @@ export type {
   LabelOptions,
   SyncOperation,
   SyncResult,
-} from "./types.ts";
+} from "@/types.ts";
 
 // Interfaces
-export type { AnnotationProperties, ILogger } from "./interfaces/logger.ts";
+export type { AnnotationProperties, ILogger } from "@/interfaces/logger.ts";
 export type {
   GitHubClientConfig,
   IGitHubClient,
-} from "./interfaces/github-client.ts";
+} from "@/interfaces/github-client.ts";
 
 // Config
 export {
@@ -52,10 +52,10 @@ export {
   isLabelConfig,
   loadConfig,
   printHelp,
-} from "./config.ts";
+} from "@/config.ts";
 
 // Client (high-level API with auto-detection)
-export { LabelManager } from "./client.ts";
+export { LabelManager } from "@/client.ts";
 
 // Factory (for manual control over implementations)
 export {
@@ -63,20 +63,20 @@ export {
   createLogger,
   createServices,
   isGitHubActions,
-} from "./factory.ts";
+} from "@/factory.ts";
 
 // Adapters (for direct instantiation)
 export {
   ConsoleLogger,
   ExtendedConsoleLogger,
-} from "./adapters/console-logger.ts";
-export { ActionsLogger } from "./adapters/actions-logger.ts";
-export { OctokitClient } from "./adapters/octokit-client.ts";
-export { ActionsGitHubClient } from "./adapters/actions-client.ts";
+} from "@/adapters/console-logger.ts";
+export { ActionsLogger } from "@/adapters/actions-logger.ts";
+export { OctokitClient } from "@/adapters/octokit-client.ts";
+export { ActionsGitHubClient } from "@/adapters/actions-client.ts";
 
 // Sync
-export { syncLabels } from "./sync.ts";
+export { syncLabels } from "@/sync.ts";
 
 // Legacy logger exports (for backwards compatibility)
-export { COLORS, LOG_LEVELS, logger } from "./logger.ts";
-export type { Logger, LogLevel } from "./logger.ts";
+export { COLORS, LOG_LEVELS, logger } from "@/logger.ts";
+export type { Logger, LogLevel } from "@/logger.ts";

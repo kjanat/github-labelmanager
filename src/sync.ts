@@ -8,9 +8,9 @@ import type {
   LabelConfig,
   SyncOperation,
   SyncResult,
-} from "./types.ts";
-import { LabelManager } from "./client.ts";
-import { logger } from "./logger.ts";
+} from "@/types.ts";
+import { LabelManager } from "@/client.ts";
+import { logger } from "@/logger.ts";
 
 /** Normalize color to lowercase 6-char hex without # */
 function normalizeColor(color: string): string {

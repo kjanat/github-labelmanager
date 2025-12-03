@@ -4,7 +4,7 @@
  */
 
 import { parse } from "@std/yaml";
-import type { EnvConfig, LabelConfig, LabelDefinition } from "./types.ts";
+import type { EnvConfig, LabelConfig, LabelDefinition } from "@/types.ts";
 
 /** Default config file path */
 const DEFAULT_CONFIG_PATH = ".github/labels.yml";

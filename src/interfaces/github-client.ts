@@ -3,7 +3,7 @@
  * @module
  */
 
-import type { GitHubLabel, LabelOptions } from "../types.ts";
+import type { GitHubLabel, LabelOptions } from "@/types.ts";
 
 /**
  * GitHub client interface for label CRUD operations

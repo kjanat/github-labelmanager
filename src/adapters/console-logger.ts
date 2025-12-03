@@ -3,7 +3,7 @@
  * @module
  */
 
-import type { AnnotationProperties, ILogger } from "../interfaces/logger.ts";
+import type { AnnotationProperties, ILogger } from "@/interfaces/logger.ts";
 
 /** ANSI color codes */
 const COLORS = {

@@ -3,7 +3,7 @@
  */
 
 import { assertEquals } from "@std/assert";
-import { isLabelConfig } from "./config.ts";
+import { isLabelConfig } from "@/config.ts";
 
 // --- isLabelConfig tests ---
 
