@@ -1,5 +1,10 @@
 # github-labelmanager
 
+[![CI](https://github.com/kjanat/github-labelmanager/actions/workflows/ci.yml/badge.svg)](https://github.com/kjanat/github-labelmanager/actions/workflows/ci.yml)
+[![Docker](https://github.com/kjanat/github-labelmanager/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/kjanat/github-labelmanager/actions/workflows/docker-publish.yml)
+[![JSR](https://jsr.io/badges/@kjanat/github-labelmanager)](https://jsr.io/@kjanat/github-labelmanager)
+[![NPM](https://img.shields.io/npm/v/@kjanat/github-labelmanager)](https://www.npmjs.com/package/@kjanat/github-labelmanager)
+
 Declaratively sync GitHub issue labels from a YAML config file.
 
 ---

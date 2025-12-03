@@ -8,5 +8,11 @@ RUN deno cache main.ts
 FROM denoland/deno:2.5.6
 WORKDIR /app
 COPY --from=builder /app .
+# Create deno user
+RUN addgroup --system deno && \
+    adduser --system --ingroup deno deno
+
+# Switch to deno user
+USER deno
 ENTRYPOINT ["deno", "run", "--allow-net=api.github.com", "--allow-read", "--allow-env", "main.ts"]
 CMD []

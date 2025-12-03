@@ -9,9 +9,14 @@ on:
   pull_request:
     branches: [master]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     steps:
@@ -23,6 +28,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       id-token: write
@@ -30,7 +36,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: denoland/setup-deno@v2
         with: { deno-version: v2.x }
-      - run: deno test -A --coverage=cov/
+      - run: deno task test --coverage=cov/
       - run: deno coverage --lcov cov/ > cov.lcov
         if: ${{ !cancelled() }}
       - uses: codecov/codecov-action@v5
