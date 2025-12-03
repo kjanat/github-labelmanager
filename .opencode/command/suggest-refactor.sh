@@ -9,15 +9,14 @@ if ! command -v rg &>/dev/null; then
 fi
 
 # Configurable patterns and globs
-PATTERNS="biome-ignore|eslint-disable|ts-expect-error|ts-ignore|@ts-nocheck|prettier-ignore|stylelint-disable"
+PATTERNS="deno-lint-ignore|deno-fmt-ignore|ts-expect-error|ts-ignore|@ts-nocheck"
 GLBS=(
-  "*.{ts,tsx,js,jsx,json,css,scss}"
-  '!**/*.gen.ts'
-  '!**/.git'
-  '!**/.next'
-  '!**/build'
-  '!**/dist'
-  '!**/node_modules'
+  "!**/.git"
+  "!**/*.gen.ts"
+  "!**/build"
+  "!**/dist"
+  "!**/npm"
+  "*.{ts,tsx,js,jsx,json}"
 )
 INPUT="${1:-.}"
 

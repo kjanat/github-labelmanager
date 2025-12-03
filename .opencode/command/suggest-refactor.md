@@ -7,7 +7,11 @@ Search the codebase for lint suppression comments and analyze each one.
 
 ## Lint Ignore Comments Found
 
-!`.opencode/command/suggest-refactor.sh $ARGUMENTS`
+<ignore_comments>
+
+!`bash -c "cd $(git rev-parse --show-toplevel) && ./.opencode/command/suggest-refactor.sh $ARGUMENTS"`
+
+</ignore_comments>
 
 ## Analysis Guidelines
 
@@ -20,8 +24,9 @@ For each ignore comment found:
 
 ## Common Refactoring Strategies
 
-- `noExcessiveCognitiveComplexity` -> Extract helper functions, reduce nesting
-- `noStaticOnlyClass` -> Convert to module with exported functions
+- `deno-lint-ignore` -> Fix the underlying lint issue or document why it's
+  necessary
+- `deno-fmt-ignore` -> Restructure code to work with formatter
 - `noExplicitAny` -> Add proper types or generics
 - `@ts-expect-error` in tests -> Use type assertions or proper test utilities
 - Generated files (`*.gen.ts`) -> Skip, auto-generated
@@ -37,3 +42,5 @@ For each finding provide:
 
 Focus on actionable suggestions. If an ignore is justified (e.g., testing
 invalid inputs), acknowledge it but still suggest alternatives if possible.
+
+<!-- markdownlint-disable-file MD033 MD041 -->

@@ -2,27 +2,33 @@
 
 set -euo pipefail
 
+# Get script's name
+SCRIPT_NAME=$(basename "$0")
+
+# Default values
 scope="${1:-all}"
 ref="${2:-HEAD}"
 
 # Show help
 if [[ "${scope}" == "--help" || "${scope}" == "-h" ]]; then
-  echo "Usage: review.sh [scope] [ref]"
-  echo ""
-  echo "Scopes:"
-  echo "  all       - All uncommitted changes (default)"
-  echo "  staged    - Only staged changes"
-  echo "  unstaged  - Only unstaged changes"
-  echo "  commit    - Show specific commit (use ref for commit hash)"
-  echo "  branch    - Compare current branch to base branch"
-  echo "  pr        - Full PR review (commits, stats, diff)"
-  echo ""
-  echo "Examples:"
-  echo "  review.sh                  # all uncommitted changes"
-  echo "  review.sh staged           # staged changes only"
-  echo "  review.sh commit abc123    # show specific commit"
-  echo "  review.sh pr               # full PR review"
-  exit 0
+  {
+    echo "Usage: ${SCRIPT_NAME} [scope] [ref]"
+    echo ""
+    echo "Scopes:"
+    echo "  all       - All uncommitted changes (default)"
+    echo "  staged    - Only staged changes"
+    echo "  unstaged  - Only unstaged changes"
+    echo "  commit    - Show specific commit (use ref for commit hash)"
+    echo "  branch    - Compare current branch to base branch"
+    echo "  pr        - Full PR review (commits, stats, diff)"
+    echo ""
+    echo "Examples:"
+    echo "  ${SCRIPT_NAME}                  # all uncommitted changes"
+    echo "  ${SCRIPT_NAME} staged           # staged changes only"
+    echo "  ${SCRIPT_NAME} commit [HASH]    # show specific commit"
+    echo "  ${SCRIPT_NAME} pr [NUMBER]      # full PR review"
+    exit 0
+  }
 fi
 
 # Detect default branch (master/main)
@@ -39,7 +45,7 @@ validate_ref() {
 case "${scope}" in
   staged)
     echo "=== STAGED CHANGES ==="
-    git --no-pager diff --cached
+    git --no-pager diff --staged
     ;;
   unstaged)
     echo "=== UNSTAGED CHANGES ==="
@@ -51,24 +57,28 @@ case "${scope}" in
     git --no-pager show "${ref}"
     ;;
   branch)
-    echo "=== BRANCH vs ${base^^} ==="
+    current_branch=$(git rev-parse --abbrev-ref HEAD)
+    if [[ "${current_branch}" == "${base}" ]]; then
+      echo "You are on the base branch (${base}). No changes to show."
+      exit 0
+    fi
+    echo "=== ${current_branch^^} vs ${base^^} ==="
     echo "--- Commits ---"
-    git --no-pager log --oneline "${base}..HEAD"
+    git --no-pager log --oneline "${base}..${current_branch}"
     echo -e "\n--- Changed Files ---"
-    git --no-pager diff --name-status "${base}...HEAD"
+    git --no-pager diff --name-status "${base}...${current_branch}"
     echo -e "\n--- Diff ---"
-    git --no-pager diff "${base}...HEAD"
+    git --no-pager diff "${base}...${current_branch}"
     ;;
   pr)
-    echo "=== PR REVIEW ==="
-    echo "--- Commits ---"
-    git --no-pager log --oneline "${base}..HEAD"
-    echo -e "\n--- Stats ---"
-    git --no-pager diff --stat "${base}...HEAD"
-    echo -e "\n--- Changed Files ---"
-    git --no-pager diff --name-status "${base}...HEAD"
-    echo -e "\n--- Full Diff ---"
-    git --no-pager diff "${base}...HEAD"
+    gh pr view "${ref}" --json number,title,body,reviews,assignees --template \
+      '{{printf "#%v" .number}} {{.title}}
+
+      {{.body}}
+
+      {{tablerow "ASSIGNEE" "NAME"}}{{range .assignees}}{{tablerow .login .name}}{{end}}{{tablerender}}
+      {{tablerow "REVIEWER" "STATE" "COMMENT"}}{{range .reviews}}{{tablerow .author.login .state .body}}{{end}}
+      '
     ;;
   all | *)
     echo "=== ALL UNCOMMITTED CHANGES ==="
