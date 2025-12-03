@@ -16,7 +16,8 @@ Review the following code changes for:
 
 Get changes like this, use the following optional
 <arguments>$ARGUMENTS</arguments> (if provided) to filter when running this
-command: `bun diff [all|staged|unstaged|commit|branch|pr] [ref]`
+command:
+`./.opencode/command/review.sh [all|staged|unstaged|commit|branch|pr] [ref]`
 
 <message>
 
@@ -28,15 +29,16 @@ command: `bun diff [all|staged|unstaged|commit|branch|pr] [ref]`
 </message>
 
 Please let me know if the above message is empty. Also, then, run
-`bun diff [--help]` to see the changes.
+`./.opencode/command/review.sh --help` to see usage.
 
-## CodonCanvas Guidelines
+## github-labelmanager Guidelines
 
-- TypeScript strict mode, no "any"
-- Proper error handling (no silent failures)
-- Naming: kebab-case files, PascalCase classes/components, camelCase functions
-- Max cognitive complexity: 15
-- No "console.log" (use info/warn/error)
-- Import path aliases: "@/*"
+- Deno runtime (not Node.js) - use Deno APIs
+- Imports: JSR (`jsr:@std/*`) for stdlib, npm specifiers for npm packages
+- Types: `interface` for shapes, `as const` for readonly objects
+- Naming: camelCase (vars/funcs), PascalCase (types/classes), kebab-case (files)
+- Error handling: try/catch with type guards, no silent failures
+- Permissions: explicit flags (`--allow-net`, `--allow-read`, `--allow-env`)
+- No "console.log" in src/ (use logger from `./src/logger.ts`)
 
 Provide actionable feedback with `file:line` references.

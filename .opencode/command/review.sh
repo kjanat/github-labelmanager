@@ -5,6 +5,26 @@ set -euo pipefail
 scope="${1:-all}"
 ref="${2:-HEAD}"
 
+# Show help
+if [[ "${scope}" == "--help" || "${scope}" == "-h" ]]; then
+  echo "Usage: review.sh [scope] [ref]"
+  echo ""
+  echo "Scopes:"
+  echo "  all       - All uncommitted changes (default)"
+  echo "  staged    - Only staged changes"
+  echo "  unstaged  - Only unstaged changes"
+  echo "  commit    - Show specific commit (use ref for commit hash)"
+  echo "  branch    - Compare current branch to base branch"
+  echo "  pr        - Full PR review (commits, stats, diff)"
+  echo ""
+  echo "Examples:"
+  echo "  review.sh                  # all uncommitted changes"
+  echo "  review.sh staged           # staged changes only"
+  echo "  review.sh commit abc123    # show specific commit"
+  echo "  review.sh pr               # full PR review"
+  exit 0
+fi
+
 # Detect default branch (master/main)
 base=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "master")
 
