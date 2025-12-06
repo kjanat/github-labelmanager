@@ -1,4 +1,6 @@
-# lefthook.yml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/evilmartians/lefthook/master/schema.json
+# https://lefthook.dev/configuration/
+---
 pre-commit:
   parallel: true
   commands:
@@ -19,5 +21,5 @@ pre-commit:
     schemagen:
       glob: "src/types.ts"
       run: |
-        deno run --allow-read --allow-write --allow-env scripts/build_schema.ts \
+        deno run -RWE scripts/build_schema.ts \
         && git add .github/labels.schema.json

@@ -1,5 +1,6 @@
 name: Check schema is up-to-date
 description: Generates schema and loads diff
+
 outputs:
   outdated:
     description: Whether schema is outdated
@@ -7,6 +8,12 @@ outputs:
   up-to-date:
     description: Whether schema is up-to-date
     value: ${{ steps.schema.outputs.up-to-date }}
+
+inputs:
+  file:
+    description: File to check
+    default: .github/labels.schema.json
+    required: true
 
 runs:
   using: composite
@@ -16,7 +23,7 @@ runs:
       uses: actions/github-script@v8
       with:
         script: |
-          const schemafile = '.github/labels.schema.json';
+          const schemafile = core.getInput('file');
 
           await exec.exec('deno', ['task', 'schema']);
 

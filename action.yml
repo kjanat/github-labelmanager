@@ -13,17 +13,18 @@ runs:
 
 inputs:
   token:
+    description: "GitHub Personal Access Token (must have issues: write permission)"
     required: true
-    description: GitHub Personal Access Token
+    default: ${{ github.token }}
   repository:
-    required: false
     description: Repository in 'owner/repo' format
-    default: "${{ github.repository }}"
+    required: true
+    default: ${{ github.repository }}
   dry-run:
-    required: false
     description: Run without making changes to GitHub
-    default: "false"
-  config-path:
     required: false
+    default: false
+  config-path:
     description: Path to the configuration file
-    default: ".github/labels.yml"
+    required: true
+    default: .github/labels.yml

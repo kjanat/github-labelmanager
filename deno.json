@@ -31,33 +31,39 @@
     ".": "./src/mod.ts",
     "./cli": "./main.ts"
   },
+  "fmt": {
+    "exclude": [
+      ".github/actions/publish-npm",
+      "npm"
+    ]
+  },
+  "lint": {
+    "exclude": [
+      ".github/actions/publish-npm",
+      "npm"
+    ]
+  },
   "nodeModulesDir": "auto",
   "publish": {
     "include": [
-      "src/**/*.ts",
-      "main.ts",
+      ".github/labels.schema.json",
       "deno.json",
-      "README.md",
       "LICENSE",
-      ".github/labels.schema.json"
+      "main.ts",
+      "README.md",
+      "src/**/*.ts"
     ]
   },
   "readme": "README.md",
   "tasks": {
-    "dev": "deno run --watch main.ts",
     "build": "deno run -A scripts/build_npm.ts",
-    "compile": "deno compile --allow-net --allow-read --allow-env --output labels main.ts",
+    "compile": "deno compile --allow-net=api.github.com -RE -o github-labelmanager main.ts",
+    "dev": "deno run --watch main.ts",
     "hooks": "lefthook install",
-    "labels": "deno run --allow-net=api.github.com --allow-read --allow-env main.ts",
-    "labels:dry-run": "deno run --allow-net=api.github.com --allow-read --allow-env main.ts --dry-run",
-    "test": "deno test --allow-read --allow-write --allow-env src/ scripts/",
-    "test:coverage": "deno test --allow-read --allow-write --allow-env src/ scripts/ --coverage",
-    "schema": "deno run -A scripts/build_schema.ts"
-  },
-  "lint": {
-    "exclude": [".github/actions/publish-npm", "npm"]
-  },
-  "fmt": {
-    "exclude": [".github/actions/publish-npm", "npm"]
+    "labels": "deno run --allow-net=api.github.com -RE main.ts",
+    "labels:dry-run": "deno run --allow-net=api.github.com -RE main.ts --dry-run kjanat/github-labelmanager",
+    "schema": "deno run -A scripts/build_schema.ts",
+    "test": "deno test -RWE src/ scripts/",
+    "test:coverage": "deno test -RWE src/ scripts/ --coverage"
   }
 }
