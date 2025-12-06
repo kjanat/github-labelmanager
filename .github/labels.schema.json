@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/LabelConfig",
+  "definitions": {
+    "LabelConfig": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LabelDefinition"
+          },
+          "description": "Labels to create/update"
+        },
+        "delete": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Labels to delete (by name)"
+        }
+      },
+      "required": [
+        "labels"
+      ],
+      "additionalProperties": false,
+      "description": "Root configuration schema from labels.yml"
+    },
+    "LabelDefinition": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the label"
+        },
+        "color": {
+          "type": "string",
+          "description": "The color as 6 character hex code (with or without '#')",
+          "pattern": "^#?[0-9A-Fa-f]{6}$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the label"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Optional aliases for renaming from old label names"
+        }
+      },
+      "required": [
+        "name",
+        "color",
+        "description"
+      ],
+      "additionalProperties": false,
+      "description": "Label definition from labels.yml config file"
+    }
+  },
+  "$id": "https://raw.githubusercontent.com/kjanat/github-labelmanager/master/.github/labels.schema.json"
+}

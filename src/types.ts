@@ -7,12 +7,25 @@
 export interface LabelDefinition {
   /** The name of the label */
   name: string;
-  /** The color as 6 character hex code (with or without '#') */
+  /**
+   * The color as 6 character hex code (with or without '#')
+   * @pattern ^#?[0-9A-Fa-f]{6}$
+   */
   color: string;
   /** Description of the label */
   description: string;
   /** Optional aliases for renaming from old label names */
   aliases?: string[];
+}
+
+/** Metadata for config annotations (not part of YAML schema) */
+export interface LabelConfigMeta {
+  /** Resolved config file path */
+  filePath: string;
+  /** Map of label name -> 1-based line number */
+  labelLines: Record<string, number>;
+  /** Map of delete entry -> 1-based line number */
+  deleteLines: Record<string, number>;
 }
 
 /** Root configuration schema from labels.yml */
@@ -21,25 +34,8 @@ export interface LabelConfig {
   labels: LabelDefinition[];
   /** Labels to delete (by name) */
   delete?: string[];
-}
-
-/** Options for GitHub label API operations */
-export interface LabelOptions {
-  /** The name of the label */
-  name: string;
-  /** The color of the label as 6 character hex code, without '#' */
-  color?: string;
-  /** The description of the label */
-  description?: string;
-  /** The new name of the label (for renames) */
-  new_name?: string;
-}
-
-/** Label as returned by GitHub API */
-export interface GitHubLabel {
-  name: string;
-  color: string;
-  description: string | null;
+  /** Metadata for annotations (populated during parsing, not serialized) */
+  _meta?: LabelConfigMeta;
 }
 
 /** Environment/CLI configuration */
@@ -59,6 +55,14 @@ export interface SyncOperation {
   from?: string;
   success: boolean;
   error?: string;
+  /** Details for summary display */
+  details?: {
+    color?: string;
+    description?: string;
+    /** For updates: previous values */
+    oldColor?: string;
+    oldDescription?: string;
+  };
 }
 
 /** Result of a sync operation - extensible for different output formats */

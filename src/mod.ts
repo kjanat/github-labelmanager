@@ -30,20 +30,22 @@
 // Types
 export type {
   EnvConfig,
-  GitHubLabel,
   LabelConfig,
   LabelDefinition,
-  LabelOptions,
   SyncOperation,
   SyncResult,
 } from "@/types.ts";
 
-// Interfaces
-export type { AnnotationProperties, ILogger } from "@/interfaces/logger.ts";
+// Client types
 export type {
   GitHubClientConfig,
+  GitHubLabel,
   IGitHubClient,
-} from "@/interfaces/github-client.ts";
+  LabelOptions,
+} from "@/adapters/client/mod.ts";
+
+// Logger types
+export type { AnnotationProperties, ILogger } from "@/adapters/logger/mod.ts";
 
 // Config
 export {
@@ -66,17 +68,12 @@ export {
 } from "@/factory.ts";
 
 // Adapters (for direct instantiation)
-export {
-  ConsoleLogger,
-  ExtendedConsoleLogger,
-} from "@/adapters/console-logger.ts";
-export { ActionsLogger } from "@/adapters/actions-logger.ts";
-export { OctokitClient } from "@/adapters/octokit-client.ts";
-export { ActionsGitHubClient } from "@/adapters/actions-client.ts";
+export { ActionsLogger, ConsoleLogger } from "@/adapters/logger/mod.ts";
+export { ActionsGitHubClient, OctokitClient } from "@/adapters/client/mod.ts";
 
 // Sync
 export { syncLabels } from "@/sync.ts";
 
-// Legacy logger exports (for backwards compatibility)
-export { COLORS, LOG_LEVELS, logger } from "@/logger.ts";
-export type { Logger, LogLevel } from "@/logger.ts";
+// Test utilities (for consumers writing tests)
+export { createTestEnv, MockGitHubClient, NullLogger } from "@/testing.ts";
+export type { ApiCall, MockGitHubClientOptions } from "@/testing.ts";

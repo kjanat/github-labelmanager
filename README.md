@@ -134,6 +134,8 @@ jobs:
 Create [`.github/labels.yml`][labels.yml] in your repository:
 
 ```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kjanat/github-labelmanager/master/.github/labels.schema.json
+---
 labels:
   - name: bug
     color: "#d73a4a"

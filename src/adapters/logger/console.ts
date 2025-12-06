@@ -3,7 +3,8 @@
  * @module
  */
 
-import type { AnnotationProperties, ILogger } from "@/interfaces/logger.ts";
+import type { AnnotationProperties, ILogger } from "./types.ts";
+import type { SyncResult } from "@/types.ts";
 
 /** ANSI color codes */
 const COLORS = {
@@ -134,29 +135,21 @@ export class ConsoleLogger implements ILogger {
     this.error(msg);
     Deno.exit(1);
   }
-}
 
-/**
- * Extended console logger with additional CLI-specific methods
- */
-export class ExtendedConsoleLogger extends ConsoleLogger {
-  /**
-   * Log success message (green)
-   */
   success(message: string): void {
-    const indent = "  ".repeat(0); // Access base indent
     console.log(
-      `${indent}${colorize(COLORS.green, "[+]")} ${message}`,
+      `${this.indent}${colorize(COLORS.green, "[+]")} ${message}`,
     );
   }
 
-  /**
-   * Log skip message (gray)
-   */
   skip(message: string): void {
-    const indent = "  ".repeat(0);
     console.log(
-      `${indent}${colorize(COLORS.gray, "[-]")} ${message}`,
+      `${this.indent}${colorize(COLORS.gray, "[-]")} ${message}`,
     );
+  }
+
+  writeSummary(_result: SyncResult): Promise<void> {
+    // No-op for CLI - results already printed inline during sync
+    return Promise.resolve();
   }
 }

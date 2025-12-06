@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=labels.schema.json
+---
 labels:
   - name: bug
     color: "#d73a4a"

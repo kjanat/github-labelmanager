@@ -1,39 +1,30 @@
 /**
- * GitHub Actions client using @actions/github
- * Pre-configured for GitHub Actions environment with proper proxy support
+ * Base GitHub client with shared CRUD logic
  * @module
  */
 
-import * as github from "@actions/github";
-import type { components } from "@octokit/openapi-types";
+import type { ILogger } from "../logger/mod.ts";
 import type {
   GitHubClientConfig,
+  GitHubLabel,
   IGitHubClient,
-} from "@/interfaces/github-client.ts";
-import type { GitHubLabel, LabelOptions } from "@/types.ts";
-import type { ILogger } from "@/interfaces/logger.ts";
-
-// Type for GitHub label from API response
-type GitHubLabelSchema = components["schemas"]["label"];
-
-// Type for the octokit instance from @actions/github
-type ActionsOctokit = ReturnType<typeof github.getOctokit>;
+  LabelOptions,
+  OctokitLike,
+} from "./types.ts";
 
 /**
- * GitHub Actions client using @actions/github
+ * Abstract base class for GitHub clients
  *
- * Features:
- * - Pre-authenticated via GITHUB_TOKEN
- * - Proper proxy support for self-hosted runners
- * - Correct base URL handling for GHES
- * - Native pagination via octokit.paginate()
- *
- * Note: Does not include throttling - GitHub Actions has shorter runs
- * and rate limiting is less of a concern
+ * Provides shared CRUD implementations for label operations.
+ * Subclasses must:
+ * 1. Initialize the octokit instance with appropriate config (auth, proxy, throttling)
+ * 2. Implement list() as paginate() signatures differ between octokit versions
  */
-export class ActionsGitHubClient implements IGitHubClient {
-  private octokit: ActionsOctokit;
-  private logger: ILogger;
+export abstract class BaseGitHubClient implements IGitHubClient {
+  /** Octokit instance - must be initialized by subclass */
+  protected abstract readonly octokit: OctokitLike;
+
+  protected readonly logger: ILogger;
 
   readonly owner: string;
   readonly repo: string;
@@ -44,27 +35,13 @@ export class ActionsGitHubClient implements IGitHubClient {
     this.owner = config.owner;
     this.repo = config.repo;
     this.isDryRun = config.dryRun;
-
-    // @actions/github handles authentication and proxy configuration
-    this.octokit = github.getOctokit(config.token);
   }
 
-  async list(): Promise<GitHubLabel[]> {
-    const labels = await this.octokit.paginate(
-      this.octokit.rest.issues.listLabelsForRepo,
-      {
-        owner: this.owner,
-        repo: this.repo,
-        per_page: 100,
-      },
-    );
-
-    return labels.map((l: GitHubLabelSchema) => ({
-      name: l.name,
-      color: l.color,
-      description: l.description,
-    }));
-  }
+  /**
+   * List all labels - must be implemented by subclass
+   * (paginate() signatures differ between octokit versions)
+   */
+  abstract list(): Promise<GitHubLabel[]>;
 
   async get(name: string): Promise<GitHubLabel | null> {
     try {
@@ -151,7 +128,7 @@ export class ActionsGitHubClient implements IGitHubClient {
   /**
    * Check if error is a 404 Not Found
    */
-  private isNotFoundError(err: unknown): boolean {
+  protected isNotFoundError(err: unknown): boolean {
     return (
       err !== null &&
       typeof err === "object" &&

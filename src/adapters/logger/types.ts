@@ -3,6 +3,8 @@
  * @module
  */
 
+import type { SyncResult } from "@/types.ts";
+
 /**
  * Annotation properties for marking specific file locations
  */
@@ -74,4 +76,25 @@ export interface ILogger {
    * In CLI mode, this logs error and sets exit code
    */
   setFailed(message: string | Error): void;
+
+  /**
+   * Log success message
+   * CLI: Green colored output
+   * Actions: Maps to core.info()
+   */
+  success(message: string): void;
+
+  /**
+   * Log skip/no-op message
+   * CLI: Gray colored output
+   * Actions: Maps to core.debug() (hidden unless debug enabled)
+   */
+  skip(message: string): void;
+
+  /**
+   * Write a summary of the sync operation
+   * CLI: No-op (results already printed inline)
+   * Actions: Writes markdown step summary via @actions/core
+   */
+  writeSummary(result: SyncResult): Promise<void>;
 }

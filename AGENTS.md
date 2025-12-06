@@ -8,7 +8,7 @@
 - Type check: `deno check --all`
 - Format: `deno fmt`
 - Lint: `deno lint`
-- No tests exist yet
+- Test: `deno task test`
 
 ## Code Style
 
@@ -31,6 +31,31 @@
 
 - Default config: `.github/labels.yml` (YAML format)
 - Entry point: `main.ts`
+
+## Structure
+
+```tree
+src/
+  adapters/
+    client/          # GitHub API clients
+      mod.ts         # Barrel exports
+      types.ts       # IGitHubClient, GitHubClientConfig, LabelOptions
+      base.ts        # BaseGitHubClient (shared CRUD logic)
+      actions.ts     # ActionsGitHubClient (CI: proxy, GHES support)
+      octokit.ts     # OctokitClient (CLI: throttling, retry)
+    logger/          # Logging adapters
+      mod.ts         # Barrel exports
+      types.ts       # ILogger, AnnotationProperties
+      actions.ts     # ActionsLogger (@actions/core)
+      console.ts     # ConsoleLogger (colored CLI output)
+  client.ts          # LabelManager (high-level API with DI)
+  config.ts          # Config loading and validation
+  factory.ts         # Environment detection, service creation
+  mod.ts             # Public API exports
+  sync.ts            # Label sync orchestration
+  testing.ts         # Test utilities (MockGitHubClient, NullLogger)
+  types.ts           # Domain types (LabelConfig, SyncResult, etc.)
+```
 
 ## Repository
 

@@ -23,6 +23,15 @@ jobs:
       is_tag: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v6
+      # TODO: Convert `version` to github-script
+      # - name: Extract and validate version
+      #   id: version-github-script
+      #   uses: actions/github-script@v8
+      #   with:
+      #     script: |
+      #       const version = process.env.GITHUB_REF_NAME;
+      #       console.log(`Version from GITHUB_REF_NAME: ${version}`);
+      #       core.setOutput('version', version);
       - name: Extract and validate version
         id: version
         run: |
@@ -69,73 +78,44 @@ jobs:
       - name: Validate JSR (dry-run)
         run: deno publish --dry-run
 
-  publish:
-    name: ${{ matrix.target }} ${{ fromJSON(needs.validate.outputs.is_tag) && '(publish)' || '(dry-run)' }}
+  publish-jsr:
+    name: JSR ${{ needs.validate.outputs.is_tag == 'true' && '(publish)' || '(dry-run)' }}
+    needs: [validate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions: { contents: read, id-token: write }
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/publish-jsr
+        with:
+          dry-run: ${{ needs.validate.outputs.is_tag != 'true' }}
+
+  publish-npm:
+    name: NPM ${{ needs.validate.outputs.is_tag == 'true' && '(publish)' || '(dry-run)' }}
     needs: [validate, build]
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    permissions:
-      contents: read
-      id-token: write
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - jsr
-          - npm
+    permissions: { contents: read, id-token: write }
     steps:
       - uses: actions/checkout@v6
-
-      # JSR
-      - name: Setup Deno
-        if: matrix.target == 'jsr'
-        uses: denoland/setup-deno@v2
+      - uses: denoland/setup-deno@v2
         with: { deno-version: v2.x }
-      - name: Publish to JSR
-        if: matrix.target == 'jsr' && needs.validate.outputs.is_tag == 'true'
-        run: deno publish
-      - name: JSR dry-run
-        if: matrix.target == 'jsr' && needs.validate.outputs.is_tag != 'true'
-        run: deno publish --dry-run
+      - name: Build NPM package
+        run: deno task build
 
-      # NPM
-      - name: Download NPM artifact
-        if: matrix.target == 'npm'
-        uses: actions/download-artifact@v6
-        with:
-          name: npm-package
-          path: npm/
       - name: Setup Node
-        if: matrix.target == 'npm'
         uses: actions/setup-node@v6
+        with: { node-version: latest }
+
+      - uses: ./.github/actions/publish-npm
         with:
-          node-version: latest
-          registry-url: https://registry.npmjs.org
-      - name: Update npm
-        if: matrix.target == 'npm'
-        run: npm install -g npm@latest
-      - name: Publish to NPM
-        if: matrix.target == 'npm' && needs.validate.outputs.is_tag == 'true'
-        working-directory: ./npm
-        env:
-          VERSION: ${{ needs.validate.outputs.version }}
-        run: |
-          SEMVER="${VERSION#v}"
-          if [ "${{ needs.validate.outputs.prerelease }}" == "true" ]; then
-            npm publish --access public --provenance --tag beta
-          else
-            npm publish --access public --provenance
-            # Update beta dist-tag to point to stable (beta becomes alias)
-            npm dist-tag add "@kjanat/github-labelmanager@$SEMVER" beta || echo "::warning::Failed to update beta dist-tag"
-          fi
-      - name: NPM dry-run
-        if: matrix.target == 'npm' && needs.validate.outputs.is_tag != 'true'
-        working-directory: ./npm
-        run: npm publish --access public --dry-run
+          dry-run: ${{ needs.validate.outputs.is_tag != 'true' }}
+          version: ${{ needs.validate.outputs.version }}
+          prerelease: ${{ needs.validate.outputs.prerelease }}
 
   release:
     name: Create GitHub Release
-    needs: [validate, publish]
+    needs: [validate, publish-jsr, publish-npm]
     if: needs.validate.outputs.is_tag == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -145,21 +125,16 @@ jobs:
       - uses: actions/checkout@v6
       - name: Create GitHub Release
         run: |
-          gh release create ${{ github.ref_name }} \
+          gh release create "${{ github.ref_name }}" \
             --generate-notes \
-            ${{
-              fromJSON(needs.validate.outputs.prerelease)
-              && '--prerelease'
-            }}
+            ${{ needs.validate.outputs.prerelease == 'true' && '--prerelease' || '' }}
         env:
           GH_TOKEN: ${{ github.token }}
 
   update-tags:
     name: Update version tags
     needs: [validate, release]
-    if: >-
-      ${{ fromJSON(needs.validate.outputs.is_tag) &&
-      !fromJSON(needs.validate.outputs.prerelease) }}
+    if: needs.validate.outputs.is_tag == 'true' && needs.validate.outputs.prerelease != 'true'
     uses: ./.github/workflows/update-tags.yml
     with:
       version: ${{ needs.validate.outputs.version }}

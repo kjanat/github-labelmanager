@@ -25,6 +25,7 @@ jobs:
         with: { deno-version: v2.x }
       - run: deno fmt --check
       - run: deno lint
+      - uses: .github/actions/check-schema-outdated
 
   test:
     runs-on: ubuntu-latest

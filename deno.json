@@ -19,9 +19,11 @@
     "@deno/dnt": "jsr:@deno/dnt@^0.42.3",
     "@octokit/openapi-types": "npm:@octokit/openapi-types@^27.0.0",
     "@std/assert": "jsr:@std/assert@^1.0.16",
-    "@std/yaml": "jsr:@std/yaml@^1.0.10",
+    "yaml": "jsr:@eemeli/yaml@^2.7.1",
+    "ajv": "npm:ajv@^8.17.1",
     "lefthook": "npm:lefthook@^2.0.5",
     "octokit": "npm:octokit@^5.0.5",
+    "ts-json-schema-generator": "npm:ts-json-schema-generator@^2.4.0",
     "@/": "./src/",
     "~/": "./"
   },
@@ -36,7 +38,8 @@
       "main.ts",
       "deno.json",
       "README.md",
-      "LICENSE"
+      "LICENSE",
+      ".github/labels.schema.json"
     ]
   },
   "readme": "README.md",
@@ -47,6 +50,14 @@
     "hooks": "lefthook install",
     "labels": "deno run --allow-net=api.github.com --allow-read --allow-env main.ts",
     "labels:dry-run": "deno run --allow-net=api.github.com --allow-read --allow-env main.ts --dry-run",
-    "test": "deno test --allow-read --allow-env src/"
+    "test": "deno test --allow-read --allow-write --allow-env src/ scripts/",
+    "test:coverage": "deno test --allow-read --allow-write --allow-env src/ scripts/ --coverage",
+    "schema": "deno run -A scripts/build_schema.ts"
+  },
+  "lint": {
+    "exclude": [".github/actions/publish-npm", "npm"]
+  },
+  "fmt": {
+    "exclude": [".github/actions/publish-npm", "npm"]
   }
 }

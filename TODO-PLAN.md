@@ -9,12 +9,12 @@
 - [x] #5 - CONFIG_PATH input - now used via getEnv()
 - [x] #6 - YAML schema validation - isLabelConfig() type guard
 - [x] #7 - Unsafe owner/repo split - validated in getEnv()
-- [x] #8 - README claims - marked packages as "Coming Soon"
+- [x] #8 - README claims - packages now published
 - [x] #9 - Pin Docker version - denoland/deno:2.5.6
 - [x] #10 - Scope Deno permissions - scoped in deno.json tasks
 - [x] #11 - Rate limit handling - @octokit/plugin-throttling
 - [x] #12 - labels:dry-run task - accepts OWNER/REPO argument
-- [x] #13 - Tests - 18 tests in src/config_test.ts
+- [x] #13 - Tests - 28 tests in src/config_test.ts
 - [x] #14 - Format check - removed continue-on-error
 
 ## Refactoring Completed
@@ -28,32 +28,40 @@
   - `src/mod.ts` - Public API exports
 
 - Upgraded Octokit stack:
-  - `@octokit/rest` - Built-in pagination
-  - `@octokit/plugin-throttling` - Rate limit handling
-  - `@octokit/auth-action` - GitHub Actions auth
-  - `@octokit/types` / `@octokit/openapi-types` - Proper typing
+  - `octokit` - Full SDK with pagination, throttling, retry
+  - `@actions/github` - GitHub Actions client (proxy, GHES support)
+  - `@octokit/openapi-types` - API schema types
+
+- Restructured adapters into `client/` and `logger/` subdirs:
+  - `src/adapters/client/` - GitHub API clients with shared base class
+  - `src/adapters/logger/` - Logging implementations
+  - Moved interfaces to co-locate with implementations
+  - Extracted `BaseGitHubClient` to reduce duplication (~100 lines)
+  - Deleted `src/interfaces/` folder
 
 ## Remaining Work
 
 ### Publishing
 
-- [ ] Publish to JSR: `jsr:@kjanat/github-labelmanager`
-- [ ] Publish to NPM: `npm:@kjanat/github-labelmanager`
-- [ ] Create GitHub release with tag
+- [x] Publish to JSR: `jsr:@kjanat/github-labelmanager` (v1.0.3)
+- [x] Publish to NPM: `npm:@kjanat/github-labelmanager` (v1.0.3)
+- [x] Create GitHub release with tag
+- [x] Add release workflow for JSR/NPM publishing
 
 ### Testing
 
-- [ ] Add integration tests (mock GitHub API)
-- [ ] Add tests for sync.ts
-- [ ] Add tests for client.ts
+- [x] Add tests for sync.ts (15 tests)
+- [x] Add tests for client.ts (6 tests)
+- [x] Add test utilities (MockGitHubClient, NullLogger, createTestEnv)
+- [ ] Add integration tests (mock GitHub API) - optional, unit tests cover core
+      logic
 
 ### Documentation
 
 - [ ] Update README with actual published package versions
 - [ ] Add CHANGELOG.md
-- [ ] Add JSDoc to all public exports
+- [x] Add JSDoc to all public exports
 
 ### CI/CD
 
-- [ ] Add release workflow for JSR/NPM publishing
 - [ ] Add version bump automation

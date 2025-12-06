@@ -1,0 +1,48 @@
+name: Check schema is up-to-date
+description: Generates schema and loads diff
+outputs:
+  outdated:
+    description: Whether schema is outdated
+    value: ${{ steps.schema.outputs.outdated }}
+  up-to-date:
+    description: Whether schema is up-to-date
+    value: ${{ steps.schema.outputs.up-to-date }}
+
+runs:
+  using: composite
+  steps:
+    - name: Check schema is up-to-date
+      id: schema
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const schemafile = '.github/labels.schema.json';
+
+          await exec.exec('deno', ['task', 'schema']);
+
+          // Destructuring the result (cleaner syntax)
+          const { exitCode, stdout } = await exec.getExecOutput(
+            'git',
+            ['diff', '--color=never', schemafile],
+            { ignoreReturnCode: true }
+          );
+
+          if (exitCode === 0) {
+            core.summary.addHeading(':white_check_mark: Schema is up-to-date', 3);
+            core.setOutput('outdated', 'false'); // standardized on 'outdated'
+            core.setOutput('up-to-date', 'true');
+          } else {
+            core.summary.addHeading(':x: Schema is out-of-date', 3);
+            core.summary.addRaw('The schema file has changed. Please run the updater locally.');
+            core.summary.addRaw(`\n\n**File:** \`${schemafile}\`\n`);
+
+            core.summary.codeBlock(stdout, 'diff');
+
+            core.summary.addRaw('\n> **Run `deno task schema` locally to update.**\n');
+
+            core.setOutput('outdated', 'true');
+            core.setOutput('up-to-date', 'false');
+            core.setFailed('Schema needs update');
+          }
+
+          await core.summary.write();

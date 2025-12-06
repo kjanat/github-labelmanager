@@ -3,7 +3,7 @@
  * @module
  */
 
-import { parse } from "@std/yaml";
+import { isMap, isScalar, isSeq, LineCounter, parseDocument } from "yaml";
 import type { EnvConfig, LabelConfig, LabelDefinition } from "@/types.ts";
 
 /** Default config file path */
@@ -205,7 +205,18 @@ export async function loadConfig(path?: string): Promise<LabelConfig> {
     throw new Error(`Failed to read config file: ${configPath}: ${err}`);
   }
 
-  const parsed = parse(configContent);
+  // Parse with line tracking for annotations
+  const lineCounter = new LineCounter();
+  const doc = parseDocument(configContent, { lineCounter });
+
+  // Check for parse errors
+  if (doc.errors.length > 0) {
+    throw new Deno.errors.InvalidData(
+      `YAML parse error: ${doc.errors[0].message}`,
+    );
+  }
+
+  const parsed = doc.toJS() as Record<string, unknown>;
 
   if (!isLabelConfig(parsed)) {
     throw new Deno.errors.InvalidData(
@@ -213,5 +224,37 @@ export async function loadConfig(path?: string): Promise<LabelConfig> {
     );
   }
 
-  return parsed;
+  // Build line number maps for annotations
+  const labelLines: Record<string, number> = {};
+  const deleteLines: Record<string, number> = {};
+
+  // Extract line numbers for labels
+  const labelsNode = doc.get("labels", true);
+  if (isSeq(labelsNode)) {
+    for (const item of labelsNode.items) {
+      if (isMap(item)) {
+        const nameNode = item.get("name", true);
+        if (isScalar(nameNode) && nameNode.range) {
+          const name = nameNode.value as string;
+          labelLines[name] = lineCounter.linePos(nameNode.range[0]).line;
+        }
+      }
+    }
+  }
+
+  // Extract line numbers for delete entries
+  const deleteNode = doc.get("delete", true);
+  if (isSeq(deleteNode)) {
+    for (const item of deleteNode.items) {
+      if (isScalar(item) && item.range) {
+        const name = item.value as string;
+        deleteLines[name] = lineCounter.linePos(item.range[0]).line;
+      }
+    }
+  }
+
+  // Attach metadata
+  parsed._meta = { filePath: configPath, labelLines, deleteLines };
+
+  return parsed as LabelConfig;
 }

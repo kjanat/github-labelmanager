@@ -19,6 +19,7 @@
     "autonumber",
     "Buildx",
     "bunx",
+    "codegen",
     "denoland",
     "fulcio",
     "funcs",
@@ -39,7 +40,8 @@
     "stdlib",
     "tablerender",
     "tablerow",
-    "toplevel"
+    "toplevel",
+    "tsgo"
   ],
   "deno.cacheOnSave": true,
   "deno.codeLens.implementations": true,

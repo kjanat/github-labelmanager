@@ -1,0 +1,15 @@
+name: Publish to JSR
+description: Publish package to JSR registry
+inputs:
+  dry-run:
+    description: Run in dry-run mode
+    required: true
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - uses: denoland/setup-deno@v2
+      with: { deno-version: v2.x }
+    - shell: bash
+      run: deno publish "${{ inputs.dry-run == 'true' && '--dry-run' || '' }}"

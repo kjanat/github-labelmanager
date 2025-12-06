@@ -16,3 +16,8 @@ pre-commit:
     test:
       glob: "src/*.ts"
       run: deno test -RWE {staged_files}
+    schemagen:
+      glob: "src/types.ts"
+      run: |
+        deno run --allow-read --allow-write --allow-env scripts/build_schema.ts \
+        && git add .github/labels.schema.json
