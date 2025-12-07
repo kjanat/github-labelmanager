@@ -156,6 +156,25 @@ Deno.test("OctokitClient.update - updates label", async () => {
   assertEquals(requests[0].route, "PATCH /repos/{owner}/{repo}/labels/{name}");
 });
 
+Deno.test("OctokitClient.update - dry run returns null", async () => {
+  const { octokit, requests } = createMockOctokit();
+  const logger = new NullLogger();
+  const client = new OctokitClient(
+    { ...testConfig, dryRun: true },
+    logger,
+    octokit,
+  );
+
+  const label = await client.update("old-name", {
+    name: "old-name",
+    new_name: "new-name",
+    color: "ffffff",
+  });
+
+  assertEquals(label, null);
+  assertEquals(requests.length, 0); // No PATCH call made
+});
+
 Deno.test("OctokitClient.delete - deletes label", async () => {
   const { octokit, requests } = createMockOctokit({
     labels: [{ name: "to-delete", color: "000000", description: null }],

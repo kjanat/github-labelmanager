@@ -5,13 +5,13 @@
  */
 
 import * as github from "@actions/github";
-import type { components } from "@octokit/openapi-types";
 import type { ILogger } from "../logger/mod.ts";
-import type { GitHubClientConfig, GitHubLabel } from "./types.ts";
+import type {
+  GitHubClientConfig,
+  GitHubLabel,
+  GitHubLabelSchema,
+} from "./types.ts";
 import { BaseGitHubClient } from "./base.ts";
-
-/** GitHub label schema from API response */
-type GitHubLabelSchema = components["schemas"]["label"];
 
 /** Octokit instance type from @actions/github */
 type ActionsOctokit = ReturnType<typeof github.getOctokit>;

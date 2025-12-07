@@ -138,6 +138,8 @@ export async function syncLabels(
             existingMap.set(desired.name, {
               ...movedLabel,
               name: desired.name,
+              color: cleanColor,
+              description: desired.description,
             });
             matchedName = desired.name;
           } catch (err) {

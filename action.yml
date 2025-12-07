@@ -5,11 +5,11 @@ author: Kaj Kowalski
 inputs:
   token:
     description: "GitHub Personal Access Token (must have issues: write permission)"
-    required: true
+    required: false
     default: ${{ github.token }}
   repository:
     description: Repository in 'owner/repo' format
-    required: true
+    required: false
     default: ${{ github.repository }}
   dry-run:
     description: Run without making changes to GitHub
@@ -17,7 +17,7 @@ inputs:
     default: "false"
   config-path:
     description: Path to the configuration file
-    required: true
+    required: false
     default: .github/labels.yml
 
 runs:

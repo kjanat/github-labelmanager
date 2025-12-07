@@ -159,6 +159,37 @@ Deno.test("syncLabels - uses first matching alias", async () => {
   );
 });
 
+Deno.test("syncLabels - rename with color and description change updates all in single operation", async () => {
+  const client = new MockGitHubClient({
+    labels: [{ name: "old-name", color: "000000", description: "Old desc" }],
+  });
+  const manager = createTestManager(client);
+
+  const config: LabelConfig = {
+    labels: [{
+      name: "new-name",
+      color: "#ff0000",
+      description: "New description",
+      aliases: ["old-name"],
+    }],
+  };
+
+  const result = await syncLabels(manager, config);
+
+  assertEquals(result.success, true);
+  assertEquals(result.summary.renamed, 1);
+  assertEquals(result.summary.updated, 0); // No separate update needed - rename includes color/description
+  assertEquals(result.summary.skipped, 1); // After rename, label is in sync so skipped
+
+  // Verify the label was fully updated via the rename call
+  assertEquals(client.labels[0].name, "new-name");
+  assertEquals(client.labels[0].color, "ff0000");
+  assertEquals(client.labels[0].description, "New description");
+
+  // Verify only one update call was made (the rename)
+  assertEquals(client.getCalls("update").length, 1);
+});
+
 // =============================================================================
 // Delete tests
 // =============================================================================

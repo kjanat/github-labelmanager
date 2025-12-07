@@ -745,9 +745,11 @@ Deno.test("writeSummary - truncates long descriptions", async () => {
   const opsTable = tableCalls[1].args[0] as unknown[][];
   const row = opsTable[1] as string[];
 
-  // Should be truncated to 50 chars
+  // Should be truncated to 47 chars + "..."
   assertEquals(row[3].includes("A".repeat(100)), false);
-  assertEquals(row[3].includes("A".repeat(50)), true);
+  assertEquals(row[3].includes("A".repeat(47)), true);
+  assertEquals(row[3].endsWith("..."), true);
+  assertEquals(row[3].length, 50); // 47 + "..." = 50
 });
 
 Deno.test("writeSummary - handles missing color in operation", async () => {

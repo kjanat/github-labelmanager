@@ -204,7 +204,7 @@ export class MockGitHubClient implements IGitHubClient {
 
     const label: GitHubLabel = {
       name: options.name,
-      color: options.color?.replace(/^#/, "") ?? "",
+      color: options.color?.replace(/^#/, "") ?? "000000",
       description: options.description ?? null,
     };
     this.labels.push(label);

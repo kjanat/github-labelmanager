@@ -129,6 +129,21 @@ export class ActionsLogger implements ILogger {
       summary.deleted +
       summary.failed;
 
+    // Early exit: all labels already in sync
+    if (total === 0 && summary.skipped > 0) {
+      this.core.summary.addHeading("Label Sync :white_check_mark:", 2);
+      this.core.summary.addRaw(
+        `All ${summary.skipped} label(s) already in sync. No changes needed.`,
+      );
+      await this.core.summary.write();
+      return;
+    }
+
+    // Nothing happened at all
+    if (total === 0) {
+      return;
+    }
+
     // Status emoji based on result
     const status = result.success ? ":white_check_mark:" : ":x:";
 
@@ -187,17 +202,7 @@ export class ActionsLogger implements ILogger {
       );
     }
 
-    // Only write if there were actual changes (not just skips)
-    if (total > 0 || failedOps.length > 0) {
-      await this.core.summary.write();
-    } else if (summary.skipped > 0) {
-      // All labels already in sync - write minimal summary
-      this.core.summary.addHeading("Label Sync :white_check_mark:", 2);
-      this.core.summary.addRaw(
-        `All ${summary.skipped} label(s) already in sync. No changes needed.`,
-      );
-      await this.core.summary.write();
-    }
+    await this.core.summary.write();
   }
 
   /**
@@ -217,7 +222,9 @@ export class ActionsLogger implements ILogger {
         ? `<span style="background-color:#${color};width:1em;height:1em;display:inline-block;border-radius:50%;border:1px solid #666;vertical-align:middle;margin-right:0.3em;" title="#${color}"></span>`
         : "";
       const desc = op.details?.description
-        ? op.details.description.slice(0, 50)
+        ? op.details.description.length > 50
+          ? op.details.description.slice(0, 47) + "..."
+          : op.details.description
         : "";
 
       let action: string;
