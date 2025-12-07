@@ -67,25 +67,25 @@ labels:
     color: "#0e8a16"
     description: Nice-to-have, polish, or low impact
 
-  - name: "area: core-vm"
-    color: "#1d76db"
-    description: VM, opcodes, execution engine, runtime internals
-
-  - name: "area: ui"
-    color: "#0052cc"
-    description: General UI/UX, layout, navigation, theming
-
-  - name: "area: labs"
-    color: "#5319e7"
-    description: Mutation Lab, demos, evolution labs, GA experiments
-
-  - name: "area: dashboards"
+  - name: "area: ci"
     color: "#006b75"
-    description: Teacher dashboard, research metrics, analytics views
+    description: GitHub Actions, workflows, and automation
 
-  - name: "area: content"
+  - name: "area: cli"
+    color: "#1d76db"
+    description: CLI arguments, flags, and console output
+
+  - name: "area: core"
+    color: "#5319e7"
+    description: Core logic, config parsing, and synchronization
+
+  - name: "area: pkg"
     color: "#f9d0c4"
-    description: Worksheets, examples, copy, and learning content
+    description: Packaging, NPM/JSR publishing, and distribution
+
+  - name: test
+    color: "#fbca04"
+    description: Tests and testing utilities
 
   - name: blocked
     color: "#bdb76b"
