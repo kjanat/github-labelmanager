@@ -167,10 +167,10 @@ export class ActionsLogger implements ILogger {
       // Collapse if many items, inline otherwise
       if (changedOps.length >= COLLAPSE_THRESHOLD) {
         this.core.summary.addRaw(
-          "<details><summary>Operation Details</summary>",
+          "<details><summary>Operation Details</summary>\n\n",
         );
         this.core.summary.addTable(rows);
-        this.core.summary.addRaw("</details>");
+        this.core.summary.addRaw("\n</details>");
       } else {
         this.core.summary.addTable(rows);
       }
@@ -212,7 +212,10 @@ export class ActionsLogger implements ILogger {
     ];
 
     const rows = operations.map((op) => {
-      const colorSwatch = op.details?.color ? `\`#${op.details.color}\`` : "";
+      const color = op.details?.color ?? "";
+      const colorSwatch = color
+        ? `<span style="background-color:#${color};width:1em;height:1em;display:inline-block;border-radius:50%;border:1px solid #666;vertical-align:middle;margin-right:0.3em;" title="#${color}"></span>`
+        : "";
       const desc = op.details?.description
         ? op.details.description.slice(0, 50)
         : "";
@@ -220,16 +223,16 @@ export class ActionsLogger implements ILogger {
       let action: string;
       switch (op.type) {
         case "create":
-          action = ":new: Created";
+          action = "🆕 Created";
           break;
         case "update":
-          action = ":pencil2: Updated";
+          action = "✏️ Updated";
           break;
         case "rename":
-          action = `:arrows_counterclockwise: Renamed from "${op.from}"`;
+          action = `🔄 Renamed from "${op.from}"`;
           break;
         case "delete":
-          action = ":wastebasket: Deleted";
+          action = "🗑️ Deleted";
           break;
         default:
           action = op.type;

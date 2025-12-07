@@ -451,8 +451,18 @@ Deno.test("writeSummary - adds collapsed table for >= 5 operations", async () =>
     (c.args[0] as string).includes("</details>")
   );
 
-  assertEquals(detailsStart !== undefined, true, "should start details");
+  assertEquals(
+    detailsStart !== undefined,
+    true,
+    "should start details with header",
+  );
+  assertStringIncludes(
+    detailsStart!.args[0] as string,
+    "<details><summary>Operation Details</summary>\n\n",
+  );
+
   assertEquals(detailsEnd !== undefined, true, "should end details");
+  assertStringIncludes(detailsEnd!.args[0] as string, "\n</details>");
 
   // Should have operation table
   const tableCalls = calls.filter((c) => c.method === "summary.addTable");
@@ -610,8 +620,8 @@ Deno.test("writeSummary - formats create operation", async () => {
   const row = opsTable[1] as string[];
 
   assertEquals(row[0], "bug");
-  assertStringIncludes(row[1], ":new: Created");
-  assertStringIncludes(row[2], "`#d73a4a`");
+  assertStringIncludes(row[1], "🆕 Created");
+  assertStringIncludes(row[2], "background-color:#d73a4a");
   assertStringIncludes(row[3], "Bug report");
 });
 
@@ -639,7 +649,7 @@ Deno.test("writeSummary - formats update operation", async () => {
   const opsTable = tableCalls[1].args[0] as unknown[][];
   const row = opsTable[1] as string[];
 
-  assertStringIncludes(row[1], ":pencil2: Updated");
+  assertStringIncludes(row[1], "✏️ Updated");
 });
 
 Deno.test("writeSummary - formats rename operation with from", async () => {
@@ -673,7 +683,7 @@ Deno.test("writeSummary - formats rename operation with from", async () => {
 
   assertStringIncludes(
     row[1],
-    ':arrows_counterclockwise: Renamed from "feature"',
+    '🔄 Renamed from "feature"',
   );
 });
 
@@ -701,7 +711,7 @@ Deno.test("writeSummary - formats delete operation", async () => {
   const opsTable = tableCalls[1].args[0] as unknown[][];
   const row = opsTable[1] as string[];
 
-  assertStringIncludes(row[1], ":wastebasket: Deleted");
+  assertStringIncludes(row[1], "🗑️ Deleted");
 });
 
 Deno.test("writeSummary - truncates long descriptions", async () => {
