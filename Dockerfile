@@ -10,7 +10,5 @@ WORKDIR /app
 ENV DENO_DIR=/deno-dir
 COPY --from=builder /deno-dir /deno-dir
 COPY --from=builder /app .
-# Run as non-root (Distroless has no adduser, use numeric UID)
-USER 1000
 ENTRYPOINT ["deno", "run", "--allow-net=api.github.com", "--allow-read", "--allow-env", "--cached-only", "main.ts"]
 CMD []
