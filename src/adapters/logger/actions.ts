@@ -162,13 +162,17 @@ export class ActionsLogger implements ILogger {
     );
 
     if (changedOps.length > 0) {
-      const detailsContent = this.formatOperationsTable(changedOps);
+      const rows = this.buildOperationsTableRows(changedOps);
 
       // Collapse if many items, inline otherwise
       if (changedOps.length >= COLLAPSE_THRESHOLD) {
-        this.core.summary.addDetails("Operation Details", detailsContent);
+        this.core.summary.addRaw(
+          "<details><summary>Operation Details</summary>",
+        );
+        this.core.summary.addTable(rows);
+        this.core.summary.addRaw("</details>");
       } else {
-        this.core.summary.addRaw(detailsContent);
+        this.core.summary.addTable(rows);
       }
     }
 
@@ -197,9 +201,16 @@ export class ActionsLogger implements ILogger {
   }
 
   /**
-   * Format operations as markdown table with color swatches
+   * Build table rows for operations
    */
-  private formatOperationsTable(operations: SyncOperation[]): string {
+  private buildOperationsTableRows(operations: SyncOperation[]): unknown[][] {
+    const headers = [
+      { data: "Label", header: true },
+      { data: "Action", header: true },
+      { data: "Color", header: true },
+      { data: "Description", header: true },
+    ];
+
     const rows = operations.map((op) => {
       const colorSwatch = op.details?.color ? `\`#${op.details.color}\`` : "";
       const desc = op.details?.description
@@ -224,14 +235,9 @@ export class ActionsLogger implements ILogger {
           action = op.type;
       }
 
-      return `| ${op.label} | ${action} | ${colorSwatch} | ${desc} |`;
+      return [op.label, action, colorSwatch, desc];
     });
 
-    return `
-
-| Label | Action | Color | Description |
-|-------|--------|-------|-------------|
-${rows.join("\n")}
-`;
+    return [headers, ...rows];
   }
 }

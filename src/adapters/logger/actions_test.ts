@@ -408,14 +408,17 @@ Deno.test("writeSummary - adds raw table for < 5 operations", async () => {
     }),
   );
 
-  const rawCall = calls.find((c) => c.method === "summary.addRaw");
-  assertEquals(rawCall !== undefined, true, "should call addRaw");
+  // Should have two table calls: one for counts, one for operations
+  const tableCalls = calls.filter((c) => c.method === "summary.addTable");
+  assertEquals(tableCalls.length, 2);
 
-  const detailsCall = calls.find((c) => c.method === "summary.addDetails");
-  assertEquals(detailsCall, undefined, "should not call addDetails");
+  const operationsTable = tableCalls[1].args[0] as unknown[][];
+  assertEquals(operationsTable.length, 3); // Headers + 2 rows
+  assertEquals(operationsTable[1][0], "bug");
+  assertEquals(operationsTable[2][0], "old");
 });
 
-Deno.test("writeSummary - adds details for >= 5 operations", async () => {
+Deno.test("writeSummary - adds collapsed table for >= 5 operations", async () => {
   const { core, calls } = createMockCore();
   const logger = new ActionsLogger(core);
 
@@ -439,9 +442,22 @@ Deno.test("writeSummary - adds details for >= 5 operations", async () => {
     }),
   );
 
-  const detailsCall = calls.find((c) => c.method === "summary.addDetails");
-  assertEquals(detailsCall !== undefined, true, "should call addDetails");
-  assertEquals(detailsCall?.args[0], "Operation Details");
+  // Should have raw calls for details tags
+  const rawCalls = calls.filter((c) => c.method === "summary.addRaw");
+  const detailsStart = rawCalls.find((c) =>
+    (c.args[0] as string).includes("<details>")
+  );
+  const detailsEnd = rawCalls.find((c) =>
+    (c.args[0] as string).includes("</details>")
+  );
+
+  assertEquals(detailsStart !== undefined, true, "should start details");
+  assertEquals(detailsEnd !== undefined, true, "should end details");
+
+  // Should have operation table
+  const tableCalls = calls.filter((c) => c.method === "summary.addTable");
+  assertEquals(tableCalls.length, 2);
+  assertEquals((tableCalls[1].args[0] as unknown[][]).length, 6); // Headers + 5 rows
 });
 
 Deno.test("writeSummary - adds failed operations list", async () => {
@@ -504,7 +520,10 @@ Deno.test("writeSummary - writes 'all in sync' message when only skips", async (
     "should call write for skip-only",
   );
 
-  const rawCall = calls.find((c) => c.method === "summary.addRaw");
+  const rawCall = calls.find((c) =>
+    c.method === "summary.addRaw" &&
+    (c.args[0] as string).includes("5 label(s) already in sync")
+  );
   assertStringIncludes(
     rawCall?.args[0] as string,
     "5 label(s) already in sync",
@@ -586,12 +605,14 @@ Deno.test("writeSummary - formats create operation", async () => {
     }),
   );
 
-  const rawCall = calls.find((c) => c.method === "summary.addRaw");
-  const content = rawCall?.args[0] as string;
-  assertStringIncludes(content, "| bug |");
-  assertStringIncludes(content, ":new: Created");
-  assertStringIncludes(content, "`#d73a4a`");
-  assertStringIncludes(content, "Bug report");
+  const tableCalls = calls.filter((c) => c.method === "summary.addTable");
+  const opsTable = tableCalls[1].args[0] as unknown[][];
+  const row = opsTable[1] as string[];
+
+  assertEquals(row[0], "bug");
+  assertStringIncludes(row[1], ":new: Created");
+  assertStringIncludes(row[2], "`#d73a4a`");
+  assertStringIncludes(row[3], "Bug report");
 });
 
 Deno.test("writeSummary - formats update operation", async () => {
@@ -614,9 +635,11 @@ Deno.test("writeSummary - formats update operation", async () => {
     }),
   );
 
-  const rawCall = calls.find((c) => c.method === "summary.addRaw");
-  const content = rawCall?.args[0] as string;
-  assertStringIncludes(content, ":pencil2: Updated");
+  const tableCalls = calls.filter((c) => c.method === "summary.addTable");
+  const opsTable = tableCalls[1].args[0] as unknown[][];
+  const row = opsTable[1] as string[];
+
+  assertStringIncludes(row[1], ":pencil2: Updated");
 });
 
 Deno.test("writeSummary - formats rename operation with from", async () => {
@@ -644,10 +667,12 @@ Deno.test("writeSummary - formats rename operation with from", async () => {
     }),
   );
 
-  const rawCall = calls.find((c) => c.method === "summary.addRaw");
-  const content = rawCall?.args[0] as string;
+  const tableCalls = calls.filter((c) => c.method === "summary.addTable");
+  const opsTable = tableCalls[1].args[0] as unknown[][];
+  const row = opsTable[1] as string[];
+
   assertStringIncludes(
-    content,
+    row[1],
     ':arrows_counterclockwise: Renamed from "feature"',
   );
 });
@@ -672,9 +697,11 @@ Deno.test("writeSummary - formats delete operation", async () => {
     }),
   );
 
-  const rawCall = calls.find((c) => c.method === "summary.addRaw");
-  const content = rawCall?.args[0] as string;
-  assertStringIncludes(content, ":wastebasket: Deleted");
+  const tableCalls = calls.filter((c) => c.method === "summary.addTable");
+  const opsTable = tableCalls[1].args[0] as unknown[][];
+  const row = opsTable[1] as string[];
+
+  assertStringIncludes(row[1], ":wastebasket: Deleted");
 });
 
 Deno.test("writeSummary - truncates long descriptions", async () => {
@@ -704,11 +731,13 @@ Deno.test("writeSummary - truncates long descriptions", async () => {
     }),
   );
 
-  const rawCall = calls.find((c) => c.method === "summary.addRaw");
-  const content = rawCall?.args[0] as string;
+  const tableCalls = calls.filter((c) => c.method === "summary.addTable");
+  const opsTable = tableCalls[1].args[0] as unknown[][];
+  const row = opsTable[1] as string[];
+
   // Should be truncated to 50 chars
-  assertEquals(content.includes("A".repeat(100)), false);
-  assertEquals(content.includes("A".repeat(50)), true);
+  assertEquals(row[3].includes("A".repeat(100)), false);
+  assertEquals(row[3].includes("A".repeat(50)), true);
 });
 
 Deno.test("writeSummary - handles missing color in operation", async () => {
@@ -731,8 +760,11 @@ Deno.test("writeSummary - handles missing color in operation", async () => {
     }),
   );
 
-  const rawCall = calls.find((c) => c.method === "summary.addRaw");
-  const content = rawCall?.args[0] as string;
+  const tableCalls = calls.filter((c) => c.method === "summary.addTable");
+  const opsTable = tableCalls[1].args[0] as unknown[][];
+  const row = opsTable[1] as string[];
+
   // Should have empty color column
-  assertStringIncludes(content, "| test |");
+  assertEquals(row[0], "test");
+  assertEquals(row[2], "");
 });
