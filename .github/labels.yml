@@ -87,6 +87,10 @@ labels:
     color: "#fbca04"
     description: Tests and testing utilities
 
+  - name: test-summary
+    color: "#ededed"
+    description: Label for testing GitHub Action step summary
+
   - name: blocked
     color: "#bdb76b"
     description: Work cannot proceed due to an external dependency
