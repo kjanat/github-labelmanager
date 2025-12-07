@@ -7,7 +7,7 @@ outputs:
     value: ${{ steps.schema.outputs.outdated }}
   up-to-date:
     description: Whether schema is up-to-date
-    value: ${{ steps.schema.outputs.up-to-date }}
+    value: ${{ !fromJSON(steps.schema.outputs.outdated) }}
 
 inputs:
   file:
@@ -37,7 +37,6 @@ runs:
           if (exitCode === 0) {
             core.summary.addHeading(':white_check_mark: Schema is up-to-date', 3);
             core.setOutput('outdated', 'false'); // standardized on 'outdated'
-            core.setOutput('up-to-date', 'true');
           } else {
             core.summary.addHeading(':x: Schema is out-of-date', 3);
             core.summary.addRaw('The schema file has changed. Please run the updater locally.');
@@ -48,7 +47,6 @@ runs:
             core.summary.addRaw('\n> **Run `deno task schema` locally to update.**\n');
 
             core.setOutput('outdated', 'true');
-            core.setOutput('up-to-date', 'false');
             core.setFailed('Schema needs update');
           }
 

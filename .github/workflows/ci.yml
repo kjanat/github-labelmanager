@@ -21,10 +21,13 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - uses: denoland/setup-deno@v2
-        with: { deno-version: v2.x }
+
+      - uses: ./.github/actions/setup-deno/action.yml
+
       - run: deno fmt --check
+
       - run: deno lint
+
       - uses: ./.github/actions/check-schema-outdated
 
   test:
@@ -35,11 +38,14 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v6
-      - uses: denoland/setup-deno@v2
-        with: { deno-version: v2.x }
+
+      - uses: ./.github/actions/setup-deno/action.yml
+
       - run: deno task test --coverage=cov/
+
       - run: deno coverage --lcov cov/ > cov.lcov
         if: ${{ !cancelled() }}
+
       - uses: codecov/codecov-action@v5
         if: ${{ !cancelled() }}
         with:

@@ -1,0 +1,72 @@
+name: Setup Deno
+description: Setup Deno runtime with caching
+
+inputs:
+  version:
+    description: Deno version to install
+    required: false
+    default: "2.x"
+  install-node:
+    description: Install Node.js
+    required: false
+    default: "false"
+  node-version:
+    description: Node version to install
+    required: false
+    default: "latest"
+  update-npm:
+    description: Update npm to latest
+    required: false
+    default: "false"
+  node-registry-url:
+    description: Registry URL for Node.js
+    required: false
+    default: "https://registry.npmjs.org"
+
+outputs:
+  deno-version:
+    description: The installed Deno version
+    value: ${{ steps.setup-deno.outputs.deno-version }}
+  cache-hit:
+    description: Whether dependencies cache was restored
+    value: ${{ steps.cache-deno.outputs.cache-hit }}
+  node-version:
+    description: The installed Node.js version (if install-node is true)
+    value: ${{ steps.setup-node.outputs.node-version }}
+  npm-version:
+    description: The installed npm version
+    value: ${{ steps.update-npm.outputs.npm-version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Deno
+      id: setup-deno
+      uses: denoland/setup-deno@v2
+      with: { deno-version: "${{ inputs.version }}" }
+
+    - name: Setup Node
+      id: setup-node
+      if: ${{ inputs.install-node == 'true' }}
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+        registry-url: ${{ inputs.node-registry-url }}
+
+    - name: Cache Deno dependencies
+      id: cache-deno
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/deno
+        key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock', '**/deno.json', '**/deno.jsoc') }}
+        restore-keys: |
+          ${{ runner.os }}-deno-
+
+    - name: Update npm
+      id: update-npm
+      shell: bash
+      run: |
+        if [[ "${{ inputs.update-npm }}" == "true" ]]; then
+          npm install -g npm@latest
+        fi
+        echo "npm-version=$(npm --version)" >> "${GITHUB_OUTPUT}"

@@ -1,0 +1,44 @@
+name: Publish to NPM
+description: Publish package to NPM registry (assumes setup-node configured auth)
+author: kjanat
+
+branding:
+  icon: package
+  color: red
+
+inputs:
+  working-directory:
+    description: Directory containing package.json
+    required: false
+  dry-run:
+    description: Run in dry-run mode
+    required: false
+    default: "false"
+  prerelease:
+    description: Whether this is a prerelease (publishes with beta tag)
+    required: false
+    default: "false"
+  prerelease-tag:
+    description: Tag to use for prereleases
+    required: false
+    default: beta
+
+outputs:
+  package-name:
+    description: The published package name
+    value: ${{ steps.publish.outputs.package-name }}
+  package-version:
+    description: The published package version
+    value: ${{ steps.publish.outputs.package-version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Publish to NPM
+      id: publish
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: "${{ github.action_path }}/npm.sh"
+      env:
+        TAG: "${{ inputs.prerelease == 'true' && inputs.prerelease-tag || 'latest' }}"
+        DRY_RUN: "${{ inputs.dry-run }}"
