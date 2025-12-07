@@ -91,6 +91,4 @@ labels:
     color: "#bdb76b"
     description: Work cannot proceed due to an external dependency
 
-delete:
-  - dependencies
-  - javascript
+# delete:

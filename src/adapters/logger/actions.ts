@@ -153,6 +153,9 @@ export class ActionsLogger implements ILogger {
       ],
     ]);
 
+    // Add separator to ensure markdown rendering of subsequent elements
+    this.core.summary.addRaw("\n");
+
     // Add operation details if any changes were made
     const changedOps = operations.filter(
       (op) => op.type !== "skip" && op.success,
@@ -225,6 +228,7 @@ export class ActionsLogger implements ILogger {
     });
 
     return `
+
 | Label | Action | Color | Description |
 |-------|--------|-------|-------------|
 ${rows.join("\n")}
