@@ -1,5 +1,7 @@
 name: Check schema is up-to-date
-description: Generates schema and loads diff
+description: |
+  Generates schema and checks for changes via git diff.
+  Requires: deno in PATH, git checkout with tracked schema file.
 
 outputs:
   outdated:

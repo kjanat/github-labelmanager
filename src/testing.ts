@@ -496,6 +496,10 @@ export interface FetchCall {
 /**
  * Mock global fetch for testing HTTP clients
  *
+ * WARNING: JSON-centric by design. Response bodies are JSON.stringify'd and
+ * default to content-type: application/json. String bodies become `"my string"`
+ * (JSON), not raw text. Do not use for testing non-JSON HTTP clients.
+ *
  * @param handler - Function that returns response based on request
  * @returns Object with calls array and restore function
  *
@@ -740,6 +744,9 @@ export function createMockOctokit(options: MockOctokitOptions = {}): {
   const errors = options.errors ?? {};
 
   // Mock the paginate method which is used by OctokitClient.list()
+  // WARNING: Only supports route-string overload: paginate("GET /repos/...", params)
+  // Does NOT support function overload: paginate(octokit.rest.issues.listLabelsForRepo, params)
+  // If production switches to function overload, update this mock or tests will silently diverge.
   const paginate = (
     route: string,
     params?: Record<string, unknown>,

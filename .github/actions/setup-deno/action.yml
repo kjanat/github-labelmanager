@@ -58,7 +58,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: ~/.cache/deno
-        key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock', '**/deno.json', '**/deno.jsoc') }}
+        key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock', '**/deno.json', '**/deno.jsonc') }}
         restore-keys: |
           ${{ runner.os }}-deno-
 
