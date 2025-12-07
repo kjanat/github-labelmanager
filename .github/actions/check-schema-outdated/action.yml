@@ -21,9 +21,11 @@ runs:
     - name: Check schema is up-to-date
       id: schema
       uses: actions/github-script@v8
+      env:
+        SCHEMA_FILE: ${{ inputs.file }}
       with:
         script: |
-          const schemafile = core.getInput('file');
+          const schemafile = process.env.SCHEMA_FILE;
 
           await exec.exec('deno', ['task', 'schema']);
 
@@ -42,7 +44,7 @@ runs:
             core.summary.addRaw('The schema file has changed. Please run the updater locally.');
             core.summary.addRaw(`\n\n**File:** \`${schemafile}\`\n`);
 
-            core.summary.codeBlock(stdout, 'diff');
+            core.summary.addCodeBlock(stdout, 'diff');
 
             core.summary.addRaw('\n> **Run `deno task schema` locally to update.**\n');
 
