@@ -6,7 +6,7 @@
 
 import { Octokit } from "octokit";
 import type { components } from "@octokit/openapi-types";
-import type { ILogger } from "../logger/mod.ts";
+import type { ILogger } from "@/adapters/logger/mod.ts";
 import type { GitHubClientConfig, GitHubLabel } from "./types.ts";
 import { BaseGitHubClient } from "./base.ts";
 

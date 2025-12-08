@@ -6,7 +6,7 @@
  */
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
-import { main } from "../main.ts";
+import { main } from "~/main.ts";
 import { MockLogger, stubArgs, stubEnv } from "@/testing.ts";
 
 // =============================================================================

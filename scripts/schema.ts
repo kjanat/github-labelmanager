@@ -1,50 +1,72 @@
 /**
- * Shared schema generation logic
+ * Generate JSON Schema from Zod definitions
  * @module
  */
+import { z } from "zod";
+import { labelConfig } from "@/schema.ts";
 
-import { type Config, createGenerator } from "ts-json-schema-generator";
-
-const REPO = "kjanat/github-labelmanager";
 export const OUTPUT_PATH = ".github/labels.schema.json";
 export const SCHEMA_ID =
-  `https://raw.githubusercontent.com/${REPO}/master/${OUTPUT_PATH}`;
+  "https://raw.githubusercontent.com/kjanat/github-labelmanager/master/.github/labels.schema.json";
 
-const generatorConfig: Config = {
-  path: "src/types.ts",
-  type: "LabelConfig",
-  tsconfig: "deno.json",
-  additionalProperties: false,
-  skipTypeCheck: true,
-};
-
-/**
- * Generate the JSON schema for LabelConfig.
- * Excludes runtime-only _meta property.
- */
 export function generateSchema(): Record<string, unknown> {
-  const generator = createGenerator(generatorConfig);
-  const schema = generator.createSchema(generatorConfig.type);
+  const schema = z.toJSONSchema(labelConfig, {
+    target: "draft-2020-12",
+    reused: "ref", // Extract shared defs to $defs
+    cycles: "ref",
+    unrepresentable: "any", // _meta has Record types
+    override: (ctx) => {
+      // Add uniqueItems to arrays (not natively supported by Zod)
+      if (ctx.zodSchema === labelConfig.shape.labels) {
+        ctx.jsonSchema.uniqueItems = true;
+      }
+      if (ctx.zodSchema === labelConfig.shape.delete) {
+        ctx.jsonSchema.uniqueItems = true;
+      }
+      // Remove _meta from output (runtime-only)
+      const props = ctx.jsonSchema.properties as
+        | Record<string, unknown>
+        | undefined;
+      if (props?._meta) {
+        delete props._meta;
+      }
+    },
+  }) as Record<string, unknown>;
 
-  // Set $id for remote reference
-  schema.$id = SCHEMA_ID;
-
-  // Remove runtime-only _meta property (not part of YAML schema)
-  // These are added at runtime by loadConfig() for source line annotations
-  if (schema.definitions?.LabelConfig) {
-    const labelConfig = schema.definitions.LabelConfig as Record<
-      string,
-      unknown
-    >;
-    const props = labelConfig.properties as Record<string, unknown>;
-    if (props?._meta) {
-      delete props._meta;
-    }
-    // No error if _meta missing - schema generator output may vary
-  }
-  if (schema.definitions?.LabelConfigMeta) {
-    delete schema.definitions.LabelConfigMeta;
-  }
-
-  return schema as Record<string, unknown>;
+  // Add schema metadata
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: SCHEMA_ID,
+    title: "GitHub Label Manager Configuration",
+    description:
+      "Schema for declaratively managing GitHub issue labels via kjanat/github-labelmanager.",
+    ...schema,
+    examples: [{
+      labels: [
+        {
+          name: "bug",
+          color: "#d73a4a",
+          description: "Something isn't working",
+        },
+        {
+          name: "feature",
+          color: "#a2eeef",
+          description: "New feature",
+          aliases: ["enhancement"],
+        },
+        {
+          name: "docs",
+          color: "#0075ca",
+          description: "Documentation improvements",
+          aliases: ["documentation"],
+        },
+        {
+          name: "P0: critical",
+          color: "#b60205",
+          description: "Broken core flows, must fix ASAP",
+        },
+      ],
+      delete: ["dependencies", "javascript", "obsolete-label"],
+    }],
+  };
 }

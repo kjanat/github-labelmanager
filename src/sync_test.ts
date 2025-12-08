@@ -365,6 +365,22 @@ Deno.test("syncLabels - normalizes color case", async () => {
   assertEquals(result.summary.skipped, 1);
 });
 
+Deno.test("syncLabels - expands 3-char hex", async () => {
+  const client = new MockGitHubClient({
+    labels: [{ name: "bug", color: "ffaabb", description: "Bug" }],
+  });
+  const manager = createTestManager(client);
+
+  const config: LabelConfig = {
+    labels: [{ name: "bug", color: "#fab", description: "Bug" }],
+  };
+
+  const result = await syncLabels(manager, config);
+
+  assertEquals(result.success, true);
+  assertEquals(result.summary.skipped, 1);
+});
+
 // =============================================================================
 // Empty config tests
 // =============================================================================

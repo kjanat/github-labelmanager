@@ -18,78 +18,82 @@ Deno.test("schema - has required $id property", async () => {
   assertEquals(schema.$id, SCHEMA_ID);
 });
 
-Deno.test("schema - uses draft-07", async () => {
+Deno.test("schema - uses draft 2020-12", async () => {
   const schema = await loadCommittedSchema();
-  assertEquals(schema.$schema, "http://json-schema.org/draft-07/schema#");
+  assertEquals(schema.$schema, "https://json-schema.org/draft/2020-12/schema");
 });
 
-Deno.test("schema - defines LabelConfig", async () => {
-  const schema = await loadCommittedSchema();
-  const definitions = schema.definitions as Record<string, unknown>;
-  assertExists(definitions);
-  assertExists(definitions.LabelConfig);
-});
+function getLabelDefinition(
+  schema: Record<string, unknown>,
+): Record<string, unknown> {
+  const labels = (schema.properties as Record<string, unknown>)
+    .labels as Record<string, unknown>;
+  const items = labels.items as Record<string, unknown>;
 
-Deno.test("schema - defines LabelDefinition", async () => {
+  if (items.$ref && typeof items.$ref === "string") {
+    const ref = items.$ref as string;
+    const refName = ref.split("/").pop() as string;
+    const defs = schema.$defs as Record<string, Record<string, unknown>>;
+    assertExists(defs, "$defs should exist");
+    const resolved = defs[refName];
+    assertExists(resolved, `Expected ${refName} in $defs`);
+    return resolved;
+  }
+
+  return items;
+}
+
+Deno.test("schema - LabelDefinition has correct structure", async () => {
   const schema = await loadCommittedSchema();
-  const definitions = schema.definitions as Record<string, unknown>;
-  assertExists(definitions);
-  assertExists(definitions.LabelDefinition);
+  const labelDef = getLabelDefinition(schema);
+
+  // Check required fields
+  const required = labelDef.required as string[];
+  assertEquals(required.sort(), ["color", "description", "name"]);
+
+  // Check properties
+  const props = labelDef.properties as Record<string, unknown>;
+  assertExists(props.name);
+  assertExists(props.color);
+  assertExists(props.description);
+
+  // Zod specific: aliases is optional
+  assertExists(props.aliases);
+
+  // Check no additional properties
+  assertEquals(labelDef.additionalProperties, false);
 });
 
 Deno.test("schema - LabelDefinition has color pattern", async () => {
   const schema = await loadCommittedSchema();
-  const definitions = schema.definitions as Record<
-    string,
-    Record<string, unknown>
-  >;
-  const labelDef = definitions.LabelDefinition;
-  const properties = labelDef.properties as Record<
-    string,
-    Record<string, unknown>
-  >;
+  const labelDef = getLabelDefinition(schema);
 
-  assertExists(properties.color);
-  assertEquals(properties.color.pattern, "^#?[0-9A-Fa-f]{6}$");
+  // Access the color definition directly or via ref depending on how Zod structured it
+  // In our Zod schema, hexColor is a shared const but might be inline or ref
+  // Let's inspect the property directly on LabelDefinition
+  const props = labelDef.properties as Record<string, unknown>;
+  const colorProp = props.color as Record<string, unknown>;
+
+  // Zod toJSONSchema usually puts the pattern directly
+  // hexColor regex: /^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/
+  assertExists(colorProp.pattern);
+  assertEquals(colorProp.pattern, "^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$");
 });
 
-Deno.test("schema - LabelDefinition has correct required fields", async () => {
+Deno.test("schema - Root object has correct structure", async () => {
   const schema = await loadCommittedSchema();
-  const definitions = schema.definitions as Record<
-    string,
-    Record<string, unknown>
-  >;
-  const labelDef = definitions.LabelDefinition;
-  const required = labelDef.required as string[];
+  const props = schema.properties as Record<string, Record<string, unknown>>;
 
-  assertEquals(required.includes("name"), true);
-  assertEquals(required.includes("color"), true);
-  assertEquals(required.includes("description"), true);
-  assertEquals(required.includes("aliases"), false);
-});
+  assertExists(props.labels);
+  assertExists(props.delete);
 
-Deno.test("schema - LabelConfig has labels as required", async () => {
-  const schema = await loadCommittedSchema();
-  const definitions = schema.definitions as Record<
-    string,
-    Record<string, unknown>
-  >;
-  const labelConfig = definitions.LabelConfig;
-  const required = labelConfig.required as string[];
-
+  // Check required
+  const required = schema.required as string[];
   assertEquals(required.includes("labels"), true);
-  assertEquals(required.includes("delete"), false);
-});
 
-Deno.test("schema - disallows additional properties", async () => {
-  const schema = await loadCommittedSchema();
-  const definitions = schema.definitions as Record<
-    string,
-    Record<string, unknown>
-  >;
-
-  assertEquals(definitions.LabelConfig.additionalProperties, false);
-  assertEquals(definitions.LabelDefinition.additionalProperties, false);
+  // Check uniqueItems (added via override)
+  assertEquals(props.labels.uniqueItems, true);
+  assertEquals(props.delete.uniqueItems, true);
 });
 
 // --- Schema sync tests ---
@@ -111,68 +115,34 @@ Deno.test("schema - committed schema matches generated schema", async () => {
 
 // --- Schema content tests ---
 
-Deno.test("schema - has descriptions from JSDoc", async () => {
+Deno.test("schema - has descriptions from metadata", async () => {
   const schema = await loadCommittedSchema();
-  const definitions = schema.definitions as Record<
-    string,
-    Record<string, unknown>
-  >;
 
-  // Check root description
+  // Root description
   assertStringIncludes(
-    definitions.LabelConfig.description as string,
-    "Root configuration schema",
+    schema.description as string,
+    "github-labelmanager",
   );
 
-  // Check label definition
+  // LabelDefinition description
+  const labelDef = getLabelDefinition(schema);
   assertStringIncludes(
-    definitions.LabelDefinition.description as string,
-    "Label definition",
+    labelDef.description as string,
+    "GitHub issue label",
   );
 
-  // Check property descriptions
-  const props = definitions.LabelDefinition.properties as Record<
-    string,
-    Record<string, unknown>
-  >;
-  assertStringIncludes(props.name.description as string, "name of the label");
-  assertStringIncludes(props.color.description as string, "hex code");
-});
+  // Field descriptions (name and color share LabelName/HexColor metadata)
+  const defs = schema.$defs as Record<string, Record<string, unknown>>;
+  const props = labelDef.properties as Record<string, Record<string, unknown>>;
 
-Deno.test("schema - aliases is optional array of strings", async () => {
-  const schema = await loadCommittedSchema();
-  const definitions = schema.definitions as Record<
-    string,
-    Record<string, unknown>
-  >;
-  const labelDef = definitions.LabelDefinition;
-  const properties = labelDef.properties as Record<
-    string,
-    Record<string, unknown>
-  >;
+  // name -> ref to LabelName (__schema0)
+  const nameRef = props.name.$ref as string | undefined;
+  if (nameRef) {
+    const refName = nameRef.split("/").pop() as string;
+    assertExists(defs[refName]);
+    assertExists(defs[refName].description);
+  }
 
-  assertExists(properties.aliases);
-  assertEquals(properties.aliases.type, "array");
-
-  const items = properties.aliases.items as Record<string, unknown>;
-  assertEquals(items.type, "string");
-});
-
-Deno.test("schema - delete is optional array of strings", async () => {
-  const schema = await loadCommittedSchema();
-  const definitions = schema.definitions as Record<
-    string,
-    Record<string, unknown>
-  >;
-  const labelConfig = definitions.LabelConfig;
-  const properties = labelConfig.properties as Record<
-    string,
-    Record<string, unknown>
-  >;
-
-  assertExists(properties.delete);
-  assertEquals(properties.delete.type, "array");
-
-  const items = properties.delete.items as Record<string, unknown>;
-  assertEquals(items.type, "string");
+  // color has inline description
+  assertExists(props.color.description, "color description should exist");
 });

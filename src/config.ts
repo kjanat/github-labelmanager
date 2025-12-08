@@ -4,7 +4,9 @@
  */
 
 import { isMap, isScalar, isSeq, LineCounter, parseDocument } from "yaml";
-import type { EnvConfig, LabelConfig, LabelDefinition } from "@/types.ts";
+import { fromError } from "zod-validation-error";
+import type { EnvConfig, LabelConfig } from "@/types.ts";
+import { labelConfig } from "@/schema.ts";
 
 /** Default config file path */
 const DEFAULT_CONFIG_PATH = ".github/labels.yml";
@@ -44,34 +46,10 @@ Environment Variables:
 }
 
 /**
- * Type guard for LabelDefinition
- */
-function isLabelDefinition(obj: unknown): obj is LabelDefinition {
-  if (!obj || typeof obj !== "object") return false;
-  const o = obj as Record<string, unknown>;
-  return (
-    typeof o.name === "string" &&
-    typeof o.color === "string" &&
-    typeof o.description === "string" &&
-    (o.aliases === undefined ||
-      (Array.isArray(o.aliases) &&
-        o.aliases.every((a) => typeof a === "string")))
-  );
-}
-
-/**
- * Type guard to validate LabelConfig schema
+ * Type guard to validate LabelConfig schema using Zod
  */
 export function isLabelConfig(obj: unknown): obj is LabelConfig {
-  if (!obj || typeof obj !== "object") return false;
-  const o = obj as Record<string, unknown>;
-  if (!Array.isArray(o.labels)) return false;
-  if (!o.labels.every(isLabelDefinition)) return false;
-  if (o.delete !== undefined) {
-    if (!Array.isArray(o.delete)) return false;
-    if (!o.delete.every((d) => typeof d === "string")) return false;
-  }
-  return true;
+  return labelConfig.safeParse(obj).success;
 }
 
 /**
@@ -218,9 +196,13 @@ export async function loadConfig(path?: string): Promise<LabelConfig> {
 
   const parsed = doc.toJS() as Record<string, unknown>;
 
-  if (!isLabelConfig(parsed)) {
+  // Validate with Zod
+  const validation = labelConfig.safeParse(parsed);
+
+  if (!validation.success) {
+    const validationError = fromError(validation.error);
     throw new Deno.errors.InvalidData(
-      `Invalid labels.yml schema. Expected { labels: [{ name, color, description }], delete?: string[] }`,
+      `Invalid labels.yml schema:\n${validationError.toString()}`,
     );
   }
 
@@ -253,8 +235,9 @@ export async function loadConfig(path?: string): Promise<LabelConfig> {
     }
   }
 
-  // Attach metadata
-  parsed._meta = { filePath: configPath, labelLines, deleteLines };
+  // Attach metadata (cast to LabelConfig since we validated it, but we need to add _meta)
+  const config = validation.data as LabelConfig;
+  config._meta = { filePath: configPath, labelLines, deleteLines };
 
-  return parsed as LabelConfig;
+  return config;
 }

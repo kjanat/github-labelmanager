@@ -1,63 +1,153 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/kjanat/github-labelmanager/master/.github/labels.schema.json",
-  "$ref": "#/definitions/LabelConfig",
-  "definitions": {
-    "LabelConfig": {
-      "type": "object",
-      "properties": {
-        "labels": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/LabelDefinition"
+  "title": "GitHub Label Manager Configuration",
+  "description": "Schema for declaratively managing GitHub issue labels via kjanat/github-labelmanager.",
+  "type": "object",
+  "properties": {
+    "labels": {
+      "title": "Labels to Create or Update",
+      "description": "Array of label definitions. Each label will be created if it doesn't exist, or updated if it does. Use 'aliases' to rename existing labels while preserving issue associations.",
+      "type": "array",
+      "items": {
+        "title": "Label Definition",
+        "description": "A GitHub issue label with name, color, description, and optional aliases for renaming.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/$defs/__schema0"
           },
-          "description": "Labels to create/update"
+          "color": {
+            "title": "Hex Color Code",
+            "description": "Valid CSS hex color code. Supports 3-character (#RGB) or 6-character (#RRGGBB) format. The leading '#' is optional. Case-insensitive.",
+            "examples": [
+              "#d73a4a",
+              "#a2eeef",
+              "0075ca",
+              "#FFF",
+              "#ffffff",
+              "ABC123"
+            ],
+            "type": "string",
+            "pattern": "^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$"
+          },
+          "description": {
+            "title": "Label Description",
+            "description": "GitHub label description. Maximum 100 characters. Should be concise and explain the label's purpose.",
+            "examples": [
+              "Something isn't working",
+              "New feature or meaningful behavior change"
+            ],
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 100
+          },
+          "aliases": {
+            "title": "Label Aliases (for Renaming)",
+            "description": "Array of old label names that should be renamed to this label's name. When syncing, any existing label matching an alias will be renamed, preserving all issue associations. Useful for standardizing label names across repositories.",
+            "examples": [
+              [
+                "enhancement"
+              ],
+              [
+                "documentation",
+                "docs-update"
+              ],
+              [
+                "priority-high",
+                "urgent",
+                "P1"
+              ]
+            ],
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            }
+          }
         },
-        "delete": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Labels to delete (by name)"
-        }
+        "required": [
+          "name",
+          "color",
+          "description"
+        ],
+        "additionalProperties": false
       },
-      "required": [
-        "labels"
-      ],
-      "additionalProperties": false,
-      "description": "Root configuration schema from labels.yml"
+      "uniqueItems": true
     },
-    "LabelDefinition": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The name of the label"
-        },
-        "color": {
-          "type": "string",
-          "description": "The color as 6 character hex code (with or without '#')",
-          "pattern": "^#?[0-9A-Fa-f]{6}$"
-        },
-        "description": {
-          "type": "string",
-          "description": "Description of the label"
-        },
-        "aliases": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Optional aliases for renaming from old label names"
-        }
-      },
-      "required": [
-        "name",
-        "color",
-        "description"
+    "delete": {
+      "title": "Labels to Delete",
+      "description": "Array of label names to remove from the repository. Use with caution: deleted labels will be removed from all issues. Labels listed here should NOT also appear in the 'labels' array.",
+      "examples": [
+        [
+          "obsolete-label",
+          "deprecated",
+          "wontfix"
+        ]
       ],
-      "additionalProperties": false,
-      "description": "Label definition from labels.yml config file"
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema0"
+      },
+      "uniqueItems": true
     }
-  }
+  },
+  "required": [
+    "labels"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "title": "Label Name",
+      "description": "GitHub label name. Maximum 50 characters. May contain letters, numbers, spaces, hyphens, underscores, colons, and other printable characters. Cannot be empty or consist only of whitespace.",
+      "examples": [
+        "bug",
+        "feature",
+        "P0: critical",
+        "area: ui",
+        "good first issue"
+      ],
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "pattern": "^(?!\\s).*(?<!\\s)$"
+    }
+  },
+  "examples": [
+    {
+      "labels": [
+        {
+          "name": "bug",
+          "color": "#d73a4a",
+          "description": "Something isn't working"
+        },
+        {
+          "name": "feature",
+          "color": "#a2eeef",
+          "description": "New feature",
+          "aliases": [
+            "enhancement"
+          ]
+        },
+        {
+          "name": "docs",
+          "color": "#0075ca",
+          "description": "Documentation improvements",
+          "aliases": [
+            "documentation"
+          ]
+        },
+        {
+          "name": "P0: critical",
+          "color": "#b60205",
+          "description": "Broken core flows, must fix ASAP"
+        }
+      ],
+      "delete": [
+        "dependencies",
+        "javascript",
+        "obsolete-label"
+      ]
+    }
+  ]
 }

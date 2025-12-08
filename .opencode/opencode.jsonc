@@ -115,66 +115,6 @@
   "small_model": "anthropic/claude-haiku-4-5",
   "share": "manual",
   "autoupdate": true,
-  // "instructions": [],
-  "permission": {
-    "edit": "allow",
-    "bash": {
-      // === DENY (destructive, non-recoverable) ===
-      "rm -rf*": "deny",
-      "rm -fr*": "deny",
-      "git push --force*": "deny",
-      "git push -f*": "deny",
-      "git push * +*": "deny",
-      "git rebase*": "deny",
-      "git reset --hard*": "deny",
-      "git clean*": "deny",
-      "git branch -D*": "deny",
-      "git stash drop*": "deny",
-      "sudo*": "deny",
-
-      // === ASK (state-changing, needs review) ===
-      "git add*": "ask",
-      "git commit*": "ask",
-      "git push*": "ask",
-      "git reset*": "ask",
-      "git checkout*": "ask",
-      "git restore*": "ask",
-      "git switch*": "ask",
-      "git stash*": "ask",
-      "git merge*": "ask",
-      "git cherry-pick*": "ask",
-      "git revert*": "ask",
-      "git tag*": "ask",
-      "git branch -d*": "ask",
-      "git branch --delete*": "ask",
-      "rm *": "ask",
-      "rmdir*": "ask",
-      "npm install*": "ask",
-      "npm i *": "ask",
-      "deno add*": "ask",
-      "deno install*": "ask",
-      "pip install*": "ask",
-      "curl*": "ask",
-      "wget*": "ask",
-
-      // === ALLOW (read-only, safe) ===
-      "git status*": "allow",
-      "git diff*": "allow",
-      "git log*": "allow",
-      "git show*": "allow",
-      "git branch": "allow",
-      "deno fmt*": "allow",
-      "deno lint*": "allow",
-      "deno check*": "allow",
-      "deno test*": "allow",
-      "deno task*": "allow",
-
-      // === DEFAULT ===
-      "*": "ask"
-    },
-    "doom_loop": "ask",
-    "external_directory": "ask"
-  },
   "experimental": {
     "chatMaxRetries": 1,
     "batch_tool": true

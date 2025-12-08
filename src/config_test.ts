@@ -4,9 +4,9 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { parse } from "yaml";
-import Ajv from "ajv";
+import Ajv2020 from "ajv/dist/2020.js";
 // deno-lint-ignore no-explicit-any
-const AjvClass = (Ajv as any).default || Ajv;
+const AjvClass = (Ajv2020 as any).default || Ajv2020;
 import { isLabelConfig, loadConfig } from "@/config.ts";
 import type { LabelConfig } from "@/types.ts";
 
@@ -213,18 +213,18 @@ Deno.test("schema - rejects invalid color format", () => {
   assertEquals(validate.errors[0].keyword, "pattern");
 });
 
-Deno.test("schema - rejects 3-character hex color", () => {
+Deno.test("schema - accepts 3-character hex color", () => {
   const schema = JSON.parse(
     Deno.readTextFileSync(".github/labels.schema.json"),
   );
   const ajv = new AjvClass({ strict: false });
   const validate = ajv.compile(schema);
 
-  const invalidConfig = {
+  const config = {
     labels: [{ name: "bug", color: "#f00", description: "Bug" }],
   };
 
-  assertEquals(validate(invalidConfig), false);
+  assertEquals(validate(config), true);
 });
 
 Deno.test("schema - rejects missing required fields", () => {
@@ -284,6 +284,9 @@ Deno.test("schema - accepts valid hex colors", () => {
     "FF0000", // uppercase
     "#AABBCC", // uppercase with #
     "123abc", // mixed
+    "#f00", // 3-char with #
+    "abc", // 3-char without #
+    "ABC", // 3-char uppercase
   ];
 
   for (const color of testCases) {
@@ -303,7 +306,6 @@ Deno.test("schema - rejects invalid hex colors", () => {
 
   const testCases = [
     "gggggg", // invalid hex chars
-    "#fff", // 3 chars
     "ff00", // 4 chars
     "#ff00000", // 7 chars
     "red", // color name

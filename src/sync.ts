@@ -16,7 +16,11 @@ import { LabelManager } from "@/client.ts";
  * "fff" are passed.
  */
 function normalizeColor(color: string): string {
-  return String(color).replace(/^#/, "").toLowerCase().padStart(6, "0");
+  const hex = String(color).replace(/^#/, "").toLowerCase();
+  if (hex.length === 3) {
+    return hex.split("").map((c) => c + c).join("");
+  }
+  return hex;
 }
 
 /**
