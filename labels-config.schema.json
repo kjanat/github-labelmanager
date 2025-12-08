@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kjanat/github-labelmanager/labels-config.schema.json",
+  "title": "GitHub Label Manager Configuration",
+  "description": "Schema for declaratively managing GitHub issue labels via kjanat/github-labelmanager. Supports creating, updating, renaming (via aliases), and deleting labels from a single YAML config file.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "labels": {
+      "title": "Labels to Create or Update",
+      "description": "Array of label definitions. Each label will be created if it doesn't exist, or updated if it does. Use 'aliases' to rename existing labels while preserving issue associations.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/label"
+      },
+      "uniqueItems": true,
+      "examples": [
+        [
+          {
+            "name": "bug",
+            "color": "#d73a4a",
+            "description": "Something isn't working"
+          },
+          {
+            "name": "feature",
+            "color": "#a2eeef",
+            "description": "New feature or request",
+            "aliases": ["enhancement"]
+          }
+        ]
+      ]
+    },
+    "delete": {
+      "title": "Labels to Delete",
+      "description": "Array of label names to remove from the repository. Use with caution: deleted labels will be removed from all issues. Labels listed here should NOT also appear in the 'labels' array.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/labelName"
+      },
+      "uniqueItems": true,
+      "examples": [
+        ["obsolete-label", "deprecated", "wontfix"]
+      ]
+    }
+  },
+  "$defs": {
+    "label": {
+      "title": "Label Definition",
+      "description": "A GitHub issue label with name, color, description, and optional aliases for renaming.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "color", "description"],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/labelName",
+          "title": "Label Name",
+          "description": "The display name of the label. Must be unique within the repository. Supports spaces and special characters. Common patterns include: type labels (bug, feature), priority labels (P0: critical), and area labels (area: ui).",
+          "examples": [
+            "bug",
+            "feature",
+            "P0: critical",
+            "area: ui",
+            "good first issue"
+          ]
+        },
+        "color": {
+          "$ref": "#/$defs/hexColor",
+          "title": "Label Color",
+          "description": "Hex color code for the label background. Can be 3 or 6 characters, with or without leading '#'. GitHub will normalize to 6-char format without '#'.",
+          "examples": ["#d73a4a", "#a2eeef", "0075ca", "#FFF", "abc"]
+        },
+        "description": {
+          "$ref": "#/$defs/labelDescription",
+          "title": "Label Description",
+          "description": "Short description explaining when to use this label. Displayed in GitHub's label picker and helps contributors understand label purpose.",
+          "examples": [
+            "Something isn't working",
+            "New feature or meaningful behavior change",
+            "Good for newcomers"
+          ]
+        },
+        "aliases": {
+          "title": "Label Aliases (for Renaming)",
+          "description": "Array of old label names that should be renamed to this label's name. When syncing, any existing label matching an alias will be renamed, preserving all issue associations. Useful for standardizing label names across repositories.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/labelName"
+          },
+          "uniqueItems": true,
+          "minItems": 1,
+          "examples": [
+            ["enhancement"],
+            ["documentation", "docs-update"],
+            ["priority-high", "urgent", "P1"]
+          ]
+        }
+      }
+    },
+    "labelName": {
+      "title": "Label Name",
+      "description": "GitHub label name. Maximum 50 characters. May contain letters, numbers, spaces, hyphens, underscores, colons, and other printable characters. Cannot be empty or consist only of whitespace.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "pattern": "^(?!\\s).*(?<!\\s)$",
+      "examples": [
+        "bug",
+        "feature",
+        "P0: critical",
+        "area: ui",
+        "good first issue"
+      ]
+    },
+    "labelDescription": {
+      "title": "Label Description",
+      "description": "GitHub label description. Maximum 100 characters. Should be concise and explain the label's purpose.",
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 100,
+      "examples": [
+        "Something isn't working",
+        "New feature or meaningful behavior change"
+      ]
+    },
+    "hexColor": {
+      "title": "Hex Color Code",
+      "description": "Valid CSS hex color code for the label. Supports 3-character (#RGB) or 6-character (#RRGGBB) format. The leading '#' is optional. Case-insensitive.",
+      "type": "string",
+      "pattern": "^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$",
+      "examples": ["#d73a4a", "#a2eeef", "0075ca", "#FFF", "#ffffff", "ABC123"]
+    }
+  },
+  "examples": [
+    {
+      "labels": [
+        {
+          "name": "bug",
+          "color": "#d73a4a",
+          "description": "Something isn't working"
+        },
+        {
+          "name": "feature",
+          "color": "#a2eeef",
+          "description": "New feature or meaningful behavior change",
+          "aliases": ["enhancement"]
+        },
+        {
+          "name": "docs",
+          "color": "#0075ca",
+          "description": "Improvements or additions to documentation",
+          "aliases": ["documentation"]
+        },
+        {
+          "name": "P0: critical",
+          "color": "#b60205",
+          "description": "Broken core flows, must fix ASAP"
+        }
+      ],
+      "delete": ["dependencies", "javascript", "obsolete-label"]
+    }
+  ]
+}

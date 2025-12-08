@@ -62,3 +62,51 @@ src/
 - name: `github-labelmanager`
 - owner: `kjanat`
 - url: `https://github.com/kjanat/github-labelmanager`
+
+## Git Operations
+
+### Required Workflow for All Git Write Commands
+
+Before `git add`, `git commit`, or `git push`:
+
+1. Run `git status` and `git diff`
+2. Show the user exactly what will change
+3. State your intended action: "I will stage these 3 files"
+4. Ask: "Proceed? (yes/no)"
+5. Execute ONLY if user responds: "yes", "do it", "go ahead", "commit", "push",
+   or "approved"
+
+Phrases that are NOT approval: "ok", "sure", "whatever", "sounds good", "I
+guess"
+
+### Prohibited Commands (No Exceptions)
+
+Never execute, even if requested:
+
+- `git reset --hard`
+- `git push --force` / `git push -f` / `git push origin +branch`
+- `git clean -f`
+- `git branch -D`
+- `git stash drop`
+- `rm -rf`
+
+If user requests these, explain the risk and suggest safer alternatives.
+
+### Require Approval Each Time
+
+- `git add`, `git commit`, `git push`
+- `git stash`, `git merge`, `git rebase`, `git cherry-pick`
+- `git checkout --` / `git restore` (discards changes)
+- File deletion (`rm`, `git rm`)
+- Installing dependencies (`npm install`, `deno add`, `pip install`)
+
+### Default to Read-Only
+
+Prefer: `read`, `glob`, `grep`, `git status`, `git diff`, `git log`
+
+### If You Make a Mistake
+
+1. Stop immediately
+2. Run `git reflog` to show recovery options
+3. Explain what happened
+4. Do NOT attempt automated recovery without approval

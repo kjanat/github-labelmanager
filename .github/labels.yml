@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=labels.schema.json
+# yaml-language-server: $schema=../labels.schema.json
 ---
 labels:
   - name: bug

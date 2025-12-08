@@ -1,25 +1,92 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/evilmartians/lefthook/master/schema.json
 # https://lefthook.dev/configuration/
 ---
+min_version: "1.5.0"
+
 pre-commit:
-  parallel: true
+  parallel: false # Sequential for deterministic order
   commands:
+    ai-confirmation:
+      priority: 1
+      interactive: true
+      run: |
+        # Skip in CI environments
+        { [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ] || [ -n "$GITLAB_CI" ]; } && exit 0
+
+        # Detect AI sessions (explicit env vars only, not [ ! -t 0 ])
+        is_ai_session() {
+          [ -n "$OPENCODE_SESSION" ] || \
+          [ -n "$CURSOR_SESSION" ] || \
+          [ -n "$AIDER_SESSION" ] || \
+          [ -n "$CLINE_SESSION" ] || \
+          [ -n "$CLAUDE_SESSION" ]
+        }
+
+        # Skip if human-verified or not AI session
+        [ "$HUMAN_VERIFIED" = "1" ] && exit 0
+        is_ai_session || exit 0
+
+        echo "========================================"
+        echo "AI-INITIATED COMMIT - APPROVAL REQUIRED"
+        echo "========================================"
+        echo ""
+        git diff --cached --stat
+        echo ""
+        count=$(git diff --cached --name-only | wc -l)
+        [ "$count" -gt 10 ] && echo "($count files total)"
+        echo ""
+
+        # Check for TTY
+        if [ -t 0 ] && [ -t 1 ]; then
+          printf "Approve? [y/N]: "
+          read -r answer
+        elif [ -e /dev/tty ]; then
+          printf "Approve? [y/N]: " > /dev/tty
+          read -r answer < /dev/tty
+        else
+          echo "ERROR: No TTY available for confirmation"
+          echo "Options: HUMAN_VERIFIED=1 git commit -m '...'"
+          exit 1
+        fi
+
+        [ "$answer" = "y" ] || [ "$answer" = "Y" ] || { echo "Rejected"; exit 1; }
+        echo "Approved"
+      skip:
+        - merge
+        - rebase
+
     lint:
+      priority: 2
       glob: "*.ts"
-      run: deno lint --fix
+      exclude: ".github/actions/**/*.ts"
+      run: deno lint --fix {staged_files}
       stage_fixed: true
+
     fmt:
+      priority: 3
       glob: "*.{ts,md,yml,yaml,json,jsonc}"
       run: deno fmt {staged_files}
       stage_fixed: true
+
     typecheck:
+      priority: 4
       glob: "*.ts"
+      exclude: ".github/actions/**/*.ts"
       run: deno check --all {staged_files}
+
     test:
+      priority: 4
       glob: "src/*.ts"
       run: deno test -RWE {staged_files}
+
     schemagen:
+      priority: 5
       glob: "src/types.ts"
       run: |
         deno run -RWE scripts/build_schema.ts \
         && git add .github/labels.schema.json
+
+commit-msg:
+  commands:
+    commitlint:
+      run: deno run -A npm:@commitlint/cli --edit {1}

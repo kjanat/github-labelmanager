@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2154 # GITHUB_OUTPUT, GITHUB_STEP_SUMMARY are GitHub Actions runtime env vars
 set -euo pipefail
 
 # Validate package.json exists

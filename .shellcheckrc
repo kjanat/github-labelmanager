@@ -1,0 +1,14 @@
+# ShellCheck configuration
+# https://github.com/koalaman/shellcheck/wiki/Directive
+
+# Use bash as default shell
+shell=bash
+
+# Exclude node_modules and other generated files
+# Note: ShellCheck doesn't support exclude paths in config,
+# use: shellcheck $(find . -name "*.sh" -not -path "*/node_modules/*")
+
+# Disable specific checks globally:
+# SC1091: Not following sourced files (often external/dynamic)
+# SC2034: Unused variables (often intentional for colors/constants)
+disable=SC1091

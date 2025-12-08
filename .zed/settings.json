@@ -1,15 +1,7 @@
 {
-  "formatter": {
-    "language_server": { "name": "deno" }
-  },
+  "formatter": { "language_server": { "name": "deno" } },
   "lsp": {
-    "deno": {
-      "settings": {
-        "deno": {
-          "enable": true
-        }
-      }
-    },
+    "deno": { "settings": { "deno": { "enable": true } } },
     "json-language-server": {
       "settings": {
         "json": {
