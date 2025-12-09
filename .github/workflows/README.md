@@ -13,8 +13,7 @@ graph TD
     Release --> UpdateTags(Update Tags)
 ```
 
-- **Validate Version**: Checks that the version in `package.json` matches the
-  tag.
+- **Validate Version**: Checks that the version in `deno.json` matches the tag.
 - **Build NPM**: Builds the NPM package.
 - **Publish JSR**: Publishes the package to JSR.
 - **Publish NPM**: Publishes the package to NPM.

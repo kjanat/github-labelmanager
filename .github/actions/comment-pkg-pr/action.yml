@@ -5,7 +5,7 @@ description: |
   Posts or updates a PR comment with pkg-pr-new publish information.
   Supports pull_request and push events. For push events, finds the associated PR.
 author: Kaj Kowalski
-branding: { icon: message-square, color: blue }
+branding: {icon: message-square, color: blue}
 
 inputs:
   github-token:
