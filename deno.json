@@ -15,6 +15,7 @@
   "license": "MIT",
   "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
   "imports": {
+    "@octokit/webhooks-types": "npm:@octokit/webhooks-types@^7.6.1",
     "~/": "./src/",
     "$/": "./",
     "github-labelmanager": "./main.ts",

@@ -3,6 +3,7 @@
 [![CI][badge:ci]][actions:ci] [![Docker][badge:ci:docker]][actions:docker]
 [![JSR Version][badge:jsr:@kjanat/github-labelmanager]][jsr:@kjanat/github-labelmanager]
 [![NPM Version][badge:npm:@kjanat/github-labelmanager]][npm:@kjanat/github-labelmanager]
+[![pkg.pr.new][badge:pkg.pr.new]][pkg.pr.new]
 
 <!-- [![JSR Score][badge:jsr:score]][jsr:@kjanat/github-labelmanager] -->
 
@@ -221,6 +222,8 @@ deno task build
 [jsr:@kjanat/github-labelmanager]: https://jsr.io/@kjanat/github-labelmanager
 [npm:@kjanat/github-labelmanager]: https://www.npmjs.com/package/@kjanat/github-labelmanager
 [labels.yml]: https://github.com/kjanat/github-labelmanager/blob/master/.github/labels.yml "Click to view this repository's label configuration"
+[badge:pkg.pr.new]: https://pkg.pr.new/badge/kjanat/github-labelmanager
+[pkg.pr.new]: https://pkg.pr.new/~/kjanat/github-labelmanager
 
 <!--
 markdownlint-configure-file {

@@ -1,0 +1,31 @@
+name: Publish Any Commit
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-deno
+
+      - name: Install dependencies
+        run: deno install
+
+      - name: Build
+        run: deno task build
+
+      - name: Publish
+        run: deno run -A npm:pkg-pr-new publish --json output.json --comment=off
+        working-directory: npm
+
+      - name: Post or update comment
+        uses: ./.github/actions/comment-pkg-pr
+        with:
+          github-token: ${{ github.token }}
+          output-file: npm/output.json

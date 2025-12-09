@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+---
+name: Comment pkg-pr-new
+description: |
+  Posts or updates a PR comment with pkg-pr-new publish information.
+  Supports pull_request and push events. For push events, finds the associated PR.
+author: Kaj Kowalski
+branding: { icon: message-square, color: blue }
+
+inputs:
+  github-token:
+    description: GitHub token for API access (needs pull-requests:write)
+    required: true
+  output-file:
+    description: Path to pkg-pr-new JSON output file
+    default: output.json
+  comment-identifier:
+    description: Unique identifier in comment body for update logic
+    default: "## pkg-pr-new publish"
+
+outputs:
+  comment-id:
+    description: ID of created/updated comment (empty if no PR found)
+  comment-url:
+    description: URL of the comment (empty if no PR found)
+  pr-found:
+    description: Whether a PR was found to comment on ("true" or "false")
+
+runs:
+  using: node24
+  main: dist/index.mjs
