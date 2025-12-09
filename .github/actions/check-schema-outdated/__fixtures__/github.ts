@@ -10,12 +10,12 @@ type MutableContext = {
   -readonly [K in "sha" | "serverUrl" | "repo"]: ContextType[K];
 };
 
-// Default values
+// Default values (readonly to prevent accidental mutation)
 const defaults = {
   sha: "abc123def456",
   serverUrl: "https://github.com",
   repo: { owner: "test-owner", repo: "test-repo" },
-};
+} as const;
 
 // Mock context - only the properties we use
 export const context: MutableContext = {

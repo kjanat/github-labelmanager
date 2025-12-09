@@ -8,6 +8,9 @@ import config from "root/bun-test.yaml" with { type: "yaml" };
 // Fetch codeblock content from web source if configured
 let webSourceContent: string | null = null;
 
+/** Timeout for web source fetch in milliseconds */
+const FETCH_TIMEOUT_MS = 5000;
+
 /**
  * Fetches content from a URL and stores it for web source replacement.
  * If the response is valid JSON, it will be pretty-printed.
@@ -20,19 +23,36 @@ export async function setWebSource(url: string | null): Promise<void> {
     webSourceContent = null;
     return;
   }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
   try {
-    const response = await fetch(url);
-    if (response.ok) {
-      const text = await response.text();
-      // Pretty print JSON for readability
-      try {
-        webSourceContent = JSON.stringify(JSON.parse(text), null, 2);
-      } catch {
-        webSourceContent = text;
-      }
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      console.warn(
+        `[setWebSource] HTTP ${response.status} from ${url}, using original content`,
+      );
+      return;
     }
-  } catch {
-    // Ignore fetch errors, will use original content
+
+    const text = await response.text();
+    // Pretty print JSON for readability
+    try {
+      webSourceContent = JSON.stringify(JSON.parse(text), null, 2);
+    } catch {
+      webSourceContent = text;
+    }
+  } catch (err) {
+    clearTimeout(timeoutId);
+    const isAbort = err instanceof Error && err.name === "AbortError";
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn(
+      `[setWebSource] ${isAbort ? "Timeout" : "Fetch error"}: ${message}, using original content`,
+    );
+    // Fall back to original content, don't rethrow
   }
 }
 
