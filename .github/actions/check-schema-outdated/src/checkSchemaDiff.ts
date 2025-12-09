@@ -16,8 +16,10 @@ export async function checkSchemaDiff(
     setOutput("git-diff", diff);
     return { exitCode, diff, error };
   } catch (error) {
+    const message =
+      error instanceof Error ? (error.stack ?? error.message) : String(error);
     // Let run() handle the failure via exitCode > 1 check
-    return { exitCode: 128, diff: "", error: String(error) };
+    return { exitCode: 128, diff: "", error: message };
   } finally {
     endGroup();
   }
