@@ -266,7 +266,9 @@ async function main(): Promise<void> {
         return true;
       }
       if (arg.startsWith("-")) {
-        console.error(`${red("Error:")} Unknown option: ${arg}. See --help for usage.`);
+        console.error(
+          `${red("Error:")} Unknown option: ${arg}. See --help for usage.`,
+        );
         Deno.exit(1);
       }
       return true;
