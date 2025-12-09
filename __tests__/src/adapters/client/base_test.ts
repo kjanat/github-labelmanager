@@ -45,13 +45,10 @@ const methodToRoute: Record<string, string> = {
   deleteLabel: "DELETE /repos/{owner}/{repo}/labels/{name}",
 };
 
-/** Maps route strings to method names */
-const routeToMethod: Record<string, string> = {
-  "GET /repos/{owner}/{repo}/labels/{name}": "getLabel",
-  "POST /repos/{owner}/{repo}/labels": "createLabel",
-  "PATCH /repos/{owner}/{repo}/labels/{name}": "updateLabel",
-  "DELETE /repos/{owner}/{repo}/labels/{name}": "deleteLabel",
-};
+/** Maps route strings to method names - derived from methodToRoute */
+const routeToMethod: Record<string, string> = Object.fromEntries(
+  Object.entries(methodToRoute).map(([method, route]) => [route, method]),
+);
 
 /**
  * Wrapper around shared createMockOctokit that provides method-based interface.
