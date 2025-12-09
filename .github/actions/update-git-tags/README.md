@@ -79,6 +79,7 @@ at unstable code.
 The workflow using this action must:
 
 1. **Checkout with full history** for tag operations:
+
    ```yaml
    - uses: actions/checkout@v6
      with:
@@ -86,6 +87,7 @@ The workflow using this action must:
    ```
 
 2. **Have write permissions** for pushing tags:
+
    ```yaml
    permissions:
      contents: write
