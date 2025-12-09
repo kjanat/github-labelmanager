@@ -33,7 +33,7 @@ src/
 ## Distribution
 
 The project is distributed as:
-- GitHub Action: `kjanat/github-labelmanager@v1`
+- GitHub Action: `kjanat/github-labelmanager` (use `@v1` or specific version tags)
 - JSR package: `jsr:@kjanat/github-labelmanager`
 - NPM package: `npm:@kjanat/github-labelmanager`
 - Docker image: `ghcr.io/kjanat/github-labelmanager`
@@ -126,7 +126,7 @@ The project is distributed as:
 1. **Don't use Node.js APIs** - Use Deno equivalents
 2. **Don't skip type checking** - Run `deno check --all` before committing
 3. **Don't ignore linter warnings** - Fix or justify suppressions
-4. **Don't break the build** - Test npm package build with `deno task build`
+4. **Don't break the build** - Ensure all tasks pass before committing
 5. **Don't add unnecessary dependencies** - Prefer JSR packages over npm when possible
 
 ## Files to Be Aware Of
