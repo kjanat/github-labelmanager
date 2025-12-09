@@ -174,11 +174,11 @@ Add label names to the `delete` array to remove them.
 
 ## Environment variables
 
-| Variable       | Required | Description                                     |
-| -------------- | -------- | ----------------------------------------------- |
+| Variable       | Required | Description                             |
+| -------------- | -------- | --------------------------------------- |
 | `GITHUB_TOKEN` | Yes      | Personal access token or `github.token` |
-| `REPO`         | No       | Fallback if not passed as argument              |
-| `DRY_RUN`      | No       | Set to `true` for dry-run mode                  |
+| `REPO`         | No       | Fallback if not passed as argument      |
+| `DRY_RUN`      | No       | Set to `true` for dry-run mode          |
 
 ---
 

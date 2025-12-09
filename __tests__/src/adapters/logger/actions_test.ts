@@ -308,7 +308,13 @@ Deno.test("writeSummary - adds counts table", async () => {
   headers.forEach((h, i) => (headerIndex[h] = i));
 
   // Verify all expected headers exist
-  const expectedHeaders = ["Created", "Updated", "Renamed", "Deleted", "Failed"];
+  const expectedHeaders = [
+    "Created",
+    "Updated",
+    "Renamed",
+    "Deleted",
+    "Failed",
+  ];
   for (const h of expectedHeaders) {
     assertEquals(headerIndex[h] !== undefined, true, `Missing header: ${h}`);
   }

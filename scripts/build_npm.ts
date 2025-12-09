@@ -63,8 +63,12 @@ if (isJsrYaml) {
   if (!denoConfig.imports) {
     throw new Error("Expected imports object in deno.json");
   }
-  denoConfig.imports.yaml = "npm:yaml" + originalYamlImport!.replace(/^jsr:@eemeli\/yaml/, "");
-  await Deno.writeTextFile("./deno.json", JSON.stringify(denoConfig, null, 2) + "\n");
+  denoConfig.imports.yaml = "npm:yaml" +
+    originalYamlImport!.replace(/^jsr:@eemeli\/yaml/, "");
+  await Deno.writeTextFile(
+    "./deno.json",
+    JSON.stringify(denoConfig, null, 2) + "\n",
+  );
 }
 
 try {
@@ -129,7 +133,10 @@ try {
     const denoConfig = JSON.parse(denoJsonContent) as DenoConfig;
     if (denoConfig.imports) {
       denoConfig.imports.yaml = originalYamlImport;
-      Deno.writeTextFileSync("./deno.json", JSON.stringify(denoConfig, null, 2) + "\n");
+      Deno.writeTextFileSync(
+        "./deno.json",
+        JSON.stringify(denoConfig, null, 2) + "\n",
+      );
     }
   }
 }

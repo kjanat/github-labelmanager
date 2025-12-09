@@ -60,7 +60,9 @@ export class ActionsGitHubClient extends BaseGitHubClient {
         const octokitError = error as { status: number; message?: string };
         throw new Error(
           `Failed to list labels for ${this.owner}/${this.repo}: ` +
-            `HTTP ${octokitError.status}${octokitError.message ? ` - ${octokitError.message}` : ""}`,
+            `HTTP ${octokitError.status}${
+              octokitError.message ? ` - ${octokitError.message}` : ""
+            }`,
         );
       }
       // Wrap non-Octokit errors with context
