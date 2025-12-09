@@ -38,7 +38,17 @@ jobs:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-deno
       - run: |
+          # Extract package info from deno.json
+          PKG_NAME="$(jq -r '.name' deno.json)"
+          PKG_VERSION="$(jq -r '.version' deno.json)"
+
+          # Check if version already published on JSR (skip on re-run)
           if [[ "${DRY_RUN}" != "true" ]]; then
+            PUBLISHED=$(curl -sf "https://jsr.io/${PKG_NAME}/meta.json" | jq -r ".versions[\"${PKG_VERSION}\"] // empty" || true)
+            if [[ -n "${PUBLISHED}" ]]; then
+              echo "::notice::${PKG_NAME}@${PKG_VERSION} already published on JSR, skipping"
+              exit 0
+            fi
             deno publish && exit 0
           fi
           deno publish --dry-run
