@@ -6,8 +6,8 @@
  */
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
-import { main } from "~/main.ts";
-import { MockLogger, stubArgs, stubEnv } from "@/testing.ts";
+import { main } from "github-labelmanager";
+import { MockLogger, stubArgs, stubEnv } from "./testing.ts";
 
 // =============================================================================
 // Missing token tests

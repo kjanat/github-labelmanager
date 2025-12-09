@@ -4,14 +4,14 @@
  * @module
  */
 
-import type { EnvConfig } from "@/types.ts";
+import type { EnvConfig } from "./types.ts";
 import type {
   GitHubLabel,
   IGitHubClient,
   LabelOptions,
-} from "@/adapters/client/mod.ts";
-import type { ILogger } from "@/adapters/logger/mod.ts";
-import { createGitHubClient, createLogger } from "@/factory.ts";
+} from "./adapters/client/mod.ts";
+import type { ILogger } from "./adapters/logger/mod.ts";
+import { createGitHubClient, createLogger } from "./factory.ts";
 
 /**
  * GitHub label manager client

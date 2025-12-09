@@ -3,13 +3,13 @@
  * @module
  */
 
-import type { ILogger } from "@/adapters/logger/mod.ts";
+import type { ILogger } from "./adapters/logger/mod.ts";
 import type {
   GitHubClientConfig,
   IGitHubClient,
-} from "@/adapters/client/mod.ts";
-import { ActionsLogger, ConsoleLogger } from "@/adapters/logger/mod.ts";
-import { ActionsGitHubClient, OctokitClient } from "@/adapters/client/mod.ts";
+} from "./adapters/client/mod.ts";
+import { ActionsLogger, ConsoleLogger } from "./adapters/logger/mod.ts";
+import { ActionsGitHubClient, OctokitClient } from "./adapters/client/mod.ts";
 
 /**
  * Check if running in GitHub Actions environment
@@ -60,8 +60,8 @@ export function createServices(config: GitHubClientConfig): {
 }
 
 // Re-export types
-export type { ILogger } from "@/adapters/logger/mod.ts";
+export type { ILogger } from "./adapters/logger/mod.ts";
 export type {
   GitHubClientConfig,
   IGitHubClient,
-} from "@/adapters/client/mod.ts";
+} from "./adapters/client/mod.ts";

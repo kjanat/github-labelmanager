@@ -8,7 +8,7 @@ import {
   ActionsLogger,
   toActionsAnnotation,
 } from "./actions.ts";
-import type { SyncOperation, SyncResult } from "@/types.ts";
+import type { SyncOperation, SyncResult } from "~/types.ts";
 
 // =============================================================================
 // Mock @actions/core

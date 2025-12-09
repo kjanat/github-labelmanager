@@ -3,10 +3,10 @@
  * @module
  */
 
-import type { LabelConfig, SyncOperation, SyncResult } from "@/types.ts";
-import type { GitHubLabel } from "@/adapters/client/mod.ts";
-import type { AnnotationProperties } from "@/adapters/logger/mod.ts";
-import { LabelManager } from "@/client.ts";
+import type { LabelConfig, SyncOperation, SyncResult } from "./types.ts";
+import type { GitHubLabel } from "./adapters/client/mod.ts";
+import type { AnnotationProperties } from "./adapters/logger/mod.ts";
+import { LabelManager } from "./client.ts";
 
 /**
  * Normalize color to lowercase hex without #
@@ -98,7 +98,7 @@ export async function syncLabels(
 
   // Process each desired label
   for (const desired of config.labels) {
-    const cleanColor = normalizeColor(desired.color);
+    const cleanColor = normalizeColor(desired.color!);
 
     // Check for renames via aliases
     let matchedName = desired.name;
@@ -143,7 +143,7 @@ export async function syncLabels(
               ...movedLabel,
               name: desired.name,
               color: cleanColor,
-              description: desired.description,
+              description: desired.description ?? null,
             });
             matchedName = desired.name;
           } catch (err) {
@@ -197,7 +197,7 @@ export async function syncLabels(
         existingMap.set(desired.name, {
           name: desired.name,
           color: cleanColor,
-          description: desired.description,
+          description: desired.description ?? null,
         });
       } catch (err) {
         logger.error(
@@ -245,7 +245,7 @@ export async function syncLabels(
             success: true,
             details: {
               color: cleanColor,
-              description: desired.description,
+              description: desired.description ?? undefined,
               oldColor: existing.color,
               oldDescription: existing.description ?? undefined,
             },
@@ -254,7 +254,7 @@ export async function syncLabels(
           existingMap.set(desired.name, {
             ...existing,
             color: cleanColor,
-            description: desired.description,
+            description: desired.description ?? null,
           });
         } catch (err) {
           logger.error(

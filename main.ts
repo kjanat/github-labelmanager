@@ -5,11 +5,11 @@
  * @module
  */
 
-import { ConfigError, getEnv, loadConfig, printHelp } from "@/config.ts";
-import { LabelManager } from "@/client.ts";
-import { syncLabels } from "@/sync.ts";
-import { createLogger } from "@/factory.ts";
-import type { ILogger } from "@/adapters/logger/mod.ts";
+import { ConfigError, getEnv, loadConfig, printHelp } from "~/config.ts";
+import { LabelManager } from "~/client.ts";
+import { syncLabels } from "~/sync.ts";
+import { createLogger } from "~/factory.ts";
+import type { ILogger } from "~/adapters/logger/mod.ts";
 
 /**
  * Main entry point for the CLI

@@ -4,11 +4,8 @@
 
 import { assertEquals, assertExists } from "@std/assert";
 import { parse } from "yaml";
-import Ajv2020 from "ajv/dist/2020.js";
-// deno-lint-ignore no-explicit-any
-const AjvClass = (Ajv2020 as any).default || Ajv2020;
-import { isLabelConfig, loadConfig } from "@/config.ts";
-import type { LabelConfig } from "@/types.ts";
+import { Ajv } from "ajv";
+import { isLabelConfig, loadConfig } from "./config.ts";
 
 // --- isLabelConfig tests ---
 
@@ -73,18 +70,18 @@ Deno.test("isLabelConfig - rejects label with missing name", () => {
   assertEquals(isLabelConfig(invalid), false);
 });
 
-Deno.test("isLabelConfig - rejects label with missing color", () => {
-  const invalid = {
+Deno.test("isLabelConfig - accepts label with missing color", () => {
+  const valid = {
     labels: [{ name: "bug", description: "Bug" }],
   };
-  assertEquals(isLabelConfig(invalid), false);
+  assertEquals(isLabelConfig(valid), true);
 });
 
-Deno.test("isLabelConfig - rejects label with missing description", () => {
-  const invalid = {
+Deno.test("isLabelConfig - accepts label with missing description", () => {
+  const valid = {
     labels: [{ name: "bug", color: "ff0000" }],
   };
-  assertEquals(isLabelConfig(invalid), false);
+  assertEquals(isLabelConfig(valid), true);
 });
 
 Deno.test("isLabelConfig - rejects label with non-string name", () => {
@@ -162,7 +159,7 @@ Deno.test("schema - labels.yml validates against generated schema", async () => 
   const schema = await loadSchema();
   const config = await loadLabelsYml();
 
-  const ajv = new AjvClass({ strict: false });
+  const ajv = new Ajv();
   const validate = ajv.compile(schema);
   const valid = validate(config);
 
@@ -176,10 +173,10 @@ Deno.test("schema - valid config passes schema validation", () => {
   const schema = JSON.parse(
     Deno.readTextFileSync(".github/labels.schema.json"),
   );
-  const ajv = new AjvClass({ strict: false });
+  const ajv = new Ajv();
   const validate = ajv.compile(schema);
 
-  const validConfig: LabelConfig = {
+  const validConfig = {
     labels: [
       { name: "bug", color: "#ff0000", description: "Bug report" },
       {
@@ -199,7 +196,7 @@ Deno.test("schema - rejects invalid color format", () => {
   const schema = JSON.parse(
     Deno.readTextFileSync(".github/labels.schema.json"),
   );
-  const ajv = new AjvClass({ strict: false });
+  const ajv = new Ajv();
   const validate = ajv.compile(schema);
 
   const invalidConfig = {
@@ -217,7 +214,7 @@ Deno.test("schema - accepts 3-character hex color", () => {
   const schema = JSON.parse(
     Deno.readTextFileSync(".github/labels.schema.json"),
   );
-  const ajv = new AjvClass({ strict: false });
+  const ajv = new Ajv();
   const validate = ajv.compile(schema);
 
   const config = {
@@ -231,7 +228,7 @@ Deno.test("schema - rejects missing required fields", () => {
   const schema = JSON.parse(
     Deno.readTextFileSync(".github/labels.schema.json"),
   );
-  const ajv = new AjvClass({ strict: false });
+  const ajv = new Ajv();
   const validate = ajv.compile(schema);
 
   // Missing name
@@ -240,27 +237,41 @@ Deno.test("schema - rejects missing required fields", () => {
     false,
   );
 
+  // Missing labels array entirely
+  assertEquals(validate({ delete: ["foo"] }), false);
+});
+
+Deno.test("schema - accepts optional fields (color, description)", () => {
+  const schema = JSON.parse(
+    Deno.readTextFileSync(".github/labels.schema.json"),
+  );
+  const ajv = new Ajv();
+  const validate = ajv.compile(schema);
+
   // Missing color
   assertEquals(
     validate({ labels: [{ name: "bug", description: "Bug" }] }),
-    false,
+    true,
   );
 
   // Missing description
   assertEquals(
     validate({ labels: [{ name: "bug", color: "ff0000" }] }),
-    false,
+    true,
   );
 
-  // Missing labels array entirely
-  assertEquals(validate({ delete: ["foo"] }), false);
+  // Missing both
+  assertEquals(
+    validate({ labels: [{ name: "bug" }] }),
+    true,
+  );
 });
 
 Deno.test("schema - rejects additional properties", () => {
   const schema = JSON.parse(
     Deno.readTextFileSync(".github/labels.schema.json"),
   );
-  const ajv = new AjvClass({ strict: false });
+  const ajv = new Ajv();
   const validate = ajv.compile(schema);
 
   const invalidConfig = {
@@ -275,7 +286,7 @@ Deno.test("schema - accepts valid hex colors", () => {
   const schema = JSON.parse(
     Deno.readTextFileSync(".github/labels.schema.json"),
   );
-  const ajv = new AjvClass({ strict: false });
+  const ajv = new Ajv();
   const validate = ajv.compile(schema);
 
   const testCases = [
@@ -301,7 +312,7 @@ Deno.test("schema - rejects invalid hex colors", () => {
   const schema = JSON.parse(
     Deno.readTextFileSync(".github/labels.schema.json"),
   );
-  const ajv = new AjvClass({ strict: false });
+  const ajv = new Ajv();
   const validate = ajv.compile(schema);
 
   const testCases = [
@@ -326,7 +337,7 @@ Deno.test("consistency - isLabelConfig and schema agree on valid configs", () =>
   const schema = JSON.parse(
     Deno.readTextFileSync(".github/labels.schema.json"),
   );
-  const ajv = new AjvClass({ strict: false });
+  const ajv = new Ajv();
   const validate = ajv.compile(schema);
 
   const validConfigs = [
@@ -356,7 +367,7 @@ Deno.test("consistency - isLabelConfig and schema agree on invalid structure", (
   const schema = JSON.parse(
     Deno.readTextFileSync(".github/labels.schema.json"),
   );
-  const ajv = new AjvClass({ strict: false });
+  const ajv = new Ajv();
   const validate = ajv.compile(schema);
 
   const invalidConfigs = [
@@ -454,8 +465,8 @@ Deno.test("loadConfig - handles config without delete section", async () => {
 // --- getEnv tests ---
 
 import { assertThrows } from "@std/assert";
-import { ConfigError, getEnv } from "@/config.ts";
-import { stubArgs, stubEnv } from "@/testing.ts";
+import { ConfigError, getEnv } from "./config.ts";
+import { stubArgs, stubEnv } from "./testing.ts";
 
 Deno.test("getEnv - requires GITHUB_TOKEN", () => {
   const restoreEnv = stubEnv({ GITHUB_TOKEN: undefined });

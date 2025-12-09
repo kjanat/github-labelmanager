@@ -3,7 +3,7 @@
  * @module
  */
 
-import type { ILogger } from "@/adapters/logger/mod.ts";
+import type { ILogger } from "~/adapters/logger/mod.ts";
 import type {
   GitHubClientConfig,
   GitHubLabel,

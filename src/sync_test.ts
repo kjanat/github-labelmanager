@@ -4,10 +4,11 @@
  */
 
 import { assertEquals } from "@std/assert";
-import { syncLabels } from "@/sync.ts";
-import { LabelManager } from "@/client.ts";
-import { createTestEnv, MockGitHubClient, NullLogger } from "@/testing.ts";
-import type { LabelConfig } from "@/types.ts";
+import { syncLabels } from "./sync.ts";
+import { LabelManager } from "./client.ts";
+import { createTestEnv, MockGitHubClient, NullLogger } from "./testing.ts";
+import { label, LabelNameUtils } from "./labels-model.ts";
+import type { LabelConfig } from "./types.ts";
 
 /** Helper to create a LabelManager with mock client */
 function createTestManager(
@@ -30,7 +31,7 @@ Deno.test("syncLabels - creates new label when not in repo", async () => {
   const manager = createTestManager(client);
 
   const config: LabelConfig = {
-    labels: [{ name: "bug", color: "#d73a4a", description: "Bug report" }],
+    labels: [label("bug").color("d73a4a").description("Bug report").build()],
   };
 
   const result = await syncLabels(manager, config);
@@ -53,7 +54,7 @@ Deno.test("syncLabels - skips unchanged label", async () => {
   const manager = createTestManager(client);
 
   const config: LabelConfig = {
-    labels: [{ name: "bug", color: "#d73a4a", description: "Bug report" }],
+    labels: [label("bug").color("d73a4a").description("Bug report").build()],
   };
 
   const result = await syncLabels(manager, config);
@@ -75,7 +76,7 @@ Deno.test("syncLabels - updates label when color differs", async () => {
   const manager = createTestManager(client);
 
   const config: LabelConfig = {
-    labels: [{ name: "bug", color: "#d73a4a", description: "Bug report" }],
+    labels: [label("bug").color("d73a4a").description("Bug report").build()],
   };
 
   const result = await syncLabels(manager, config);
@@ -93,7 +94,9 @@ Deno.test("syncLabels - updates label when description differs", async () => {
   const manager = createTestManager(client);
 
   const config: LabelConfig = {
-    labels: [{ name: "bug", color: "#d73a4a", description: "New description" }],
+    labels: [
+      label("bug").color("d73a4a").description("New description").build(),
+    ],
   };
 
   const result = await syncLabels(manager, config);
@@ -114,12 +117,13 @@ Deno.test("syncLabels - renames label via alias", async () => {
   const manager = createTestManager(client);
 
   const config: LabelConfig = {
-    labels: [{
-      name: "feature",
-      color: "#a2eeef",
-      description: "Feature",
-      aliases: ["enhancement"],
-    }],
+    labels: [
+      label("feature")
+        .color("a2eeef")
+        .description("Feature")
+        .aliases("enhancement")
+        .build(),
+    ],
   };
 
   const result = await syncLabels(manager, config);
@@ -138,14 +142,14 @@ Deno.test("syncLabels - uses first matching alias", async () => {
     labels: [{ name: "alias2", color: "a2eeef", description: "Feature" }],
   });
   const manager = createTestManager(client);
-
   const config: LabelConfig = {
-    labels: [{
-      name: "feature",
-      color: "#a2eeef",
-      description: "Feature",
-      aliases: ["alias1", "alias2", "alias3"],
-    }],
+    labels: [
+      label("feature")
+        .color("a2eeef")
+        .description("Feature")
+        .aliases("alias1", "alias2", "alias3")
+        .build(),
+    ],
   };
 
   const result = await syncLabels(manager, config);
@@ -164,14 +168,14 @@ Deno.test("syncLabels - rename with color and description change updates all in 
     labels: [{ name: "old-name", color: "000000", description: "Old desc" }],
   });
   const manager = createTestManager(client);
-
   const config: LabelConfig = {
-    labels: [{
-      name: "new-name",
-      color: "#ff0000",
-      description: "New description",
-      aliases: ["old-name"],
-    }],
+    labels: [
+      label("new-name")
+        .color("ff0000")
+        .description("New description")
+        .aliases("old-name")
+        .build(),
+    ],
   };
 
   const result = await syncLabels(manager, config);
@@ -202,7 +206,7 @@ Deno.test("syncLabels - deletes existing label", async () => {
 
   const config: LabelConfig = {
     labels: [],
-    delete: ["obsolete"],
+    delete: [LabelNameUtils.parse("obsolete")],
   };
 
   const result = await syncLabels(manager, config);
@@ -219,7 +223,7 @@ Deno.test("syncLabels - skips delete for non-existent label", async () => {
 
   const config: LabelConfig = {
     labels: [],
-    delete: ["missing"],
+    delete: [LabelNameUtils.parse("missing")],
   };
 
   const result = await syncLabels(manager, config);
@@ -252,7 +256,7 @@ Deno.test("syncLabels - tracks failed create in summary", async () => {
   const manager = createTestManager(client);
 
   const config: LabelConfig = {
-    labels: [{ name: "bug", color: "#d73a4a", description: "Bug" }],
+    labels: [label("bug").color("d73a4a").description("Bug").build()],
   };
 
   const result = await syncLabels(manager, config);
@@ -273,7 +277,7 @@ Deno.test("syncLabels - tracks failed update in summary", async () => {
   const manager = createTestManager(client);
 
   const config: LabelConfig = {
-    labels: [{ name: "bug", color: "#d73a4a", description: "Bug" }],
+    labels: [label("bug").color("d73a4a").description("Bug").build()],
   };
 
   const result = await syncLabels(manager, config);
@@ -292,7 +296,7 @@ Deno.test("syncLabels - tracks failed delete in summary", async () => {
 
   const config: LabelConfig = {
     labels: [],
-    delete: ["obsolete"],
+    delete: [LabelNameUtils.parse("obsolete")],
   };
 
   const result = await syncLabels(manager, config);
@@ -310,12 +314,13 @@ Deno.test("syncLabels - skips create after failed rename", async () => {
   const manager = createTestManager(client);
 
   const config: LabelConfig = {
-    labels: [{
-      name: "new-name",
-      color: "#a2eeef",
-      description: "Feature",
-      aliases: ["old-name"],
-    }],
+    labels: [
+      label("new-name")
+        .color("a2eeef")
+        .description("Feature")
+        .aliases("old-name")
+        .build(),
+    ],
   };
 
   const result = await syncLabels(manager, config);
@@ -339,7 +344,7 @@ Deno.test("syncLabels - normalizes color with # prefix", async () => {
 
   // Config has # prefix, repo doesn't - should still match
   const config: LabelConfig = {
-    labels: [{ name: "bug", color: "#D73A4A", description: "Bug" }],
+    labels: [label("bug").color("D73A4A").description("Bug").build()],
   };
 
   const result = await syncLabels(manager, config);
@@ -356,7 +361,7 @@ Deno.test("syncLabels - normalizes color case", async () => {
 
   // Config has lowercase, repo has uppercase - should still match
   const config: LabelConfig = {
-    labels: [{ name: "bug", color: "d73a4a", description: "Bug" }],
+    labels: [label("bug").color("d73a4a").description("Bug").build()],
   };
 
   const result = await syncLabels(manager, config);
@@ -372,7 +377,8 @@ Deno.test("syncLabels - expands 3-char hex", async () => {
   const manager = createTestManager(client);
 
   const config: LabelConfig = {
-    labels: [{ name: "bug", color: "#fab", description: "Bug" }],
+    // deno-lint-ignore no-explicit-any
+    labels: [label("bug").color("fab" as any).description("Bug").build()],
   };
 
   const result = await syncLabels(manager, config);

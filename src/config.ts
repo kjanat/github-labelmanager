@@ -5,8 +5,8 @@
 
 import { isMap, isScalar, isSeq, LineCounter, parseDocument } from "yaml";
 import { fromError } from "zod-validation-error";
-import type { EnvConfig, LabelConfig } from "@/types.ts";
-import { labelConfig } from "@/schema.ts";
+import type { EnvConfig, LabelConfig } from "./types.ts";
+import { labelConfig } from "./schema.ts";
 
 /** Default config file path */
 const DEFAULT_CONFIG_PATH = ".github/labels.yml";

@@ -4,7 +4,7 @@
  */
 
 import { assertEquals } from "@std/assert";
-import { LabelManager } from "@/client.ts";
+import { LabelManager } from "./client.ts";
 
 // =============================================================================
 // LabelManager.formatError tests

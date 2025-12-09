@@ -5,7 +5,7 @@
 
 import * as defaultCore from "@actions/core";
 import type { AnnotationProperties, ILogger } from "./types.ts";
-import type { SyncOperation, SyncResult } from "@/types.ts";
+import type { SyncOperation, SyncResult } from "~/types.ts";
 
 /** Minimum number of operations before collapsing details in summary */
 const COLLAPSE_THRESHOLD = 5;

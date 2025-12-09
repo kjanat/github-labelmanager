@@ -20,9 +20,9 @@ import type {
   GitHubLabel,
   IGitHubClient,
   LabelOptions,
-} from "@/adapters/client/mod.ts";
-import type { AnnotationProperties, ILogger } from "@/adapters/logger/mod.ts";
-import type { EnvConfig, SyncResult } from "@/types.ts";
+} from "./adapters/client/mod.ts";
+import type { AnnotationProperties, ILogger } from "./adapters/logger/mod.ts";
+import type { EnvConfig, SyncResult } from "./types.ts";
 
 /**
  * No-op logger that silences all output

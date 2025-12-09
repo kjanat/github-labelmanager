@@ -4,7 +4,7 @@
  */
 
 import type { AnnotationProperties, ILogger } from "./types.ts";
-import type { SyncResult } from "@/types.ts";
+import type { SyncResult } from "~/types.ts";
 
 /** ANSI color codes */
 const COLORS = {
