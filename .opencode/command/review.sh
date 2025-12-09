@@ -72,7 +72,7 @@ ${Bold}Scopes:${Color_Off}
   ${Green}staged${Color_Off}    Only staged changes
   ${Green}unstaged${Color_Off}  Only unstaged changes
   ${Green}commit${Color_Off}    Show specific commit (requires ref arg)
-  ${Green}branch${Color_Off}    Compare current branch to base (origin/main)
+  ${Green}branch${Color_Off}    Compare current branch to detected base
   ${Green}pr${Color_Off}        Full PR review (requires gh cli)
 
 ${Bold}Examples:${Color_Off}

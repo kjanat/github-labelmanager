@@ -3,6 +3,8 @@ description: Find lint ignore comments and suggest refactoring to remove them
 model: anthropic/claude-opus-4-5
 ---
 
+<!-- markdownlint-disable-file MD033 MD041 -->
+
 Search the codebase for lint suppression comments and analyze each one.
 
 ## Lint Ignore Comments Found
@@ -42,5 +44,3 @@ For each finding provide:
 
 Focus on actionable suggestions. If an ignore is justified (e.g., testing
 invalid inputs), acknowledge it but still suggest alternatives if possible.
-
-<!-- markdownlint-disable-file MD033 MD041 -->
