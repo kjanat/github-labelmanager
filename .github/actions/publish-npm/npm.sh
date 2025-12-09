@@ -48,6 +48,7 @@ if [[ "${DRY_RUN}" == "true" ]]; then
 else
   # Check npm version for --provenance support (requires >= 9.5.0)
   NPM_VERSION="$(npm --version)"
+  NPM_VERSION="${NPM_VERSION#v}"  # Remove leading 'v' if present
   NPM_MAJOR="${NPM_VERSION%%.*}"
   NPM_REST="${NPM_VERSION#*.}"
   NPM_MINOR="${NPM_REST%%.*}"

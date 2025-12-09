@@ -39,7 +39,8 @@ type ValidateHex<S extends string> = // deno-fmt-ignore
 
 /**
  * A valid 6-character hexadecimal color code (without `#`).
- * Used for runtime branding.
+ * Note: ValidateHex only provides compile-time validation for literal string types.
+ * For general strings, validation happens at runtime via LabelColorUtils.parse().
  */
 type HexColor = ValidateHex<string>;
 

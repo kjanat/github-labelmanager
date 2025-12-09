@@ -241,8 +241,13 @@ export class ActionsLogger implements ILogger {
         case "delete":
           action = "🗑️ Deleted";
           break;
-        default:
-          action = op.type;
+        case "skip":
+          action = "⏭️ Skipped";
+          break;
+        default: {
+          const _exhaustive: never = op.type;
+          throw new Error(`Unhandled operation type: ${_exhaustive}`);
+        }
       }
 
       return [op.label, action, colorSwatch, desc];

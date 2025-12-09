@@ -7,7 +7,12 @@ import { assertEquals } from "@std/assert";
 import { syncLabels } from "~/sync.ts";
 import { LabelManager } from "~/client.ts";
 import { createTestEnv, MockGitHubClient, NullLogger } from "~/testing.ts";
-import { label, LabelNameUtils } from "~/labels-model.ts";
+import {
+  label,
+  LabelColorUtils,
+  LabelDescriptionUtils,
+  LabelNameUtils,
+} from "~/labels-model.ts";
 import type { LabelConfig } from "~/types.ts";
 
 /** Helper to create a LabelManager with mock client */
@@ -343,10 +348,14 @@ Deno.test("syncLabels - normalizes color with # prefix", async () => {
   const manager = createTestManager(client);
 
   // Config has # prefix, repo doesn't - should still match after stripping #
-  // Construct directly to test normalization without builder's type restrictions
-  const config = {
-    labels: [{ name: "bug", color: "#d73a4a", description: "Bug" }],
-  } as unknown as LabelConfig;
+  // Use parsing helpers to convert string literals to branded types
+  const config: LabelConfig = {
+    labels: [{
+      name: LabelNameUtils.parse("bug"),
+      color: LabelColorUtils.parse("#d73a4a"),
+      description: LabelDescriptionUtils.parse("Bug"),
+    }],
+  };
 
   const result = await syncLabels(manager, config);
 
@@ -377,10 +386,14 @@ Deno.test("syncLabels - expands 3-char hex", async () => {
   });
   const manager = createTestManager(client);
 
-  // Construct directly to test 3-char hex expansion without builder's type restrictions
-  const config = {
-    labels: [{ name: "bug", color: "fab", description: "Bug" }],
-  } as unknown as LabelConfig;
+  // Use parsing helpers to convert 3-char hex to branded type (expands to 6-char)
+  const config: LabelConfig = {
+    labels: [{
+      name: LabelNameUtils.parse("bug"),
+      color: LabelColorUtils.parse("fab"),
+      description: LabelDescriptionUtils.parse("Bug"),
+    }],
+  };
 
   const result = await syncLabels(manager, config);
 

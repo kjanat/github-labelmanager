@@ -81,6 +81,13 @@ runs:
         restore-keys: |
           ${{ runner.os }}-deno-
 
+    - name: Validate update-npm requires install-node
+      if: ${{ inputs.update-npm == 'true' && inputs.install-node != 'true' }}
+      shell: bash
+      run: |
+        echo "::error::update-npm: true requires install-node: true"
+        exit 1
+
     - name: Update npm
       id: update-npm
       if: ${{ inputs.install-node == 'true' }}

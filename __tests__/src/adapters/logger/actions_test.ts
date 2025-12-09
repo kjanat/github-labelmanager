@@ -297,15 +297,15 @@ Deno.test("writeSummary - adds counts table", async () => {
   );
 
   const tableCall = calls.find((c) => c.method === "summary.addTable");
-  const rows = tableCall?.args[0] as string[][];
+  const rows = tableCall?.args[0] as unknown[][];
 
-  // First row is headers - verify expected columns exist
-  const headers = rows[0];
+  // First row is headers (objects with { data, header } shape)
+  const headers = rows[0] as Array<{ data: string; header: boolean }>;
   assertEquals(headers.length, 5);
 
   // Build header index mapping for robust assertions
   const headerIndex: Record<string, number> = {};
-  headers.forEach((h, i) => (headerIndex[h] = i));
+  headers.forEach((h, i) => (headerIndex[h.data] = i));
 
   // Verify all expected headers exist
   const expectedHeaders = [

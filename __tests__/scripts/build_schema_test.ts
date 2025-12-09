@@ -72,7 +72,7 @@ Deno.test("schema - LabelDefinition has correct structure", async () => {
 
   // Check required fields
   const required = labelDef.required as string[];
-  assertEquals(required.sort(), ["name"]);
+  assertEquals(required, ["name"]);
 
   // Check properties
   const props = labelDef.properties as Record<string, unknown>;

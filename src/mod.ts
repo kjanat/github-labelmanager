@@ -24,6 +24,8 @@
  * console.log(result.summary);
  * ```
  *
+ * For testing, this module also exports `MockGitHubClient`, `NullLogger`, and `createTestEnv`.
+ *
  * @module
  */
 

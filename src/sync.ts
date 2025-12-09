@@ -11,12 +11,15 @@ import { LabelManager } from "./client.ts";
 /**
  * Normalize color to lowercase hex without #
  *
+ * Returns undefined if color is falsy, allowing API defaults to apply.
+ *
  * Note: Schema validation ensures 6-char hex format, but we pad
  * as a safeguard in case validation is bypassed or colors like
  * "fff" are passed.
  */
-function normalizeColor(color: string): string {
-  const hex = String(color).replace(/^#/, "").toLowerCase();
+function normalizeColor(color: string | undefined): string | undefined {
+  if (!color) return undefined;
+  const hex = color.replace(/^#/, "").toLowerCase();
   if (hex.length === 3) {
     return hex.split("").map((c) => c + c).join("");
   }
@@ -98,7 +101,7 @@ export async function syncLabels(
 
   // Process each desired label
   for (const desired of config.labels) {
-    const cleanColor = normalizeColor(desired.color!);
+    const cleanColor = normalizeColor(desired.color);
 
     // Check for renames via aliases
     const matchedName = desired.name;
@@ -142,7 +145,7 @@ export async function syncLabels(
             existingMap.set(desired.name, {
               ...movedLabel,
               name: desired.name,
-              color: cleanColor,
+              color: cleanColor ?? movedLabel.color,
               description: desired.description ?? null,
             });
             // Skip update check - rename already applied all changes
@@ -177,10 +180,11 @@ export async function syncLabels(
 
     if (!existing) {
       // Create new label
-      const msg = `Creating: "${desired.name}" (#${cleanColor})`;
+      const colorDisplay = cleanColor ? `#${cleanColor}` : "default";
+      const msg = `Creating: "${desired.name}" (${colorDisplay})`;
       if (manager.isDryRun) {
         logger.info(
-          `[dry-run] Would create: "${desired.name}" (#${cleanColor})`,
+          `[dry-run] Would create: "${desired.name}" (${colorDisplay})`,
         );
         logger.debug(msg);
       } else {
@@ -197,7 +201,7 @@ export async function syncLabels(
         summary.created++;
         existingMap.set(desired.name, {
           name: desired.name,
-          color: cleanColor,
+          color: cleanColor ?? "ededed", // GitHub's default label color
           description: desired.description ?? null,
         });
       } catch (err) {
@@ -214,8 +218,9 @@ export async function syncLabels(
         summary.failed++;
       }
     } else {
-      // Check if update needed
-      const isColorDiff = existing.color.toLowerCase() !== cleanColor;
+      // Check if update needed (undefined cleanColor means no color change requested)
+      const isColorDiff = cleanColor !== undefined &&
+        existing.color.toLowerCase() !== cleanColor;
       const isDescDiff = (existing.description || "") !== desired.description;
 
       if (isColorDiff || isDescDiff) {
@@ -254,7 +259,7 @@ export async function syncLabels(
           summary.updated++;
           existingMap.set(desired.name, {
             ...existing,
-            color: cleanColor,
+            color: cleanColor ?? existing.color,
             description: desired.description ?? null,
           });
         } catch (err) {

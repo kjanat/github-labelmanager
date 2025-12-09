@@ -53,6 +53,9 @@ const routeToMethod: Record<string, string> = Object.fromEntries(
 /**
  * Wrapper around shared createMockOctokit that provides method-based interface.
  * Uses the shared helper from ~/testing.ts but adapts the API for these tests.
+ *
+ * Note: `calls` is a live array that updates as requests are made.
+ * This is achieved by using a Proxy to intercept array access.
  */
 function createMockOctokit(options: MockOctokitOptions = {}): {
   octokit: MockOctokit;
@@ -74,16 +77,19 @@ function createMockOctokit(options: MockOctokitOptions = {}): {
     errors: routeErrors,
   });
 
-  // Return calls as a live-mapped view of requests
-  return {
-    octokit,
-    get calls(): MockOctokitCall[] {
-      return requests.map((r) => ({
+  // Use a Proxy to provide live access to mapped calls
+  // This allows destructuring `{ calls }` while still getting updated values
+  const calls = new Proxy([] as MockOctokitCall[], {
+    get(_, prop) {
+      const mapped = requests.map((r) => ({
         method: routeToMethod[r.route] ?? r.route,
         args: r.params,
       }));
+      return Reflect.get(mapped, prop);
     },
-  };
+  });
+
+  return { octokit, calls };
 }
 
 // =============================================================================

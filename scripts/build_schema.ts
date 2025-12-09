@@ -31,11 +31,11 @@ export function generateSchema(): Record<string, unknown> {
         delete props._meta;
       }
     },
-  });
+  }) as Record<string, unknown>;
 
   // Add $id and description to the root schema
-  (schema as Record<string, unknown>).$id = DEFAULT_SCHEMA_ID;
-  (schema as Record<string, unknown>).description =
+  schema.$id = DEFAULT_SCHEMA_ID;
+  schema.description =
     `Schema for declaratively managing GitHub issue labels via ${GIT_REPO}.`;
 
   // Sort keys for consistent output (matches committed schema)

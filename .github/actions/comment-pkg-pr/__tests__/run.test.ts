@@ -177,17 +177,17 @@ describe("loadOutputFile", () => {
   it("throws on invalid format (missing packages)", () => {
     const missingPackagesReader = mock(() => '{"templates": []}');
 
-    expect(() =>
-      loadOutputFile("file.json", missingPackagesReader)
-    ).toThrow("Invalid output file format: file.json");
+    expect(() => loadOutputFile("file.json", missingPackagesReader)).toThrow(
+      "Invalid output file format: file.json",
+    );
   });
 
   it("throws on invalid format (missing templates)", () => {
     const missingTemplatesReader = mock(() => '{"packages": []}');
 
-    expect(() =>
-      loadOutputFile("file.json", missingTemplatesReader)
-    ).toThrow("Invalid output file format: file.json");
+    expect(() => loadOutputFile("file.json", missingTemplatesReader)).toThrow(
+      "Invalid output file format: file.json",
+    );
   });
 
   it("throws on invalid format (not an object)", () => {
@@ -226,20 +226,22 @@ describe("getCommitSha", () => {
     expect(sha).toBe("push-sha-def456");
   });
 
-  it("throws for unsupported event types", () => {
+  it("returns undefined for unsupported event types", () => {
     mockContext.eventName = "workflow_dispatch";
     mockContext.payload = {};
 
-    expect(() => getCommitSha()).toThrow(
-      "Unsupported event type: workflow_dispatch",
-    );
+    const sha = getCommitSha();
+
+    expect(sha).toBeUndefined();
   });
 
-  it("throws for schedule event", () => {
+  it("returns undefined for schedule event", () => {
     mockContext.eventName = "schedule";
     mockContext.payload = {};
 
-    expect(() => getCommitSha()).toThrow("Unsupported event type: schedule");
+    const sha = getCommitSha();
+
+    expect(sha).toBeUndefined();
   });
 });
 
@@ -538,11 +540,16 @@ describe("run - error handling", () => {
     );
   });
 
-  it("propagates unsupported event errors", async () => {
+  it("skips commenting for unsupported event types", async () => {
     mockContext.eventName = "release";
     mockContext.payload = {};
 
-    await expect(run(mockReadFile)).rejects.toThrow("Unsupported event type");
+    const result = await run(mockReadFile);
+
+    expect(result).toEqual({ prFound: false });
+    expect(mockSetOutput).toHaveBeenCalledWith("pr-found", "false");
+    expect(mockSetOutput).toHaveBeenCalledWith("comment-id", "");
+    expect(mockSetOutput).toHaveBeenCalledWith("comment-url", "");
   });
 
   it("propagates API errors", async () => {

@@ -29,9 +29,6 @@ import { basename, dirname } from "jsr:@std/path@^1.1.3";
 // Configuration flags
 // ============================================================================
 
-/** Demo delay for spinner showcase (enable with SPINNER_DELAY=1) */
-const DEMO_DELAY = Deno.env.get("SPINNER_DELAY") === "1";
-
 /** Show spinner when reading from stdin (default: false) */
 const SPINNER_ON_STDIN = false;
 
@@ -148,7 +145,6 @@ ${bold(cyan("Options:"))}
   ${bold("-o")}, ${bold("--output")} FILE   Write output to FILE
 
 ${bold(cyan("Environment:"))}
-  ${yellow("SPINNER_DELAY")}=1     Enable 1-second demo delay
   ${yellow("NO_COLOR")}=1          Disable colored output
 
 ${bold(cyan("Key Priority Order:"))}
@@ -177,8 +173,13 @@ ${bold(cyan("Examples:"))}
  * Non-priority keys are sorted alphabetically after priority keys.
  */
 export function sortSchema(obj: JsonValue): JsonValue {
-  if (obj === null || typeof obj !== "object" || Array.isArray(obj)) {
+  if (obj === null || typeof obj !== "object") {
     return obj;
+  }
+
+  // Recurse into array elements while preserving order
+  if (Array.isArray(obj)) {
+    return obj.map((element) => sortSchema(element));
   }
 
   const entries = Object.entries(obj as JsonObject);
@@ -326,12 +327,6 @@ async function main(): Promise<void> {
   try {
     const schema = await readInput(inputPath);
     const sorted = sortSchema(schema);
-
-    // Demo delay to showcase spinner (tromgeroffel!)
-    if (DEMO_DELAY && useSpinner) {
-      await new Promise((r) => setTimeout(r, 1000));
-    }
-
     spinner?.stop();
 
     // Output
