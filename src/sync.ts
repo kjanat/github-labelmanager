@@ -124,7 +124,7 @@ export async function syncLabels(
             await manager.update(alias, {
               name: alias,
               new_name: desired.name,
-              color: desired.color,
+              color: cleanColor,
               description: desired.description,
             });
             operations.push({
