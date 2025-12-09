@@ -297,12 +297,29 @@ Deno.test("writeSummary - adds counts table", async () => {
   );
 
   const tableCall = calls.find((c) => c.method === "summary.addTable");
-  const rows = tableCall?.args[0] as unknown[][];
+  const rows = tableCall?.args[0] as string[][];
 
-  // First row is headers
-  assertEquals(rows[0].length, 5);
-  // Second row is counts
-  assertEquals(rows[1], ["2", "1", "3", "0", "0"]);
+  // First row is headers - verify expected columns exist
+  const headers = rows[0];
+  assertEquals(headers.length, 5);
+
+  // Build header index mapping for robust assertions
+  const headerIndex: Record<string, number> = {};
+  headers.forEach((h, i) => (headerIndex[h] = i));
+
+  // Verify all expected headers exist
+  const expectedHeaders = ["Created", "Updated", "Renamed", "Deleted", "Failed"];
+  for (const h of expectedHeaders) {
+    assertEquals(headerIndex[h] !== undefined, true, `Missing header: ${h}`);
+  }
+
+  // Assert counts by header name (order-independent)
+  const counts = rows[1];
+  assertEquals(counts[headerIndex["Created"]], "2");
+  assertEquals(counts[headerIndex["Updated"]], "1");
+  assertEquals(counts[headerIndex["Renamed"]], "3");
+  assertEquals(counts[headerIndex["Deleted"]], "0");
+  assertEquals(counts[headerIndex["Failed"]], "0");
 });
 
 Deno.test("writeSummary - adds raw table for < 5 operations", async () => {
