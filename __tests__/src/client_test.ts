@@ -43,3 +43,10 @@ Deno.test("formatError - handles undefined", () => {
   const result = LabelManager.formatError(undefined);
   assertEquals(result, "undefined");
 });
+
+Deno.test("formatError - formats real Error instance with status property", () => {
+  const error = new Error("boom");
+  (error as Error & { status: number }).status = 502;
+  const result = LabelManager.formatError(error);
+  assertEquals(result, "502 - boom");
+});
