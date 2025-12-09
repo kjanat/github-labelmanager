@@ -195,6 +195,7 @@ parse_args() {
         print_help
         ;;
       -t|--tag)
+        [[ -z "${2:-}" || "${2:-}" == -* ]] && error "Option $1 requires a value"
         export INPUT_TAG="$2"
         shift 2
         ;;
@@ -215,6 +216,7 @@ parse_args() {
         shift
         ;;
       -f|--version-file)
+        [[ -z "${2:-}" || "${2:-}" == -* ]] && error "Option $1 requires a value"
         export INPUT_VERSION_FILE="$2"
         shift 2
         ;;

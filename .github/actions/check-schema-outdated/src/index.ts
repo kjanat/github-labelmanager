@@ -5,7 +5,7 @@
 import { run } from "./main.ts";
 
 if (import.meta.main) {
-  run();
+  await run();
 }
 
 export { run } from "./main.ts";
