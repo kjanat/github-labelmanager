@@ -2,7 +2,7 @@
  * Tests for factory functions
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertInstanceOf } from "@std/assert";
 import {
   createGitHubClient,
   createLogger,
@@ -71,7 +71,7 @@ Deno.test("createLogger - returns ActionsLogger when in GitHub Actions", () => {
   const restore = stubEnv({ GITHUB_ACTIONS: "true" });
   try {
     const logger = createLogger();
-    assertEquals(logger instanceof ActionsLogger, true);
+    assertInstanceOf(logger, ActionsLogger);
   } finally {
     restore();
   }
@@ -113,7 +113,7 @@ Deno.test("createServices - returns ActionsLogger and ActionsGitHubClient when i
       repo: "repo",
       dryRun: false,
     });
-    assertEquals(logger instanceof ActionsLogger, true);
+    assertInstanceOf(logger, ActionsLogger);
     assertEquals(client instanceof ActionsGitHubClient, true);
   } finally {
     restore();
