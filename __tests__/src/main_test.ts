@@ -121,7 +121,7 @@ Deno.test("main - fails when config has invalid YAML", async () => {
     await main(logger);
 
     assertEquals(logger.failedMessages.length, 1);
-    assertStringIncludes(logger.failedMessages[0], "Invalid config");
+    assertStringIncludes(logger.failedMessages[0], "YAML parse error");
   } finally {
     restoreArgs();
     restoreEnv();

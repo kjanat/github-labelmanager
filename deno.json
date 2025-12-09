@@ -42,7 +42,7 @@
     "./cli": "./main.ts"
   },
   "fmt": {
-    "exclude": ["npm", ".github/**/*.ts"]
+    "exclude": ["npm", ".github/actions"]
   },
   "lint": {
     "include": ["main.ts", "src", "scripts", "__tests__"],
