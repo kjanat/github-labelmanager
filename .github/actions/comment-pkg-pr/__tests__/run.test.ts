@@ -169,7 +169,33 @@ describe("loadOutputFile", () => {
   it("throws on invalid JSON", () => {
     const invalidJsonReader = mock(() => "{ invalid json }");
 
-    expect(() => loadOutputFile("file.json", invalidJsonReader)).toThrow();
+    expect(() => loadOutputFile("file.json", invalidJsonReader)).toThrow(
+      "Failed to parse output file: file.json",
+    );
+  });
+
+  it("throws on invalid format (missing packages)", () => {
+    const missingPackagesReader = mock(() => '{"templates": []}');
+
+    expect(() =>
+      loadOutputFile("file.json", missingPackagesReader)
+    ).toThrow("Invalid output file format: file.json");
+  });
+
+  it("throws on invalid format (missing templates)", () => {
+    const missingTemplatesReader = mock(() => '{"packages": []}');
+
+    expect(() =>
+      loadOutputFile("file.json", missingTemplatesReader)
+    ).toThrow("Invalid output file format: file.json");
+  });
+
+  it("throws on invalid format (not an object)", () => {
+    const arrayReader = mock(() => "[]");
+
+    expect(() => loadOutputFile("file.json", arrayReader)).toThrow(
+      "Invalid output file format: file.json",
+    );
   });
 
   it("uses provided readFile function", () => {
