@@ -228,7 +228,9 @@ export async function loadConfig(path?: string): Promise<LabelConfig> {
       if (isMap(item)) {
         const nameNode = item.get("name", true);
         if (isScalar(nameNode) && nameNode.range) {
-          const name = nameNode.value as string;
+          const value = nameNode.value;
+          if (value == null) continue;
+          const name = typeof value === "string" ? value : String(value);
           labelLines[name] = lineCounter.linePos(nameNode.range[0]).line;
         }
       }
@@ -240,7 +242,9 @@ export async function loadConfig(path?: string): Promise<LabelConfig> {
   if (isSeq(deleteNode)) {
     for (const item of deleteNode.items) {
       if (isScalar(item) && item.range) {
-        const name = item.value as string;
+        const value = item.value;
+        if (value == null) continue;
+        const name = typeof value === "string" ? value : String(value);
         deleteLines[name] = lineCounter.linePos(item.range[0]).line;
       }
     }
