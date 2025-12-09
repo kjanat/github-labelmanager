@@ -5,23 +5,37 @@
  * @module
  */
 
-import { ConfigError, getEnv, loadConfig, printHelp } from "~/config.ts";
+import {
+  ConfigError,
+  getEnv,
+  type GetEnvOptions,
+  loadConfig,
+  printHelp,
+} from "~/config.ts";
 import { LabelManager } from "~/client.ts";
 import { syncLabels } from "~/sync.ts";
 import { createLogger } from "~/factory.ts";
 import type { ILogger } from "~/adapters/logger/mod.ts";
 
+/** Options for main() to enable testing without global state mutation */
+export interface MainOptions {
+  /** Logger instance (uses environment-appropriate logger if not provided) */
+  logger?: ILogger;
+  /** Options for getEnv (allows explicit args/env for testing) */
+  envOptions?: GetEnvOptions;
+}
+
 /**
  * Main entry point for the CLI
  *
- * @param logger - Optional logger for testing (uses environment-appropriate logger if not provided)
+ * @param options - Optional configuration for testing
  */
-export async function main(logger?: ILogger): Promise<void> {
+export async function main(options?: MainOptions): Promise<void> {
   // Create logger first so we can report errors
-  const log = logger ?? createLogger();
+  const log = options?.logger ?? createLogger();
 
   try {
-    const env = getEnv();
+    const env = getEnv(options?.envOptions);
     const config = await loadConfig(env.configPath);
     const manager = new LabelManager(env, { logger: log });
     const result = await syncLabels(manager, config);

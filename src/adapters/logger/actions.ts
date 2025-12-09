@@ -236,7 +236,7 @@ export class ActionsLogger implements ILogger {
           action = "✏️ Updated";
           break;
         case "rename":
-          action = `🔄 Renamed from "${op.from}"`;
+          action = op.from ? `🔄 Renamed from "${op.from}"` : "🔄 Renamed";
           break;
         case "delete":
           action = "🗑️ Deleted";

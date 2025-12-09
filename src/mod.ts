@@ -55,6 +55,7 @@ export {
   loadConfig,
   printHelp,
 } from "./config.ts";
+export type { GetEnvOptions } from "./config.ts";
 
 // Client (high-level API with auto-detection)
 export { LabelManager } from "./client.ts";

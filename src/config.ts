@@ -109,33 +109,45 @@ function getPositionalArgs(args: string[]): string[] {
   return positional;
 }
 
+/** Options for getEnv to allow explicit args/env for testing */
+export interface GetEnvOptions {
+  /** CLI arguments (defaults to Deno.args) */
+  args?: string[];
+  /** Environment variable getter (defaults to Deno.env.get) */
+  envGet?: (key: string) => string | undefined;
+}
+
 /**
  * Parse command line arguments and environment variables
+ * @param options - Optional explicit args/env for testing without global mutation
  * @throws {ConfigError} If required configuration is missing or invalid
  */
-export function getEnv(): EnvConfig {
+export function getEnv(options?: GetEnvOptions): EnvConfig {
+  const args = options?.args ?? Deno.args;
+  const envGet = options?.envGet ?? ((k: string) => Deno.env.get(k));
+
   // Handle help flag (exit is acceptable here)
-  if (Deno.args.includes("--help") || Deno.args.includes("-h")) {
+  if (args.includes("--help") || args.includes("-h")) {
     printHelp();
     Deno.exit(0);
   }
 
   // Token is required
-  const token = Deno.env.get("GITHUB_TOKEN");
+  const token = envGet("GITHUB_TOKEN");
   if (!token) {
     throw new ConfigError("GITHUB_TOKEN is required");
   }
 
   // Config path: CLI flag > env > default
   const configPath = parseFlagValue(
-    Deno.args,
+    args,
     "--config",
-    Deno.env.get("CONFIG_PATH") ?? DEFAULT_CONFIG_PATH,
+    envGet("CONFIG_PATH") ?? DEFAULT_CONFIG_PATH,
   );
 
   // Get positional arguments
-  const positional = getPositionalArgs(Deno.args);
-  const repoArg = positional[0] ?? Deno.env.get("REPO");
+  const positional = getPositionalArgs(args);
+  const repoArg = positional[0] ?? envGet("REPO");
 
   // Validate repo
   if (!repoArg) {
@@ -152,8 +164,7 @@ export function getEnv(): EnvConfig {
   const [owner, repo] = parts;
 
   // Dry run mode
-  const dryRun = Deno.env.get("DRY_RUN") === "true" ||
-    Deno.args.includes("--dry-run");
+  const dryRun = envGet("DRY_RUN") === "true" || args.includes("--dry-run");
 
   return {
     token,
