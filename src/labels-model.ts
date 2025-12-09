@@ -112,8 +112,12 @@ export const LabelColorUtils = {
     return normalized.toLowerCase() as LabelColor;
   },
 
-  /** Returns true if the value is a valid hex color (3 or 6 hex chars) */
-  is(value: string): value is LabelColor {
+  /**
+   * Returns true if the value can be parsed as a valid hex color.
+   * Note: Returns boolean, not a type guard, because the input may not be
+   * in canonical form. Use parse() to get a properly branded LabelColor.
+   */
+  is(value: string): boolean {
     let normalized = value.replace(/^#/, "");
     if (normalized.length === 3) {
       normalized = normalized.split("").map((c) => c + c).join("");

@@ -61,7 +61,7 @@ Deno.test("createLogger - returns ConsoleLogger when not in GitHub Actions", () 
   const restore = stubEnv({ GITHUB_ACTIONS: undefined });
   try {
     const logger = createLogger();
-    assertEquals(logger instanceof ConsoleLogger, true);
+    assertInstanceOf(logger, ConsoleLogger);
   } finally {
     restore();
   }
@@ -94,7 +94,7 @@ Deno.test("createGitHubClient - returns ActionsGitHubClient when in GitHub Actio
       { token: "test", owner: "owner", repo: "repo", dryRun: false },
       logger,
     );
-    assertEquals(client instanceof ActionsGitHubClient, true);
+    assertInstanceOf(client, ActionsGitHubClient);
   } finally {
     restore();
   }
@@ -114,7 +114,7 @@ Deno.test("createServices - returns ActionsLogger and ActionsGitHubClient when i
       dryRun: false,
     });
     assertInstanceOf(logger, ActionsLogger);
-    assertEquals(client instanceof ActionsGitHubClient, true);
+    assertInstanceOf(client, ActionsGitHubClient);
   } finally {
     restore();
   }
