@@ -15,7 +15,7 @@ import type { Octokit } from "~/types.ts";
 setupMocks();
 
 // Single typed view of the global mock for functions that expect Octokit
-const octokit = octokit;
+const octokit = mockOctokit as unknown as Octokit;
 
 // Import after mocking
 const {
