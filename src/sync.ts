@@ -136,7 +136,7 @@ export async function syncLabels(
             });
             summary.renamed++;
 
-            // Update local map
+            // Update local map - rename already updated color/description
             const movedLabel = existingMap.get(alias)!;
             existingMap.delete(alias);
             existingMap.set(desired.name, {
@@ -145,7 +145,8 @@ export async function syncLabels(
               color: cleanColor,
               description: desired.description ?? null,
             });
-            matchedName = desired.name;
+            // Skip update check - rename already applied all changes
+            skipLabel = true;
           } catch (err) {
             logger.error(
               `Rename failed: ${LabelManager.formatError(err)}`,
