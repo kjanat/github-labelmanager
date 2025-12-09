@@ -1,13 +1,24 @@
 /**
  * Tests for config module
+ *
+ * Note: getEnv tests use explicit args/envGet options to avoid global state
+ * mutation, allowing safe parallel test execution.
  */
 
-import { assertEquals, assertExists } from "@std/assert";
+import {
+  assertEquals,
+  assertExists,
+  assertRejects,
+  assertThrows,
+} from "@std/assert";
 import { parse } from "yaml";
-import { Ajv } from "ajv";
-import { isLabelConfig, loadConfig } from "~/config.ts";
+import { Ajv, type ValidateFunction } from "ajv";
+import { ConfigError, getEnv, isLabelConfig, loadConfig } from "~/config.ts";
+import { stubEnv } from "~/testing.ts";
 
-// --- isLabelConfig tests ---
+// =============================================================================
+// isLabelConfig tests
+// =============================================================================
 
 Deno.test("isLabelConfig - validates correct minimal schema", () => {
   const valid = {
@@ -143,11 +154,20 @@ Deno.test("isLabelConfig - accepts empty delete array", () => {
   assertEquals(isLabelConfig(valid), true);
 });
 
-// --- JSON Schema validation tests ---
+// =============================================================================
+// JSON Schema validation tests
+// =============================================================================
 
+/** Shared schema loading and validator compilation */
 async function loadSchema(): Promise<Record<string, unknown>> {
   const content = await Deno.readTextFile(".github/labels.schema.json");
   return JSON.parse(content);
+}
+
+async function createSchemaValidator(): Promise<ValidateFunction> {
+  const schema = await loadSchema();
+  const ajv = new Ajv();
+  return ajv.compile(schema);
 }
 
 async function loadLabelsYml(): Promise<unknown> {
@@ -156,25 +176,18 @@ async function loadLabelsYml(): Promise<unknown> {
 }
 
 Deno.test("schema - labels.yml validates against generated schema", async () => {
-  const schema = await loadSchema();
+  const validate = await createSchemaValidator();
   const config = await loadLabelsYml();
 
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
   const valid = validate(config);
-
   if (!valid) {
     console.error("Validation errors:", validate.errors);
   }
   assertEquals(valid, true);
 });
 
-Deno.test("schema - valid config passes schema validation", () => {
-  const schema = JSON.parse(
-    Deno.readTextFileSync(".github/labels.schema.json"),
-  );
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
+Deno.test("schema - valid config passes schema validation", async () => {
+  const validate = await createSchemaValidator();
 
   const validConfig = {
     labels: [
@@ -192,12 +205,8 @@ Deno.test("schema - valid config passes schema validation", () => {
   assertEquals(validate(validConfig), true);
 });
 
-Deno.test("schema - rejects invalid color format", () => {
-  const schema = JSON.parse(
-    Deno.readTextFileSync(".github/labels.schema.json"),
-  );
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
+Deno.test("schema - rejects invalid color format", async () => {
+  const validate = await createSchemaValidator();
 
   const invalidConfig = {
     labels: [
@@ -210,12 +219,8 @@ Deno.test("schema - rejects invalid color format", () => {
   assertEquals(validate.errors[0].keyword, "pattern");
 });
 
-Deno.test("schema - accepts 3-character hex color", () => {
-  const schema = JSON.parse(
-    Deno.readTextFileSync(".github/labels.schema.json"),
-  );
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
+Deno.test("schema - accepts 3-character hex color", async () => {
+  const validate = await createSchemaValidator();
 
   const config = {
     labels: [{ name: "bug", color: "#f00", description: "Bug" }],
@@ -224,12 +229,8 @@ Deno.test("schema - accepts 3-character hex color", () => {
   assertEquals(validate(config), true);
 });
 
-Deno.test("schema - rejects missing required fields", () => {
-  const schema = JSON.parse(
-    Deno.readTextFileSync(".github/labels.schema.json"),
-  );
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
+Deno.test("schema - rejects missing required fields", async () => {
+  const validate = await createSchemaValidator();
 
   // Missing name
   assertEquals(
@@ -241,12 +242,8 @@ Deno.test("schema - rejects missing required fields", () => {
   assertEquals(validate({ delete: ["foo"] }), false);
 });
 
-Deno.test("schema - accepts optional fields (color, description)", () => {
-  const schema = JSON.parse(
-    Deno.readTextFileSync(".github/labels.schema.json"),
-  );
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
+Deno.test("schema - accepts optional fields (color, description)", async () => {
+  const validate = await createSchemaValidator();
 
   // Missing color
   assertEquals(
@@ -267,12 +264,8 @@ Deno.test("schema - accepts optional fields (color, description)", () => {
   );
 });
 
-Deno.test("schema - rejects additional properties", () => {
-  const schema = JSON.parse(
-    Deno.readTextFileSync(".github/labels.schema.json"),
-  );
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
+Deno.test("schema - rejects additional properties", async () => {
+  const validate = await createSchemaValidator();
 
   const invalidConfig = {
     labels: [{ name: "bug", color: "ff0000", description: "Bug" }],
@@ -282,12 +275,8 @@ Deno.test("schema - rejects additional properties", () => {
   assertEquals(validate(invalidConfig), false);
 });
 
-Deno.test("schema - accepts valid hex colors", () => {
-  const schema = JSON.parse(
-    Deno.readTextFileSync(".github/labels.schema.json"),
-  );
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
+Deno.test("schema - accepts valid hex colors", async () => {
+  const validate = await createSchemaValidator();
 
   const testCases = [
     "ff0000", // without #
@@ -308,12 +297,8 @@ Deno.test("schema - accepts valid hex colors", () => {
   }
 });
 
-Deno.test("schema - rejects invalid hex colors", () => {
-  const schema = JSON.parse(
-    Deno.readTextFileSync(".github/labels.schema.json"),
-  );
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
+Deno.test("schema - rejects invalid hex colors", async () => {
+  const validate = await createSchemaValidator();
 
   const testCases = [
     "gggggg", // invalid hex chars
@@ -331,14 +316,12 @@ Deno.test("schema - rejects invalid hex colors", () => {
   }
 });
 
-// --- Type guard vs Schema consistency tests ---
+// =============================================================================
+// Type guard vs Schema consistency tests
+// =============================================================================
 
-Deno.test("consistency - isLabelConfig and schema agree on valid configs", () => {
-  const schema = JSON.parse(
-    Deno.readTextFileSync(".github/labels.schema.json"),
-  );
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
+Deno.test("consistency - isLabelConfig and schema agree on valid configs", async () => {
+  const validate = await createSchemaValidator();
 
   const validConfigs = [
     { labels: [] },
@@ -363,12 +346,8 @@ Deno.test("consistency - isLabelConfig and schema agree on valid configs", () =>
   }
 });
 
-Deno.test("consistency - isLabelConfig and schema agree on invalid structure", () => {
-  const schema = JSON.parse(
-    Deno.readTextFileSync(".github/labels.schema.json"),
-  );
-  const ajv = new Ajv();
-  const validate = ajv.compile(schema);
+Deno.test("consistency - isLabelConfig and schema agree on invalid structure", async () => {
+  const validate = await createSchemaValidator();
 
   const invalidConfigs = [
     {}, // missing labels
@@ -388,7 +367,9 @@ Deno.test("consistency - isLabelConfig and schema agree on invalid structure", (
   }
 });
 
-// --- Line number extraction tests ---
+// =============================================================================
+// Line number extraction tests
+// =============================================================================
 
 Deno.test("loadConfig - extracts line numbers for labels", async () => {
   // Create a temp file with known line numbers
@@ -462,281 +443,223 @@ Deno.test("loadConfig - handles config without delete section", async () => {
   }
 });
 
-// --- getEnv tests ---
+// =============================================================================
+// getEnv tests - using explicit options for parallel-safe execution
+// =============================================================================
 
-import { assertThrows } from "@std/assert";
-import { ConfigError, getEnv } from "~/config.ts";
-import { stubArgs, stubEnv } from "~/testing.ts";
+/** Helper to create envGet function from a record */
+function createEnvGet(
+  env: Record<string, string | undefined>,
+): (key: string) => string | undefined {
+  return (key: string) => env[key];
+}
 
 Deno.test("getEnv - requires GITHUB_TOKEN", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: undefined });
-  const restoreArgs = stubArgs(["owner/repo"]);
-  try {
-    assertThrows(
-      () => getEnv(),
-      ConfigError,
-      "GITHUB_TOKEN is required",
-    );
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  assertThrows(
+    () =>
+      getEnv({
+        args: ["owner/repo"],
+        envGet: createEnvGet({ GITHUB_TOKEN: undefined }),
+      }),
+    ConfigError,
+    "GITHUB_TOKEN is required",
+  );
 });
 
 Deno.test("getEnv - requires repository argument", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "token", REPO: undefined });
-  const restoreArgs = stubArgs([]);
-  try {
-    assertThrows(
-      () => getEnv(),
-      ConfigError,
-      "Repository required",
-    );
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  assertThrows(
+    () =>
+      getEnv({
+        args: [],
+        envGet: createEnvGet({ GITHUB_TOKEN: "token", REPO: undefined }),
+      }),
+    ConfigError,
+    "Repository required",
+  );
 });
 
 Deno.test("getEnv - rejects invalid repository format", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "token" });
-  const restoreArgs = stubArgs(["invalid-repo"]);
-  try {
-    assertThrows(
-      () => getEnv(),
-      ConfigError,
-      "Invalid repository format",
-    );
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  assertThrows(
+    () =>
+      getEnv({
+        args: ["invalid-repo"],
+        envGet: createEnvGet({ GITHUB_TOKEN: "token" }),
+      }),
+    ConfigError,
+    "Invalid repository format",
+  );
 });
 
 Deno.test("getEnv - rejects repo with empty owner", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "token" });
-  const restoreArgs = stubArgs(["/repo"]);
-  try {
-    assertThrows(
-      () => getEnv(),
-      ConfigError,
-      "Invalid repository format",
-    );
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  assertThrows(
+    () =>
+      getEnv({
+        args: ["/repo"],
+        envGet: createEnvGet({ GITHUB_TOKEN: "token" }),
+      }),
+    ConfigError,
+    "Invalid repository format",
+  );
 });
 
 Deno.test("getEnv - rejects repo with empty name", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "token" });
-  const restoreArgs = stubArgs(["owner/"]);
-  try {
-    assertThrows(
-      () => getEnv(),
-      ConfigError,
-      "Invalid repository format",
-    );
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  assertThrows(
+    () =>
+      getEnv({
+        args: ["owner/"],
+        envGet: createEnvGet({ GITHUB_TOKEN: "token" }),
+      }),
+    ConfigError,
+    "Invalid repository format",
+  );
 });
 
 Deno.test("getEnv - parses valid owner/repo from args", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "my-token" });
-  const restoreArgs = stubArgs(["my-org/my-repo"]);
-  try {
-    const env = getEnv();
-    assertEquals(env.owner, "my-org");
-    assertEquals(env.repo, "my-repo");
-    assertEquals(env.token, "my-token");
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  const env = getEnv({
+    args: ["my-org/my-repo"],
+    envGet: createEnvGet({ GITHUB_TOKEN: "my-token" }),
+  });
+
+  assertEquals(env.owner, "my-org");
+  assertEquals(env.repo, "my-repo");
+  assertEquals(env.token, "my-token");
 });
 
 Deno.test("getEnv - falls back to REPO env var", () => {
-  const restoreEnv = stubEnv({
-    GITHUB_TOKEN: "token",
-    REPO: "env-owner/env-repo",
+  const env = getEnv({
+    args: [],
+    envGet: createEnvGet({
+      GITHUB_TOKEN: "token",
+      REPO: "env-owner/env-repo",
+    }),
   });
-  const restoreArgs = stubArgs([]);
-  try {
-    const env = getEnv();
-    assertEquals(env.owner, "env-owner");
-    assertEquals(env.repo, "env-repo");
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+
+  assertEquals(env.owner, "env-owner");
+  assertEquals(env.repo, "env-repo");
 });
 
 Deno.test("getEnv - CLI arg takes precedence over REPO env", () => {
-  const restoreEnv = stubEnv({
-    GITHUB_TOKEN: "token",
-    REPO: "env-owner/env-repo",
+  const env = getEnv({
+    args: ["cli-owner/cli-repo"],
+    envGet: createEnvGet({
+      GITHUB_TOKEN: "token",
+      REPO: "env-owner/env-repo",
+    }),
   });
-  const restoreArgs = stubArgs(["cli-owner/cli-repo"]);
-  try {
-    const env = getEnv();
-    assertEquals(env.owner, "cli-owner");
-    assertEquals(env.repo, "cli-repo");
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+
+  assertEquals(env.owner, "cli-owner");
+  assertEquals(env.repo, "cli-repo");
 });
 
 // --- dryRun flag tests ---
 
 Deno.test("getEnv - dryRun is false by default", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "token", DRY_RUN: undefined });
-  const restoreArgs = stubArgs(["owner/repo"]);
-  try {
-    const env = getEnv();
-    assertEquals(env.dryRun, false);
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  const env = getEnv({
+    args: ["owner/repo"],
+    envGet: createEnvGet({ GITHUB_TOKEN: "token", DRY_RUN: undefined }),
+  });
+
+  assertEquals(env.dryRun, false);
 });
 
 Deno.test("getEnv - dryRun from --dry-run flag", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "token" });
-  const restoreArgs = stubArgs(["owner/repo", "--dry-run"]);
-  try {
-    const env = getEnv();
-    assertEquals(env.dryRun, true);
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  const env = getEnv({
+    args: ["owner/repo", "--dry-run"],
+    envGet: createEnvGet({ GITHUB_TOKEN: "token" }),
+  });
+
+  assertEquals(env.dryRun, true);
 });
 
 Deno.test("getEnv - dryRun from DRY_RUN env var", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "token", DRY_RUN: "true" });
-  const restoreArgs = stubArgs(["owner/repo"]);
-  try {
-    const env = getEnv();
-    assertEquals(env.dryRun, true);
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  const env = getEnv({
+    args: ["owner/repo"],
+    envGet: createEnvGet({ GITHUB_TOKEN: "token", DRY_RUN: "true" }),
+  });
+
+  assertEquals(env.dryRun, true);
 });
 
 Deno.test("getEnv - DRY_RUN=false is not dry run", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "token", DRY_RUN: "false" });
-  const restoreArgs = stubArgs(["owner/repo"]);
-  try {
-    const env = getEnv();
-    assertEquals(env.dryRun, false);
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  const env = getEnv({
+    args: ["owner/repo"],
+    envGet: createEnvGet({ GITHUB_TOKEN: "token", DRY_RUN: "false" }),
+  });
+
+  assertEquals(env.dryRun, false);
 });
 
 // --- config path tests ---
 
 Deno.test("getEnv - uses default config path", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "token", CONFIG_PATH: undefined });
-  const restoreArgs = stubArgs(["owner/repo"]);
-  try {
-    const env = getEnv();
-    assertEquals(env.configPath, ".github/labels.yml");
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  const env = getEnv({
+    args: ["owner/repo"],
+    envGet: createEnvGet({ GITHUB_TOKEN: "token", CONFIG_PATH: undefined }),
+  });
+
+  assertEquals(env.configPath, ".github/labels.yml");
 });
 
 Deno.test("getEnv - uses CONFIG_PATH env var", () => {
-  const restoreEnv = stubEnv({
-    GITHUB_TOKEN: "token",
-    CONFIG_PATH: "custom/path.yml",
+  const env = getEnv({
+    args: ["owner/repo"],
+    envGet: createEnvGet({
+      GITHUB_TOKEN: "token",
+      CONFIG_PATH: "custom/path.yml",
+    }),
   });
-  const restoreArgs = stubArgs(["owner/repo"]);
-  try {
-    const env = getEnv();
-    assertEquals(env.configPath, "custom/path.yml");
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+
+  assertEquals(env.configPath, "custom/path.yml");
 });
 
 Deno.test("getEnv - --config flag takes precedence over env", () => {
-  const restoreEnv = stubEnv({
-    GITHUB_TOKEN: "token",
-    CONFIG_PATH: "env/path.yml",
+  const env = getEnv({
+    args: ["owner/repo", "--config", "cli/path.yml"],
+    envGet: createEnvGet({
+      GITHUB_TOKEN: "token",
+      CONFIG_PATH: "env/path.yml",
+    }),
   });
-  const restoreArgs = stubArgs(["owner/repo", "--config", "cli/path.yml"]);
-  try {
-    const env = getEnv();
-    assertEquals(env.configPath, "cli/path.yml");
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+
+  assertEquals(env.configPath, "cli/path.yml");
 });
 
 Deno.test("getEnv - --config=value syntax works", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "token" });
-  const restoreArgs = stubArgs(["owner/repo", "--config=equals/path.yml"]);
-  try {
-    const env = getEnv();
-    assertEquals(env.configPath, "equals/path.yml");
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  const env = getEnv({
+    args: ["owner/repo", "--config=equals/path.yml"],
+    envGet: createEnvGet({ GITHUB_TOKEN: "token" }),
+  });
+
+  assertEquals(env.configPath, "equals/path.yml");
 });
 
 // --- Positional argument extraction tests ---
 
 Deno.test("getEnv - ignores flags in positional args", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "token" });
-  const restoreArgs = stubArgs([
-    "--dry-run",
-    "owner/repo",
-    "--config",
-    "path.yml",
-  ]);
-  try {
-    const env = getEnv();
-    assertEquals(env.owner, "owner");
-    assertEquals(env.repo, "repo");
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  const env = getEnv({
+    args: ["--dry-run", "owner/repo", "--config", "path.yml"],
+    envGet: createEnvGet({ GITHUB_TOKEN: "token" }),
+  });
+
+  assertEquals(env.owner, "owner");
+  assertEquals(env.repo, "repo");
 });
 
 Deno.test("getEnv - handles --config=value in middle of args", () => {
-  const restoreEnv = stubEnv({ GITHUB_TOKEN: "token" });
-  const restoreArgs = stubArgs([
-    "--config=custom.yml",
-    "owner/repo",
-    "--dry-run",
-  ]);
-  try {
-    const env = getEnv();
-    assertEquals(env.owner, "owner");
-    assertEquals(env.repo, "repo");
-    assertEquals(env.configPath, "custom.yml");
-    assertEquals(env.dryRun, true);
-  } finally {
-    restoreArgs();
-    restoreEnv();
-  }
+  const env = getEnv({
+    args: ["--config=custom.yml", "owner/repo", "--dry-run"],
+    envGet: createEnvGet({ GITHUB_TOKEN: "token" }),
+  });
+
+  assertEquals(env.owner, "owner");
+  assertEquals(env.repo, "repo");
+  assertEquals(env.configPath, "custom.yml");
+  assertEquals(env.dryRun, true);
 });
 
-// --- loadConfig error handling tests ---
-
-import { assertRejects } from "@std/assert";
+// =============================================================================
+// loadConfig error handling tests
+// =============================================================================
 
 Deno.test("loadConfig - throws on file not found", async () => {
   await assertRejects(
