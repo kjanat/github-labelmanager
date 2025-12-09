@@ -15,7 +15,7 @@ inputs:
     required: false
     default: "latest"
   update-npm:
-    description: Update npm to latest (requires install-node: true)
+    description: "Update npm to latest (requires install-node: true)"
     required: false
     default: "false"
   node-registry-url:
