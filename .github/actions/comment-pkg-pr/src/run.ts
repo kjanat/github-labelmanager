@@ -58,10 +58,14 @@ export function loadOutputFile(
   return parsed as OutputMetadata;
 }
 
+/** Supported GitHub event types for this action */
+const SUPPORTED_EVENTS = ["pull_request", "push"] as const;
+
 /**
  * Get the commit SHA based on event type
+ * @returns The commit SHA, or undefined if the event type is not supported
  */
-export function getCommitSha(): string {
+export function getCommitSha(): string | undefined {
   if (context.eventName === "pull_request") {
     const payload = context.payload as PullRequestEvent;
     return payload.pull_request.head.sha;
@@ -70,7 +74,11 @@ export function getCommitSha(): string {
     const payload = context.payload as PushEvent;
     return payload.after;
   }
-  throw new Error(`Unsupported event type: ${context.eventName}`);
+  core.warning(
+    `Unsupported event type: ${context.eventName}. ` +
+      `Supported events: ${SUPPORTED_EVENTS.join(", ")}`,
+  );
+  return undefined;
 }
 
 /**
@@ -100,6 +108,14 @@ export async function run(
 
   // Get commit info
   const sha = getCommitSha();
+  if (!sha) {
+    core.info("Skipping comment - no commit SHA available for this event type");
+    core.setOutput("pr-found", "false");
+    core.setOutput("comment-id", "");
+    core.setOutput("comment-url", "");
+    return { prFound: false };
+  }
+
   const commitUrl = buildCommitUrl(sha);
   core.info(`Commit: ${sha}`);
 
