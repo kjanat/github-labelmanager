@@ -18,10 +18,6 @@ inputs:
     description: "Update npm to latest (requires install-node: true)"
     required: false
     default: "false"
-  node-registry-url:
-    description: Registry URL for Node.js
-    required: false
-    default: "https://registry.npmjs.org"
   install-bun:
     description: Install Bun
     required: false
@@ -63,7 +59,6 @@ runs:
       uses: actions/setup-node@v6
       with:
         node-version: ${{ inputs.node-version }}
-        registry-url: ${{ inputs.node-registry-url }}
 
     - name: Setup Bun
       id: setup-bun
