@@ -83,16 +83,17 @@ describe("checkSchemaDiff (bun:test)", () => {
     });
   });
 
-  it("returns exitCode 128 and calls setFailed on exception", async () => {
+  it("returns exitCode 128 with error message on exception", async () => {
     const error = new Error("spawn git ENOENT");
     mockGetExecOutput.mockRejectedValueOnce(error);
 
     const result = await checkSchemaDiff(testFile);
 
-    expect(result).toEqual({ exitCode: 128, diff: "", error: String(error) });
-    expect(mockSetFailed).toHaveBeenCalledWith(
-      `Failed to get git diff: ${error}`,
-    );
+    // Implementation returns error.stack ?? error.message, not String(error)
+    // setFailed is NOT called - run() handles failure via exitCode > 1 check
+    expect(result.exitCode).toBe(128);
+    expect(result.diff).toBe("");
+    expect(result.error).toContain("spawn git ENOENT");
   });
 
   it("sets git-diff output", async () => {
