@@ -77,8 +77,8 @@ jobs:
       - name: Publish GitHub Release
         run: |
           # Publish existing draft from release-drafter, or create new release as fallback
-          gh release edit "${TAG}" --repo "${REPO}" --draft=false "${PRERELEASE}" 2>/dev/null \
-          || gh release create "${TAG}" --repo "${REPO}" --generate-notes "${PRERELEASE}"
+          gh release edit "${TAG}" --repo "${REPO}" --draft=false ${PRERELEASE} 2>/dev/null \
+          || gh release create "${TAG}" --repo "${REPO}" --generate-notes ${PRERELEASE}
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
