@@ -75,6 +75,10 @@ export { ActionsGitHubClient, OctokitClient } from "./adapters/client/mod.ts";
 // Sync
 export { syncLabels } from "./sync.ts";
 
+// CLI entry point
+export { main } from "$/main.ts";
+export type { MainOptions } from "$/main.ts";
+
 // Test utilities (for consumers writing tests)
 export { createTestEnv, MockGitHubClient, NullLogger } from "./testing.ts";
 export type { ApiCall, MockGitHubClientOptions } from "./testing.ts";
