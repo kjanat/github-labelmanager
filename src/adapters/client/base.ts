@@ -7,6 +7,7 @@ import type { ILogger } from "~/adapters/logger/mod.ts";
 import type {
   GitHubClientConfig,
   GitHubLabel,
+  GitHubLabelSchema,
   IGitHubClient,
   LabelOptions,
   OctokitLike,
@@ -128,7 +129,7 @@ export abstract class BaseGitHubClient implements IGitHubClient {
   /**
    * Map Octokit label response to GitHubLabel
    */
-  protected mapLabelResponse(data: GitHubLabel): GitHubLabel {
+  protected mapLabelResponse(data: GitHubLabelSchema): GitHubLabel {
     return {
       name: data.name,
       color: data.color,
