@@ -9,6 +9,7 @@ import {
   setupMocks,
   type TestIssueComment,
 } from "tests/mocks.ts";
+import type { Octokit } from "~/types.ts";
 
 // Setup mocks before importing source
 setupMocks();
@@ -67,7 +68,7 @@ describe("findBotComment", () => {
     });
 
     const result = await findBotComment(
-      mockOctokit as never,
+      mockOctokit as unknown as Octokit,
       ctx,
       1,
       identifier,
@@ -82,7 +83,7 @@ describe("findBotComment", () => {
     });
 
     const result = await findBotComment(
-      mockOctokit as never,
+      mockOctokit as unknown as Octokit,
       ctx,
       1,
       identifier,
@@ -95,7 +96,7 @@ describe("findBotComment", () => {
     mockOctokit.rest.issues.listComments.mockResolvedValueOnce({ data: [] });
 
     const result = await findBotComment(
-      mockOctokit as never,
+      mockOctokit as unknown as Octokit,
       ctx,
       1,
       identifier,
@@ -110,7 +111,7 @@ describe("findBotComment", () => {
     });
 
     const result = await findBotComment(
-      mockOctokit as never,
+      mockOctokit as unknown as Octokit,
       ctx,
       1,
       identifier,
@@ -122,7 +123,7 @@ describe("findBotComment", () => {
   it("calls listComments with correct parameters", async () => {
     mockOctokit.rest.issues.listComments.mockResolvedValueOnce({ data: [] });
 
-    await findBotComment(mockOctokit as never, ctx, 42, identifier);
+    await findBotComment(mockOctokit as unknown as Octokit, ctx, 42, identifier);
 
     expect(mockOctokit.rest.issues.listComments).toHaveBeenCalledWith({
       owner: "test-owner",
@@ -149,7 +150,7 @@ describe("createComment", () => {
     });
 
     const result = await createComment(
-      mockOctokit as never,
+      mockOctokit as unknown as Octokit,
       ctx,
       1,
       commentBody,
@@ -159,7 +160,7 @@ describe("createComment", () => {
   });
 
   it("calls createComment with correct parameters", async () => {
-    await createComment(mockOctokit as never, ctx, 42, commentBody);
+    await createComment(mockOctokit as unknown as Octokit, ctx, 42, commentBody);
 
     expect(mockOctokit.rest.issues.createComment).toHaveBeenCalledWith({
       owner: "test-owner",
@@ -187,7 +188,7 @@ describe("updateComment", () => {
     });
 
     const result = await updateComment(
-      mockOctokit as never,
+      mockOctokit as unknown as Octokit,
       ctx,
       123,
       commentBody,
@@ -200,7 +201,7 @@ describe("updateComment", () => {
   });
 
   it("calls updateComment with correct parameters", async () => {
-    await updateComment(mockOctokit as never, ctx, 123, commentBody);
+    await updateComment(mockOctokit as unknown as Octokit, ctx, 123, commentBody);
 
     expect(mockOctokit.rest.issues.updateComment).toHaveBeenCalledWith({
       owner: "test-owner",
@@ -229,7 +230,7 @@ describe("upsertComment", () => {
     });
 
     const result = await upsertComment(
-      mockOctokit as never,
+      mockOctokit as unknown as Octokit,
       ctx,
       1,
       commentBody,
@@ -256,7 +257,7 @@ describe("upsertComment", () => {
     });
 
     const result = await upsertComment(
-      mockOctokit as never,
+      mockOctokit as unknown as Octokit,
       ctx,
       1,
       commentBody,
@@ -276,7 +277,7 @@ describe("upsertComment", () => {
       data: existingComment,
     });
 
-    await upsertComment(mockOctokit as never, ctx, 1, commentBody, identifier);
+    await upsertComment(mockOctokit as unknown as Octokit, ctx, 1, commentBody, identifier);
 
     expect(mockOctokit.rest.issues.updateComment).toHaveBeenCalledWith(
       expect.objectContaining({ comment_id: 123 }),
@@ -295,7 +296,7 @@ describe("findPrForPush", () => {
     });
 
     const result = await findPrForPush(
-      mockOctokit as never,
+      mockOctokit as unknown as Octokit,
       ctx,
       "refs/heads/feature/test",
     );
@@ -307,7 +308,7 @@ describe("findPrForPush", () => {
     mockOctokit.rest.pulls.list.mockResolvedValueOnce({ data: [] });
 
     const result = await findPrForPush(
-      mockOctokit as never,
+      mockOctokit as unknown as Octokit,
       ctx,
       "refs/heads/feature/test",
     );
@@ -321,7 +322,7 @@ describe("findPrForPush", () => {
     });
 
     const result = await findPrForPush(
-      mockOctokit as never,
+      mockOctokit as unknown as Octokit,
       ctx,
       "refs/heads/feature/test",
     );
@@ -332,7 +333,7 @@ describe("findPrForPush", () => {
   it("strips refs/heads/ prefix from branch", async () => {
     mockOctokit.rest.pulls.list.mockResolvedValueOnce({ data: [] });
 
-    await findPrForPush(mockOctokit as never, ctx, "refs/heads/feature/test");
+    await findPrForPush(mockOctokit as unknown as Octokit, ctx, "refs/heads/feature/test");
 
     expect(mockOctokit.rest.pulls.list).toHaveBeenCalledWith({
       owner: "test-owner",
@@ -346,7 +347,7 @@ describe("findPrForPush", () => {
     mockOctokit.rest.pulls.list.mockResolvedValueOnce({ data: [] });
 
     await findPrForPush(
-      mockOctokit as never,
+      mockOctokit as unknown as Octokit,
       ctx,
       "refs/heads/feature/nested/branch",
     );
@@ -359,7 +360,7 @@ describe("findPrForPush", () => {
   it("handles simple branch ref", async () => {
     mockOctokit.rest.pulls.list.mockResolvedValueOnce({ data: [] });
 
-    await findPrForPush(mockOctokit as never, ctx, "refs/heads/main");
+    await findPrForPush(mockOctokit as unknown as Octokit, ctx, "refs/heads/main");
 
     expect(mockOctokit.rest.pulls.list).toHaveBeenCalledWith(
       expect.objectContaining({ head: "test-owner:main" }),
