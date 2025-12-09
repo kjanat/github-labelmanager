@@ -44,9 +44,61 @@
     "exclude": ["npm", ".github/**/*.ts"]
   },
   "lint": {
-    "include": ["main.ts", "src", "scripts"],
+    "include": ["main.ts", "src", "scripts", "__tests__"],
     "exclude": ["npm"],
     "rules": { "exclude": ["no-import-prefix"] }
+  },
+  "test": {
+    "include": ["__tests__"],
+    "exclude": ["npm", ".github"],
+    "permissions": {
+      "read": [
+        "./.github",
+        "./src",
+        "./scripts",
+        "./__tests__",
+        "/tmp",
+        "./nonexistent.yml",
+        "./nonexistent"
+      ],
+      "write": ["/tmp"],
+      "env": [
+        "DEBUG",
+        "GITHUB_TOKEN",
+        "GITHUB_ACTIONS",
+        "CONFIG_PATH",
+        "DRY_RUN",
+        "REPO",
+        "NO_SPINNER_DELAY",
+        "NO_COLOR",
+        "JEST_WORKER_ID",
+        "NODE_V8_COVERAGE",
+        "GITHUB_EVENT_PATH",
+        "GITHUB_EVENT_NAME",
+        "GITHUB_SHA",
+        "GITHUB_REF",
+        "GITHUB_WORKFLOW",
+        "GITHUB_ACTION",
+        "GITHUB_ACTOR",
+        "LOG_TOKENS",
+        "GITHUB_JOB",
+        "GITHUB_RUN_ATTEMPT",
+        "LOG_STREAM",
+        "GITHUB_RUN_NUMBER",
+        "GITHUB_RUN_ID",
+        "GITHUB_API_URL",
+        "GITHUB_SERVER_URL",
+        "GITHUB_GRAPHQL_URL",
+        "no_proxy",
+        "NO_PROXY",
+        "NODE_V8_COVERAGE",
+        "https_proxy",
+        "HTTPS_PROXY"
+      ],
+      "net": ["api.github.com:443"],
+      "run": true,
+      "ffi": true
+    }
   },
   "bin": {
     "github-labelmanager": "./esm/main.js"
@@ -73,8 +125,8 @@
     "labels": "deno run --allow-net=api.github.com -RE main.ts",
     "labels:dry-run": "deno run --allow-net=api.github.com -RE main.ts --dry-run kjanat/github-labelmanager",
     "schema": "deno run -A scripts/build_schema.ts",
-    "test:coverage": "deno test -RWE src/ scripts/ --coverage",
-    "test": "deno test -RWE src/ scripts/"
+    "test:coverage": "deno test -RWE __tests__/ --coverage",
+    "test": "deno test -RWE __tests__/"
   },
   "compilerOptions": {
     "paths": {

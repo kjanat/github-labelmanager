@@ -4,11 +4,11 @@
  */
 
 import { assertEquals } from "@std/assert";
-import { syncLabels } from "./sync.ts";
-import { LabelManager } from "./client.ts";
-import { createTestEnv, MockGitHubClient, NullLogger } from "./testing.ts";
-import { label, LabelNameUtils } from "./labels-model.ts";
-import type { LabelConfig } from "./types.ts";
+import { syncLabels } from "~/sync.ts";
+import { LabelManager } from "~/client.ts";
+import { createTestEnv, MockGitHubClient, NullLogger } from "~/testing.ts";
+import { label, LabelNameUtils } from "~/labels-model.ts";
+import type { LabelConfig } from "~/types.ts";
 
 /** Helper to create a LabelManager with mock client */
 function createTestManager(

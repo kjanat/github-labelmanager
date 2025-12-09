@@ -8,7 +8,7 @@ import {
   DEFAULT_SCHEMA_ID,
   generateSchema,
   OUTPUT_PATH,
-} from "./build_schema.ts";
+} from "$/scripts/build_schema.ts";
 
 async function loadCommittedSchema(): Promise<Record<string, unknown>> {
   const content = await Deno.readTextFile(OUTPUT_PATH);
@@ -149,11 +149,14 @@ Deno.test("schema - has descriptions from metadata", async () => {
   const labelDef = getLabelDefinition(schema);
   assertStringIncludes(
     labelDef.description as string,
-    "labelDefinition",
+    "GitHub issue label",
   );
 
   // Field descriptions (name and color share LabelName/HexColor metadata)
-  const defs = root.definitions as Record<string, Record<string, unknown>>;
+  const defs = (root.$defs || root.definitions) as Record<
+    string,
+    Record<string, unknown>
+  >;
   const props = labelDef.properties as Record<string, Record<string, unknown>>;
 
   // name -> ref to LabelName (__schema0)

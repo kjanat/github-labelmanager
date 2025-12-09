@@ -63,11 +63,11 @@ try {
     importMap: "deno.json",
     esModule: true,
     typeCheck: "both",
-    test: false,
     declaration: "inline",
     scriptModule: false, // default "cjs"
     packageManager: "bun",
-    rootTestDir: "src",
+    test: false,
+    rootTestDir: "__tests__",
     shims: {
       // Shims Deno.* APIs for Node.js users
       deno: true,

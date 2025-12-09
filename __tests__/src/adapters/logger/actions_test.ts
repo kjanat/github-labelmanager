@@ -7,7 +7,7 @@ import {
   type ActionsCore,
   ActionsLogger,
   toActionsAnnotation,
-} from "./actions.ts";
+} from "~/adapters/logger/actions.ts";
 import type { SyncOperation, SyncResult } from "~/types.ts";
 
 // =============================================================================

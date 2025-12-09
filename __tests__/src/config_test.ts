@@ -5,7 +5,7 @@
 import { assertEquals, assertExists } from "@std/assert";
 import { parse } from "yaml";
 import { Ajv } from "ajv";
-import { isLabelConfig, loadConfig } from "./config.ts";
+import { isLabelConfig, loadConfig } from "~/config.ts";
 
 // --- isLabelConfig tests ---
 
@@ -407,13 +407,13 @@ Deno.test("loadConfig - extracts line numbers for labels", async () => {
     const config = await loadConfig(tempFile);
 
     assertExists(config._meta);
-    assertEquals(config._meta.filePath, tempFile);
+    assertEquals(config?._meta.filePath, tempFile);
 
     // Line numbers are 1-based
     // "bug" appears on line 2 (name: bug)
     // "feature" appears on line 5 (name: feature)
-    assertEquals(config._meta.labelLines["bug"], 2);
-    assertEquals(config._meta.labelLines["feature"], 5);
+    assertEquals(config?._meta.labelLines["bug"], 2);
+    assertEquals(config?._meta.labelLines["feature"], 5);
   } finally {
     await Deno.remove(tempFile);
   }
@@ -465,8 +465,8 @@ Deno.test("loadConfig - handles config without delete section", async () => {
 // --- getEnv tests ---
 
 import { assertThrows } from "@std/assert";
-import { ConfigError, getEnv } from "./config.ts";
-import { stubArgs, stubEnv } from "./testing.ts";
+import { ConfigError, getEnv } from "~/config.ts";
+import { stubArgs, stubEnv } from "~/testing.ts";
 
 Deno.test("getEnv - requires GITHUB_TOKEN", () => {
   const restoreEnv = stubEnv({ GITHUB_TOKEN: undefined });

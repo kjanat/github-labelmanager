@@ -3,8 +3,11 @@
  */
 
 import { assertEquals, assertRejects } from "@std/assert";
-import { BaseGitHubClient } from "./base.ts";
-import type { GitHubClientConfig, GitHubLabel } from "./types.ts";
+import { BaseGitHubClient } from "~/adapters/client/base.ts";
+import type {
+  GitHubClientConfig,
+  GitHubLabel,
+} from "~/adapters/client/types.ts";
 import { NullLogger } from "~/testing.ts";
 
 // =============================================================================

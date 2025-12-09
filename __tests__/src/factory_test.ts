@@ -8,10 +8,10 @@ import {
   createLogger,
   createServices,
   isGitHubActions,
-} from "./factory.ts";
-import { ActionsLogger, ConsoleLogger } from "./adapters/logger/mod.ts";
-import { ActionsGitHubClient } from "./adapters/client/mod.ts";
-import { stubEnv } from "./testing.ts";
+} from "~/factory.ts";
+import { ActionsLogger, ConsoleLogger } from "~/adapters/logger/mod.ts";
+import { ActionsGitHubClient } from "~/adapters/client/mod.ts";
+import { stubEnv } from "~/testing.ts";
 
 // =============================================================================
 // isGitHubActions tests

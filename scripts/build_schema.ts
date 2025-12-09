@@ -38,7 +38,8 @@ export function generateSchema(): Record<string, unknown> {
   (schema as Record<string, unknown>).description =
     `Schema for declaratively managing GitHub issue labels via ${GIT_REPO}.`;
 
-  return schema as Record<string, unknown>;
+  // Sort keys for consistent output (matches committed schema)
+  return sortSchema(schema as JsonValue) as Record<string, unknown>;
 }
 
 if (import.meta.main) {
