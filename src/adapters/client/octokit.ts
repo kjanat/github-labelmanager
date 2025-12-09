@@ -92,12 +92,19 @@ export class OctokitClient extends BaseGitHubClient {
 
       return labels.map((l: GitHubLabelSchema) => this.mapLabelResponse(l));
     } catch (error) {
-      // Type guard for Octokit errors (matches isNotFoundError pattern)
-      // Unlike get(), list() has no 404 case - errors propagate
+      // Type guard for Octokit errors (has status property)
       if (error !== null && typeof error === "object" && "status" in error) {
-        throw error;
+        const octokitError = error as { status: number; message?: string };
+        throw new Error(
+          `Failed to list labels for ${this.owner}/${this.repo}: ` +
+            `HTTP ${octokitError.status}${octokitError.message ? ` - ${octokitError.message}` : ""}`,
+        );
       }
-      throw error;
+      // Wrap non-Octokit errors with context
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Failed to list labels for ${this.owner}/${this.repo}: ${message}`,
+      );
     }
   }
 }
