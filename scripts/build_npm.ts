@@ -5,70 +5,6 @@ import { build, emptyDir } from "@deno/dnt";
 // Package information from deno.json
 import pkg from "$/deno.json" with { type: "json" };
 
-/**
- * Normalize repository field to "github:owner/repo" format for npm.
- * Handles string URLs, object forms, and various git URL formats.
- */
-function normalizeRepository(
-  repo: string | { type?: string; url?: string } | undefined,
-): string {
-  let url: string | undefined;
-
-  if (!repo) {
-    throw new Error(
-      "Missing repository field in deno.json. " +
-        "Add a repository URL (e.g., 'https://github.com/owner/repo').",
-    );
-  }
-
-  // Handle object form: { type: "git", url: "..." }
-  if (typeof repo === "object") {
-    url = repo.url;
-    if (!url) {
-      throw new Error(
-        "Repository object missing 'url' field. " +
-          "Expected { type: 'git', url: 'https://github.com/owner/repo' }.",
-      );
-    }
-  } else {
-    url = repo;
-  }
-
-  // Already in github: shorthand format
-  if (url.startsWith("github:")) {
-    return url;
-  }
-
-  // Strip common prefixes
-  url = url
-    .replace(/^git\+/, "")
-    .replace(/^git:\/\//, "https://")
-    .replace(/^ssh:\/\/git@github\.com[:\/]/, "https://github.com/")
-    .replace(/^git@github\.com:/, "https://github.com/");
-
-  // Strip .git suffix
-  url = url.replace(/\.git$/, "");
-
-  // Extract owner/repo from GitHub URL
-  const githubMatch = url.match(
-    /^https?:\/\/github\.com\/([^/]+)\/([^/]+)(?:\/.*)?$/,
-  );
-  if (githubMatch) {
-    const [, owner, repo] = githubMatch;
-    return `github:${owner}/${repo}`;
-  }
-
-  // If it looks like owner/repo already, assume GitHub
-  if (/^[^/]+\/[^/]+$/.test(url)) {
-    return `github:${url}`;
-  }
-
-  throw new Error(
-    `Unable to normalize repository URL: ${url}. ` +
-      "Expected GitHub URL (https://github.com/owner/repo) or shorthand (github:owner/repo).",
-  );
-}
-
 const mainPath: string = "main.ts";
 
 await emptyDir("npm");
@@ -145,7 +81,7 @@ try {
       description: pkg.description,
       keywords: pkg.keywords,
       bugs: pkg.bugs,
-      repository: normalizeRepository(pkg.repository),
+      repository: pkg.repository,
       license: pkg.license,
       author: pkg.author,
       publish: pkg.publish,
