@@ -1,6 +1,6 @@
 import type { UserConfig } from "@commitlint/types";
 
-const config: UserConfig = {
+const config: Readonly<UserConfig> = {
   extends: ["@commitlint/config-conventional"],
   rules: {
     "type-enum": [
@@ -23,6 +23,6 @@ const config: UserConfig = {
       ],
     ],
   },
-};
+} as const;
 
 export default config;
