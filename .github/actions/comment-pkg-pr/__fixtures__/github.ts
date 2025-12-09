@@ -209,6 +209,10 @@ function clearOctokitMocks(): void {
 export function clearGitHubMocks(): void {
   resetContext();
   clearOctokitMocks();
+  // Reset implementation to match the defensive reset of mockOctokit.rest.*
+  getOctokit.mockImplementation(
+    () => mockOctokit as unknown as ReturnType<typeof getOctokitType>,
+  );
   getOctokit.mockClear();
 }
 
