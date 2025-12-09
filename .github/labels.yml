@@ -84,7 +84,7 @@ labels:
     description: Packaging, NPM/JSR publishing, and distribution
 
   - name: test
-    color: "#fbca04"
+    color: "#90EE90"
     description: Tests and testing utilities
 
   - name: test-summary
