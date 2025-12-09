@@ -343,9 +343,9 @@ Deno.test("syncLabels - normalizes color with # prefix", async () => {
   const manager = createTestManager(client);
 
   // Config has # prefix, repo doesn't - should still match after stripping #
+  // Construct directly to test normalization without builder's type restrictions
   const config: LabelConfig = {
-    // deno-lint-ignore no-explicit-any
-    labels: [label("bug").color("#d73a4a" as any).description("Bug").build()],
+    labels: [{ name: "bug", color: "#d73a4a", description: "Bug" }],
   };
 
   const result = await syncLabels(manager, config);
