@@ -24,7 +24,9 @@ src/
   client.ts          # LabelManager (high-level API with DI)
   config.ts          # Config loading and validation
   factory.ts         # Environment detection, service creation
+  labels-model.ts    # Branded types (LabelName, LabelColor, LabelDescription)
   mod.ts             # Public API exports
+  schema.ts          # Zod schemas for validation and JSON schema generation
   sync.ts            # Label sync orchestration
   testing.ts         # Test utilities
   types.ts           # Domain types
@@ -143,6 +145,8 @@ The project is distributed as:
 - `src/sync.ts` - Label synchronization logic
 - `src/factory.ts` - Environment detection and service creation
 - `src/config.ts` - Configuration loading and validation
+- `src/schema.ts` - Zod schemas for validation and JSON schema generation
+- `src/labels-model.ts` - Branded types for type-safe label properties
 
 ### Documentation
 - `README.md` - Main documentation
