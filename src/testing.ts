@@ -600,6 +600,7 @@ export interface CoreCall {
 /** Mock summary object */
 export interface MockSummary {
   buffer: string[];
+  written: boolean;
   addHeading: (text: string, level?: number) => MockSummary;
   addTable: (rows: unknown[][]) => MockSummary;
   addDetails: (label: string, content: string) => MockSummary;
@@ -626,6 +627,7 @@ export function createMockActionsCore(): {
 
   const summary: MockSummary = {
     buffer: [],
+    written: false,
     addHeading(text: string, level?: number) {
       this.buffer.push(`h${level ?? 1}:${text}`);
       record("summary.addHeading", text, level);
@@ -652,6 +654,7 @@ export function createMockActionsCore(): {
       return this;
     },
     write() {
+      this.written = true;
       record("summary.write");
       return Promise.resolve(this);
     },
