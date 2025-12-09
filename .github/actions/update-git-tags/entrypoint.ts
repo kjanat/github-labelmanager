@@ -143,9 +143,9 @@ function findVersionFile(specified: string): string | null {
 function validateVersionFile(tag: string, file: string): void {
   let content = readFileSync(file, "utf-8");
 
-  // Strip comments for jsonc files
+  // Strip comments for jsonc files (negative lookbehind avoids matching URLs like https://)
   if (file.endsWith(".jsonc")) {
-    content = content.replace(/\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
+    content = content.replace(/(?<!:)\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
   }
 
   let fileVersion: string | undefined;

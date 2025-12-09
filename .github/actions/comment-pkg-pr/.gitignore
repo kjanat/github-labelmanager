@@ -3,7 +3,7 @@ node_modules
 
 # output
 out
-dist
+# NOTE: dist is NOT ignored - GitHub Actions require bundled code to be committed
 *.tgz
 
 # code coverage
