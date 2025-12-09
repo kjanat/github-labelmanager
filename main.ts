@@ -15,9 +15,6 @@ import type { ILogger } from "~/adapters/logger/mod.ts";
  * Main entry point for the CLI
  *
  * @param logger - Optional logger for testing (uses environment-appropriate logger if not provided)
- * @throws ConfigError for configuration issues
- * @throws Deno.errors.NotFound for missing config file
- * @throws Deno.errors.InvalidData for invalid YAML
  */
 export async function main(logger?: ILogger): Promise<void> {
   // Create logger first so we can report errors
@@ -54,12 +51,12 @@ export async function main(logger?: ILogger): Promise<void> {
     }
 
     if (err instanceof Deno.errors.NotFound) {
-      log.setFailed(`Config file not found: ${err.message}`);
+      log.setFailed(err.message);
       return;
     }
 
     if (err instanceof Deno.errors.InvalidData) {
-      log.setFailed(`Invalid config: ${err.message}`);
+      log.setFailed(err.message);
       return;
     }
 

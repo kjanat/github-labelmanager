@@ -43,7 +43,8 @@ runs:
     - name: Setup Deno
       id: setup-deno
       uses: denoland/setup-deno@v2
-      with: { deno-version: "${{ inputs.version }}" }
+      with:
+        deno-version: ${{ inputs.version }}
 
     - name: Setup Node
       id: setup-node
@@ -64,6 +65,7 @@ runs:
 
     - name: Update npm
       id: update-npm
+      if: ${{ inputs.install-node == 'true' }}
       shell: bash
       run: |
         if [[ "${{ inputs.update-npm }}" == "true" ]]; then
