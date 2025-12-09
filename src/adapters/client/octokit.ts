@@ -5,13 +5,13 @@
  */
 
 import { Octokit } from "octokit";
-import type { components } from "@octokit/openapi-types";
 import type { ILogger } from "~/adapters/logger/mod.ts";
-import type { GitHubClientConfig, GitHubLabel } from "./types.ts";
+import type {
+  GitHubClientConfig,
+  GitHubLabel,
+  GitHubLabelSchema,
+} from "./types.ts";
 import { BaseGitHubClient } from "./base.ts";
-
-/** GitHub label schema from API response */
-type GitHubLabelSchema = components["schemas"]["label"];
 
 /**
  * Throttle handler options from octokit
@@ -80,19 +80,24 @@ export class OctokitClient extends BaseGitHubClient {
   }
 
   async list(): Promise<GitHubLabel[]> {
-    const labels = await this.octokit.paginate(
-      "GET /repos/{owner}/{repo}/labels",
-      {
-        owner: this.owner,
-        repo: this.repo,
-        per_page: 100,
-      },
-    );
+    try {
+      const labels = await this.octokit.paginate(
+        "GET /repos/{owner}/{repo}/labels",
+        {
+          owner: this.owner,
+          repo: this.repo,
+          per_page: 100,
+        },
+      );
 
-    return labels.map((l: GitHubLabelSchema) => ({
-      name: l.name,
-      color: l.color,
-      description: l.description,
-    }));
+      return labels.map((l: GitHubLabelSchema) => this.mapLabelResponse(l));
+    } catch (error) {
+      // Type guard for Octokit errors (matches isNotFoundError pattern)
+      // Unlike get(), list() has no 404 case - errors propagate
+      if (error !== null && typeof error === "object" && "status" in error) {
+        throw error;
+      }
+      throw error;
+    }
   }
 }
