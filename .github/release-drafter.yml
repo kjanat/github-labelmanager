@@ -109,7 +109,7 @@ autolabeler:
       - '/^docker(\(.+\))?:/'
     files:
       - Dockerfile
-      - "scripts/**"
+      - "cli/build/**"
 
   # Tests
   - label: test

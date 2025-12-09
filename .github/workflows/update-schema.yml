@@ -21,7 +21,7 @@ jobs:
         uses: ./.github/actions/setup-deno
 
       - name: Regenerate schema
-        run: deno run -A scripts/build_schema.ts
+        run: deno task schema
 
       - name: Commit schema updates
         uses: stefanzweifel/git-auto-commit-action@v5
