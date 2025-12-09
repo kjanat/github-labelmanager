@@ -533,7 +533,9 @@ describe("run - error handling", () => {
 
     const invalidJsonReader = mock(() => "not valid json");
 
-    await expect(run(invalidJsonReader)).rejects.toThrow();
+    await expect(run(invalidJsonReader)).rejects.toThrow(
+      "Failed to parse output file",
+    );
   });
 
   it("propagates unsupported event errors", async () => {
