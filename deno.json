@@ -41,6 +41,7 @@
     ".": "./src/mod.ts",
     "./cli": "./main.ts"
   },
+  "exclude": ["npm", ".github/actions", "dist", "node_modules"],
   "fmt": {
     "exclude": ["npm", ".github/actions"]
   },

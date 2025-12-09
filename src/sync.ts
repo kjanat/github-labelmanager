@@ -101,7 +101,7 @@ export async function syncLabels(
     const cleanColor = normalizeColor(desired.color!);
 
     // Check for renames via aliases
-    let matchedName = desired.name;
+    const matchedName = desired.name;
     let skipLabel = false;
 
     if (!existingMap.has(desired.name) && desired.aliases) {

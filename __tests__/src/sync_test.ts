@@ -344,9 +344,9 @@ Deno.test("syncLabels - normalizes color with # prefix", async () => {
 
   // Config has # prefix, repo doesn't - should still match after stripping #
   // Construct directly to test normalization without builder's type restrictions
-  const config: LabelConfig = {
+  const config = {
     labels: [{ name: "bug", color: "#d73a4a", description: "Bug" }],
-  };
+  } as unknown as LabelConfig;
 
   const result = await syncLabels(manager, config);
 
@@ -378,9 +378,9 @@ Deno.test("syncLabels - expands 3-char hex", async () => {
   const manager = createTestManager(client);
 
   // Construct directly to test 3-char hex expansion without builder's type restrictions
-  const config: LabelConfig = {
+  const config = {
     labels: [{ name: "bug", color: "fab", description: "Bug" }],
-  };
+  } as unknown as LabelConfig;
 
   const result = await syncLabels(manager, config);
 

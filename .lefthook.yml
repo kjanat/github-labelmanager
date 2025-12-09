@@ -72,7 +72,7 @@ pre-commit:
       priority: 4
       glob: "*.ts"
       exclude: ".github/actions/**/*.ts"
-      run: deno check --all {staged_files}
+      run: deno check {staged_files}
 
     test:
       priority: 4
