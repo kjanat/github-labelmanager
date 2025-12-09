@@ -246,9 +246,9 @@ export async function loadConfig(path?: string): Promise<LabelConfig> {
     }
   }
 
-  // Attach metadata (cast to LabelConfig since we validated it, but we need to add _meta)
-  const config = validation.data as LabelConfig;
-  config._meta = { filePath: configPath, labelLines, deleteLines };
-
-  return config;
+  // Attach metadata via spread to avoid mutating validation.data
+  return {
+    ...validation.data,
+    _meta: { filePath: configPath, labelLines, deleteLines },
+  } as LabelConfig;
 }
