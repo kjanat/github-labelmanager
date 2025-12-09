@@ -52,11 +52,7 @@ describe("checkSchemaDiff (bun:test)", () => {
 
     const result = await checkSchemaDiff(testFile);
 
-    expect(result).toEqual({
-      exitCode: 1,
-      diff: diffContent,
-      error: "",
-    });
+    expect(result).toEqual({ exitCode: 1, diff: diffContent, error: "" });
   });
 
   it("trims whitespace from diff output", async () => {
@@ -93,11 +89,7 @@ describe("checkSchemaDiff (bun:test)", () => {
 
     const result = await checkSchemaDiff(testFile);
 
-    expect(result).toEqual({
-      exitCode: 128,
-      diff: "",
-      error: String(error),
-    });
+    expect(result).toEqual({ exitCode: 128, diff: "", error: String(error) });
     expect(mockSetFailed).toHaveBeenCalledWith(
       `Failed to get git diff: ${error}`,
     );

@@ -110,7 +110,10 @@ junit.xml
 .node-version
 .vscode/
 .yaml-lint.yml
-.env.example
 .markdown-lint.yml
 .devcontainer/
 CODEOWNERS
+_*.log
+_*.md
+
+!dist/

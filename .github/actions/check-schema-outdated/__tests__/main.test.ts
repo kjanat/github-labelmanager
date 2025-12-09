@@ -1,10 +1,19 @@
 /**
  * Unit tests for the action's main functionality, src/main.ts using bun:test
  */
-import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+} from "bun:test";
 import {
   cleanupMocks,
   clearAllMocks,
+  mockContext,
   mockGetExecOutput,
   mockGetInput,
   mockSetFailed,
@@ -12,6 +21,7 @@ import {
   mockSummary,
   mockToPlatformPath,
   setupMocks,
+  setWebSource,
 } from "./mocks.ts";
 
 // Setup mocks before importing source
@@ -42,9 +52,9 @@ describe("main.ts (bun:test)", () => {
 
   describe("input handling", () => {
     it("gets file input and sets file output", async () => {
+      // generateSchema, checkSchemaDiff
       mockGetExecOutput
         .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "hash\n", stderr: "" })
         .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" });
 
       await run(mockReadFile);
@@ -62,20 +72,34 @@ describe("main.ts (bun:test)", () => {
 
       mockGetExecOutput
         .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "hash\n", stderr: "" })
         .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" });
 
       await run(mockReadFile);
 
       expect(mockSetOutput).toHaveBeenCalledWith("file", platformPath);
     });
+
+    it("sets commit-hash output from github context", async () => {
+      mockGetExecOutput
+        .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" })
+        .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" });
+
+      await run(mockReadFile);
+
+      expect(mockSetOutput).toHaveBeenCalledWith(
+        "commit-hash",
+        mockContext.sha,
+      );
+    });
   });
 
   describe("schema generation", () => {
     it("fails when schema generation returns non-zero exit code", async () => {
-      mockGetExecOutput
-        .mockResolvedValueOnce({ exitCode: 1, stdout: "", stderr: "error" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "hash\n", stderr: "" });
+      mockGetExecOutput.mockResolvedValueOnce({
+        exitCode: 1,
+        stdout: "",
+        stderr: "error",
+      });
 
       await run(mockReadFile);
 
@@ -85,21 +109,24 @@ describe("main.ts (bun:test)", () => {
     });
 
     it("does not check diff when schema generation fails", async () => {
-      mockGetExecOutput
-        .mockResolvedValueOnce({ exitCode: 127, stdout: "", stderr: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "hash\n", stderr: "" });
+      mockGetExecOutput.mockResolvedValueOnce({
+        exitCode: 127,
+        stdout: "",
+        stderr: "",
+      });
 
       await run(mockReadFile);
 
-      expect(mockGetExecOutput).toHaveBeenCalledTimes(2);
+      // Only generateSchema is called, not checkSchemaDiff
+      expect(mockGetExecOutput).toHaveBeenCalledTimes(1);
     });
   });
 
   describe("schema up-to-date", () => {
     beforeEach(() => {
+      // generateSchema, checkSchemaDiff
       mockGetExecOutput
         .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "hash\n", stderr: "" })
         .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" });
     });
 
@@ -150,9 +177,9 @@ describe("main.ts (bun:test)", () => {
     const diffContent = "-old\n+new";
 
     beforeEach(() => {
+      // generateSchema, checkSchemaDiff (with diff)
       mockGetExecOutput
         .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "hash\n", stderr: "" })
         .mockResolvedValueOnce({
           exitCode: 1,
           stdout: diffContent,
@@ -184,20 +211,22 @@ describe("main.ts (bun:test)", () => {
       );
     });
 
-    it("adds diff to summary as code block", async () => {
+    it("adds diff to summary in details block", async () => {
       await run(mockReadFile);
 
-      expect(mockSummary.addCodeBlock).toHaveBeenCalledWith(
-        diffContent,
-        "diff",
+      expect(mockSummary.addDetails).toHaveBeenCalledWith(
+        "View diff",
+        `\n\n\`\`\`diff\n${diffContent}\n\`\`\`\n\n`,
       );
     });
 
-    it("adds file info to summary", async () => {
+    it("adds file info with permalink to summary", async () => {
       await run(mockReadFile);
 
+      const expectedPermalink =
+        `${mockContext.serverUrl}/${mockContext.repo.owner}/${mockContext.repo.repo}/blob/${mockContext.sha}/${testFile}`;
       expect(mockSummary.addRaw).toHaveBeenCalledWith(
-        `**File:** \`${testFile}\``,
+        `**File:** [\`${testFile}\`](${expectedPermalink})`,
         true,
       );
     });
@@ -219,7 +248,7 @@ describe("main.ts (bun:test)", () => {
       expect(mockReadFile).toHaveBeenCalledWith(testFile, "utf-8");
       expect(mockSummary.addDetails).toHaveBeenCalledWith(
         "View generated schema",
-        `<pre lang="json"><code>${fileContent}</code></pre>`,
+        `\n\n\`\`\`json\n${fileContent}\n\`\`\`\n\n`,
       );
     });
 
@@ -238,23 +267,22 @@ describe("main.ts (bun:test)", () => {
       const written = mockSummary._getWrittenContent();
       expect(written).not.toBeNull();
       expect(written).toContain(":x: Schema is out-of-date");
-      expect(written).toContain(
-        `<pre lang="diff"><code>${diffContent}</code></pre>`,
-      );
+      expect(written).toContain("<details><summary>View diff</summary>");
+      expect(written).toContain("```diff");
+      expect(written).toContain(diffContent);
       expect(written).toContain("<blockquote>");
       expect(written).toContain(
         "<details><summary>View generated schema</summary>",
       );
-      // Details content may be replaced by web source if configured in bun-test.yaml
-      expect(written).toContain('<pre lang="json"><code>');
+      expect(written).toContain("```json");
     });
   });
 
   describe("git diff error", () => {
     it("fails when git diff returns exit code > 1", async () => {
+      // generateSchema, checkSchemaDiff (error)
       mockGetExecOutput
         .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "hash\n", stderr: "" })
         .mockResolvedValueOnce({
           exitCode: 128,
           stdout: "",
@@ -269,9 +297,9 @@ describe("main.ts (bun:test)", () => {
     });
 
     it("does not set outdated outputs on git error", async () => {
+      // generateSchema, checkSchemaDiff (error)
       mockGetExecOutput
         .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "hash\n", stderr: "" })
         .mockResolvedValueOnce({ exitCode: 2, stdout: "", stderr: "error" });
 
       await run(mockReadFile);
@@ -289,36 +317,11 @@ describe("main.ts (bun:test)", () => {
     });
   });
 
-  describe("concurrent execution", () => {
-    it("runs generateSchema and getGitHash in parallel", async () => {
-      let generateSchemaStarted = false;
-      let getGitHashStarted = false;
-
-      mockGetExecOutput.mockImplementation(async (cmd) => {
-        if (cmd === "deno") {
-          generateSchemaStarted = true;
-          await new Promise((resolve) => setTimeout(resolve, 10));
-          return { exitCode: 0, stdout: "", stderr: "" };
-        }
-        if (cmd === "git") {
-          getGitHashStarted = true;
-          return { exitCode: 0, stdout: "hash\n", stderr: "" };
-        }
-        return { exitCode: 0, stdout: "", stderr: "" };
-      });
-
-      await run(mockReadFile);
-
-      expect(generateSchemaStarted).toBe(true);
-      expect(getGitHashStarted).toBe(true);
-    });
-  });
-
   describe("file read error handling", () => {
     it("propagates error when readFile throws", async () => {
+      // generateSchema, checkSchemaDiff (outdated)
       mockGetExecOutput
         .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "hash\n", stderr: "" })
         .mockResolvedValueOnce({ exitCode: 1, stdout: "diff", stderr: "" });
 
       mockReadFile.mockImplementation(() => {
@@ -329,9 +332,9 @@ describe("main.ts (bun:test)", () => {
     });
 
     it("propagates error when readFile throws permission denied", async () => {
+      // generateSchema, checkSchemaDiff (outdated)
       mockGetExecOutput
         .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "hash\n", stderr: "" })
         .mockResolvedValueOnce({ exitCode: 1, stdout: "diff", stderr: "" });
 
       mockReadFile.mockImplementation(() => {
@@ -344,14 +347,87 @@ describe("main.ts (bun:test)", () => {
 
   describe("default readFile parameter", () => {
     it("uses default readFile when no argument provided", async () => {
+      // generateSchema, checkSchemaDiff (outdated)
       mockGetExecOutput
         .mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" })
-        .mockResolvedValueOnce({ exitCode: 0, stdout: "hash\n", stderr: "" })
         .mockResolvedValueOnce({ exitCode: 1, stdout: "diff", stderr: "" });
 
       // When schema is outdated, run() tries to read the file
       // Since file doesn't exist, it throws ENOENT
       expect(run()).rejects.toThrow("ENOENT");
+    });
+  });
+});
+
+describe("core fixture coverage", () => {
+  const JSON_SOURCE =
+    "https://cdn.jsdelivr.net/gh/kjanat/github-labelmanager@6dcde0c/.github/labels.schema.json";
+  // Plain text file (not JSON) - triggers the catch block in setWebSource
+  const TEXT_SOURCE =
+    "https://cdn.jsdelivr.net/gh/kjanat/github-labelmanager@6dcde0c/README.md";
+
+  afterEach(() => {
+    mockSummary._reset();
+  });
+
+  describe("addCodeBlock", () => {
+    it("generates HTML pre/code block with lang attribute", () => {
+      mockSummary._reset();
+      mockSummary.addCodeBlock("const x = 1;", "typescript");
+      expect(mockSummary._buffer).toBe(
+        '<pre lang="typescript"><code>const x = 1;</code></pre>\n',
+      );
+    });
+
+    it("generates HTML pre/code block without lang attribute", () => {
+      mockSummary._reset();
+      mockSummary.addCodeBlock("plain text");
+      expect(mockSummary._buffer).toBe("<pre><code>plain text</code></pre>\n");
+    });
+  });
+
+  describe("addDetails with web source replacement", () => {
+    it("replaces HTML pre/code JSON content with web source", async () => {
+      await setWebSource(JSON_SOURCE);
+      mockSummary._reset();
+      mockSummary.addDetails(
+        "Schema",
+        '<pre lang="json"><code>{"old": true}</code></pre>',
+      );
+      expect(mockSummary._buffer).toContain("$schema");
+      expect(mockSummary._buffer).not.toContain('"old": true');
+    });
+  });
+
+  describe("setWebSource with non-JSON response", () => {
+    it("handles non-JSON web source gracefully", async () => {
+      await setWebSource(TEXT_SOURCE);
+      mockSummary._reset();
+      // Should work without throwing - content is stored as-is
+      mockSummary.addDetails("Test", "```json\n{}\n```");
+      // README.md content should be in buffer (not JSON-parsed)
+      expect(mockSummary._buffer).toContain("github-labelmanager");
+      // Should NOT contain $schema (which would indicate JSON was parsed)
+      expect(mockSummary._buffer).not.toContain('"$schema"');
+    });
+
+    it("clears web source when null is passed", async () => {
+      await setWebSource(JSON_SOURCE);
+      await setWebSource(null);
+      mockSummary._reset();
+      mockSummary.addDetails("Test", "```json\n{}\n```");
+      // Original content should remain unchanged
+      expect(mockSummary._buffer).toContain("{}");
+      expect(mockSummary._buffer).not.toContain("$schema");
+    });
+
+    it("handles fetch errors gracefully", async () => {
+      // Invalid URL triggers fetch error catch block
+      await setWebSource("http://invalid.localhost.test:99999/nonexistent");
+      mockSummary._reset();
+      mockSummary.addDetails("Test", "```json\n{}\n```");
+      // Content should remain unchanged (fetch failed silently)
+      expect(mockSummary._buffer).toContain("{}");
     });
   });
 });

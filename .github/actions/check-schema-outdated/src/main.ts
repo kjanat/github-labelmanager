@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { generateSchema } from "./generateSchema.ts";
-import { getCommitHash } from "./getCommitHash.ts";
 import { checkSchemaDiff } from "./checkSchemaDiff.ts";
+import { codeFence } from "./codeFence.ts";
 import {
   getInput,
   setFailed,
@@ -9,6 +9,7 @@ import {
   summary,
   toPlatformPath,
 } from "@actions/core";
+import { context } from "@actions/github";
 
 /** Function type for reading file contents */
 type ReadFileFn = (path: string, encoding: BufferEncoding) => string;
@@ -31,7 +32,24 @@ export async function run(
   schemafile = toPlatformPath(schemafile);
   setOutput("file", schemafile);
 
-  const [denoExitCode] = await Promise.all([generateSchema(), getCommitHash()]);
+  // Get commit hash from GitHub context (set by GITHUB_SHA env var)
+  const commitHash = context.sha || "";
+  setOutput("commit-hash", commitHash);
+
+  // Build permalink if we have the required context
+  const serverUrl = context.serverUrl || "https://github.com";
+  let permalink = "";
+  try {
+    const { owner, repo } = context.repo;
+    if (commitHash && owner && repo) {
+      permalink =
+        `${serverUrl}/${owner}/${repo}/blob/${commitHash}/${schemafile}`;
+    }
+  } catch {
+    // context.repo throws if GITHUB_REPOSITORY is not set
+  }
+
+  const denoExitCode = await generateSchema();
 
   if (denoExitCode !== 0) {
     setFailed(`Schema generation failed with exit code ${denoExitCode}`);
@@ -53,21 +71,27 @@ export async function run(
   setOutput("outdated", outdated);
   setOutput("up-to-date", !outdated);
 
+  // Format file display - link if permalink available, otherwise just filename
+  const fileDisplay = permalink
+    ? `[\`${schemafile}\`](${permalink})`
+    : `\`${schemafile}\``;
+
   if (!outdated) {
     summary.addHeading(":white_check_mark: Schema is up-to-date", 3);
   } else {
     summary
       .addHeading(":x: Schema is out-of-date", 3)
       .addEOL()
-      .addRaw(`**File:** \`${schemafile}\``, true)
+      .addRaw(`**File:** ${fileDisplay}`, true)
       .addEOL()
-      .addCodeBlock(diff, "diff")
-      .addQuote("<b>Run <code>deno task schema</code> locally to update.</b>");
+      .addDetails("View diff", codeFence("diff", diff, 2))
+      .addQuote("<b>Run <code>deno task schema</code> locally to update.</b>")
+      .addEOL();
 
-    const fileContent = readFile(schemafile, "utf-8");
+    const fileContent = readFile(schemafile, "utf-8").trim();
     summary.addDetails(
       "View generated schema",
-      `<pre lang="json"><code>${fileContent}</code></pre>`,
+      codeFence("json", fileContent, 2),
     );
     setFailed("Schema needs updating. Run `deno task schema` locally.");
   }

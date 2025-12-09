@@ -14,6 +14,7 @@ export {
   info as mockInfo,
   setFailed as mockSetFailed,
   setOutput as mockSetOutput,
+  setWebSource,
   startGroup as mockStartGroup,
   summary as mockSummary,
   toPlatformPath as mockToPlatformPath,
@@ -25,8 +26,11 @@ export {
   getExecOutput as mockGetExecOutput,
 } from "fixtures/exec.ts";
 
+export { clearGitHubMocks, context as mockContext } from "fixtures/github.ts";
+
 import * as coreMocks from "fixtures/core.ts";
 import * as execMocks from "fixtures/exec.ts";
+import * as githubMocks from "fixtures/github.ts";
 
 /**
  * Setup module mocks. Must be called before importing source files.
@@ -49,6 +53,8 @@ export function setupMocks(): void {
   mock.module("@actions/exec", () => ({
     getExecOutput: execMocks.getExecOutput,
   }));
+
+  mock.module("@actions/github", () => ({ context: githubMocks.context }));
 }
 
 /**
@@ -58,6 +64,7 @@ export function setupMocks(): void {
 export function clearAllMocks(): void {
   coreMocks.clearCoreMocks();
   execMocks.clearExecMocks();
+  githubMocks.clearGitHubMocks();
 }
 
 /**

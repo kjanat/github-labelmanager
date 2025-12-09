@@ -4,4 +4,8 @@
  */
 import { run } from "./main.ts";
 
-run();
+if (import.meta.main) {
+  run();
+}
+
+export { run } from "./main.ts";

@@ -7,9 +7,21 @@ import config from "root/bun-test.yaml" with { type: "yaml" };
 
 // Fetch codeblock content from web source if configured
 let webSourceContent: string | null = null;
-if (config["codeblock-web-source"]) {
+
+/**
+ * Fetches content from a URL and stores it for web source replacement.
+ * If the response is valid JSON, it will be pretty-printed.
+ * Non-JSON responses are stored as-is.
+ *
+ * @param url - The URL to fetch content from, or null to clear
+ */
+export async function setWebSource(url: string | null): Promise<void> {
+  if (!url) {
+    webSourceContent = null;
+    return;
+  }
   try {
-    const response = await fetch(config["codeblock-web-source"]);
+    const response = await fetch(url);
     if (response.ok) {
       const text = await response.text();
       // Pretty print JSON for readability
@@ -22,6 +34,11 @@ if (config["codeblock-web-source"]) {
   } catch {
     // Ignore fetch errors, will use original content
   }
+}
+
+// Initialize from config if set
+if (config["codeblock-web-source"]) {
+  await setWebSource(config["codeblock-web-source"]);
 }
 
 // Core function mocks
@@ -105,9 +122,15 @@ function createMockSummary(): MockSummary {
     addDetails: mock((label: string, content: string) => {
       let finalContent = content;
       // If web source is configured and content contains a JSON codeblock, replace it
-      if (webSourceContent && content.includes('<pre lang="json">')) {
-        finalContent =
-          `<pre lang="json"><code>${webSourceContent}</code></pre>`;
+      if (webSourceContent) {
+        if (content.includes("```json")) {
+          // Markdown fence format
+          finalContent = `\n\n\`\`\`json\n${webSourceContent}\n\`\`\`\n\n`;
+        } else if (content.includes('<pre lang="json">')) {
+          // HTML pre/code format
+          finalContent =
+            `<pre lang="json"><code>${webSourceContent}</code></pre>`;
+        }
       }
       buffer +=
         `<details><summary>${label}</summary>${finalContent}</details>\n`;

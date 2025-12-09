@@ -1,11 +1,9 @@
 import { endGroup, setFailed, setOutput, startGroup } from "@actions/core";
 import { getExecOutput } from "@actions/exec";
 
-export async function checkSchemaDiff(file: string): Promise<{
-  exitCode: number;
-  diff: string;
-  error: string;
-}> {
+export async function checkSchemaDiff(
+  file: string,
+): Promise<{ exitCode: number; diff: string; error: string }> {
   startGroup("Check schema diff");
   try {
     const { exitCode, stdout, stderr } = await getExecOutput(
