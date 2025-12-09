@@ -122,14 +122,27 @@ validate_version_file() {
   local file_version
   if [[ "${file}" == *.jsonc ]]; then
     # JSONC files need proper parsing - use Deno's JSONC support
+    if ! command -v deno &>/dev/null; then
+      error "Deno is required to parse JSONC files but was not found"
+    fi
     # Pass file as argument to avoid injection via filename
-    file_version=$(
+    # Capture stderr to report actual errors vs missing version
+    local deno_err
+    deno_err=$(mktemp)
+    if file_version=$(
       deno eval '
         import { parse } from "jsr:@std/jsonc";
         const data = parse(Deno.readTextFileSync(Deno.args[0]));
         console.log(data.version ?? "");
-      ' -- "${file}" 2>/dev/null
-    )
+      ' -- "${file}" 2>"${deno_err}"
+    ); then
+      rm -f "${deno_err}"
+    else
+      local err_msg
+      err_msg=$(cat "${deno_err}")
+      rm -f "${deno_err}"
+      error "Failed to parse ${file}: ${err_msg}"
+    fi
   elif [[ "${file}" == *.json ]]; then
     # Standard JSON - jq handles it directly
     file_version=$(jq -r '.version // empty' "${file}")

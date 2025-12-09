@@ -461,5 +461,5 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  error(err instanceof Error ? `${err.message}\n${err.stack}` : String(err));
+  error(err instanceof Error ? `${err.message}${err.stack ? `\n${err.stack}` : ""}` : String(err));
 });
