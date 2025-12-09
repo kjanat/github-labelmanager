@@ -28,13 +28,34 @@ export function getInputs(): ActionInputs {
 
 /**
  * Load and parse the pkg-pr-new output file
+ * @throws {Error} If file cannot be read, parsed, or has invalid format
  */
 export function loadOutputFile(
   filePath: string,
   readFile: ReadFileFn = fsReadFileSync,
 ): OutputMetadata {
   const content = readFile(filePath, "utf8");
-  return JSON.parse(content) as OutputMetadata;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    throw new Error(`Failed to parse output file: ${filePath}`);
+  }
+
+  // Validate structure
+  if (
+    typeof parsed !== "object" ||
+    parsed === null ||
+    !Array.isArray((parsed as Record<string, unknown>).packages) ||
+    !Array.isArray((parsed as Record<string, unknown>).templates)
+  ) {
+    throw new Error(
+      `Invalid output file format: ${filePath} (expected {packages: [], templates: []})`,
+    );
+  }
+
+  return parsed as OutputMetadata;
 }
 
 /**
