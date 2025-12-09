@@ -8,7 +8,5 @@ shell=bash
 # Note: ShellCheck doesn't support exclude paths in config,
 # use: shellcheck $(find . -name "*.sh" -not -path "*/node_modules/*")
 
-# Disable specific checks globally:
-# SC1091: Not following sourced files (often external/dynamic)
-# SC2034: Unused variables (often intentional for colors/constants)
-disable=SC1091
+# No global disables - use inline # shellcheck disable=SCXXXX comments
+# for specific files that need exceptions
