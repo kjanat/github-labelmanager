@@ -83,8 +83,9 @@ pre-commit:
       priority: 5
       glob: "src/types.ts"
       run: |
-        deno run -RWE scripts/build_schema.ts \
-        && git add .github/labels.schema.json
+        set -e
+        deno run -RWE scripts/build_schema.ts
+        git add .github/labels.schema.json
 
 commit-msg:
   commands:

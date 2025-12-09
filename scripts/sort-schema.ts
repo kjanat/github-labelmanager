@@ -29,8 +29,8 @@ import { basename, dirname } from "jsr:@std/path@^1.1.3";
 // Configuration flags
 // ============================================================================
 
-/** Demo delay for spinner showcase (disable with NO_SPINNER_DELAY=1) */
-const DEMO_DELAY = Deno.env.get("NO_SPINNER_DELAY") !== "1";
+/** Demo delay for spinner showcase (enable with SPINNER_DELAY=1) */
+const DEMO_DELAY = Deno.env.get("SPINNER_DELAY") === "1";
 
 /** Show spinner when reading from stdin (default: false) */
 const SPINNER_ON_STDIN = false;
@@ -266,7 +266,7 @@ async function main(): Promise<void> {
         return true;
       }
       if (arg.startsWith("-")) {
-        console.error(`${red("Error:")} Unknown option: ${arg}`);
+        console.error(`${red("Error:")} Unknown option: ${arg}. See --help for usage.`);
         Deno.exit(1);
       }
       return true;

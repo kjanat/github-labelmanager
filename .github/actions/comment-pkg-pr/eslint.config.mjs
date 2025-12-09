@@ -39,7 +39,14 @@ export default [
       sourceType: "module",
 
       parserOptions: {
-        projectService: { allowDefaultProject: ["./*.config.ts"] },
+        projectService: {
+          allowDefaultProject: [
+            "__tests__/*.ts",
+            "__fixtures__/*.ts",
+            "*.config.ts",
+            "*.config.mjs",
+          ],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },

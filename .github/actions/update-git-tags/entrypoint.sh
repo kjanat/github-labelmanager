@@ -120,9 +120,12 @@ validate_version_file() {
   local tag="$1" file="$2"
 
   local file_version
-  if [[ "${file}" == *.json || "${file}" == *.jsonc ]]; then
-    # Strip comments for jsonc files, then extract version
-    file_version=$(sed 's|//.*||g; s|/\*.*\*/||g' "${file}" | jq -r '.version // empty')
+  if [[ "${file}" == *.jsonc ]]; then
+    # JSONC files need proper parsing - use Deno's JSONC support
+    file_version=$(deno eval "import { parse } from 'jsr:@std/jsonc'; console.log(parse(Deno.readTextFileSync('${file}')).version ?? '')" 2>/dev/null)
+  elif [[ "${file}" == *.json ]]; then
+    # Standard JSON - jq handles it directly
+    file_version=$(jq -r '.version // empty' "${file}")
   else
     error "Unsupported version file format: ${file}"
   fi
