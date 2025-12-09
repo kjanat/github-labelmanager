@@ -5,6 +5,17 @@ import { build, emptyDir } from "@deno/dnt";
 // Package information from deno.json
 import pkg from "$/deno.json" with { type: "json" };
 
+/** Typed structure for deno.json imports field */
+interface DenoImports {
+  [key: string]: string;
+}
+
+/** Minimal typed structure for deno.json */
+interface DenoConfig {
+  imports?: DenoImports;
+  [key: string]: unknown;
+}
+
 const mainPath: string = "main.ts";
 
 await emptyDir("npm");
@@ -46,16 +57,13 @@ if (versionArg) {
 
 // Swap jsr:@eemeli/yaml -> npm:yaml for npm build
 if (isJsrYaml) {
-  if (!originalYamlImport) {
-    throw new Error("Expected yaml import in deno.json imports but found none");
-  }
+  // originalYamlImport is guaranteed to be a string here since isJsrYaml is true
   const denoJsonContent = await Deno.readTextFile("./deno.json");
-  const denoConfig = JSON.parse(denoJsonContent) as Record<string, unknown>;
-  if (!denoConfig.imports || typeof denoConfig.imports !== "object") {
+  const denoConfig = JSON.parse(denoJsonContent) as DenoConfig;
+  if (!denoConfig.imports) {
     throw new Error("Expected imports object in deno.json");
   }
-  const imports = denoConfig.imports as Record<string, string>;
-  imports.yaml = "npm:yaml" + originalYamlImport.replace(/^jsr:@eemeli\/yaml/, "");
+  denoConfig.imports.yaml = "npm:yaml" + originalYamlImport!.replace(/^jsr:@eemeli\/yaml/, "");
   await Deno.writeTextFile("./deno.json", JSON.stringify(denoConfig, null, 2) + "\n");
 }
 
@@ -118,10 +126,9 @@ try {
   // Restore original yaml import
   if (isJsrYaml && originalYamlImport) {
     const denoJsonContent = Deno.readTextFileSync("./deno.json");
-    const denoConfig = JSON.parse(denoJsonContent) as Record<string, unknown>;
-    if (denoConfig.imports && typeof denoConfig.imports === "object") {
-      const imports = denoConfig.imports as Record<string, string>;
-      imports.yaml = originalYamlImport;
+    const denoConfig = JSON.parse(denoJsonContent) as DenoConfig;
+    if (denoConfig.imports) {
+      denoConfig.imports.yaml = originalYamlImport;
       Deno.writeTextFileSync("./deno.json", JSON.stringify(denoConfig, null, 2) + "\n");
     }
   }
