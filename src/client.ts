@@ -28,16 +28,14 @@ export class LabelManager {
    * Create a new LabelManager
    *
    * @param env - Environment configuration
-   * @param client - Optional custom client (for testing)
-   * @param logger - Optional custom logger (for testing)
+   * @param options - Optional client and logger for testing/DI
    */
   constructor(
     env: EnvConfig,
-    client?: IGitHubClient,
-    logger?: ILogger,
+    options: { client?: IGitHubClient; logger?: ILogger } = {},
   ) {
-    this.logger = logger ?? createLogger();
-    this.client = client ?? createGitHubClient(
+    this.logger = options.logger ?? createLogger();
+    this.client = options.client ?? createGitHubClient(
       {
         token: env.token,
         owner: env.owner,
