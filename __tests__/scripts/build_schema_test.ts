@@ -4,7 +4,7 @@
  */
 
 import {
-  assert,
+  assertArrayIncludes,
   assertEquals,
   assertExists,
   assertStringIncludes,
@@ -114,7 +114,7 @@ Deno.test("schema - Root object has correct structure", async () => {
 
   // Check required
   const required = schema.required as string[];
-  assert(required.includes("labels"), "labels should be required");
+  assertArrayIncludes(required, ["labels"]);
 
   // Check uniqueItems (not enforced by Zod schema)
   // assertEquals(props.labels.uniqueItems, true);
