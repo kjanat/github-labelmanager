@@ -42,7 +42,7 @@ outputs:
     description: The installed Node.js version (if install-node is true)
     value: ${{ steps.setup-node.outputs.node-version }}
   npm-version:
-    description: The installed npm version
+    description: The installed npm version (if install-node is true)
     value: ${{ steps.update-npm.outputs.npm-version }}
   bun-version:
     description: The installed Bun version (if install-bun is true)
