@@ -1,5 +1,7 @@
 /**
  * Tests for ActionsLogger
+ *
+ * Uses createMockActionsCore from testing.ts for mock @actions/core.
  */
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
@@ -9,89 +11,12 @@ import {
   toActionsAnnotation,
 } from "~/adapters/logger/actions.ts";
 import type { SyncOperation, SyncResult } from "~/types.ts";
+import { type CoreCall, createMockActionsCore } from "~/testing.ts";
 
-// =============================================================================
-// Mock @actions/core
-// =============================================================================
-
-interface CoreCall {
-  method: string;
-  args: unknown[];
-}
-
-interface MockSummary {
-  buffer: string[];
-  written: boolean;
-  addHeading(text: string, level?: number): MockSummary;
-  addTable(rows: unknown[][]): MockSummary;
-  addDetails(label: string, content: string): MockSummary;
-  addRaw(text: string): MockSummary;
-  addList(items: string[]): MockSummary;
-  write(): Promise<MockSummary>;
-}
-
+/** Helper to create mock core with ActionsCore typing */
 function createMockCore(): { core: ActionsCore; calls: CoreCall[] } {
-  const calls: CoreCall[] = [];
-
-  const record = (method: string, ...args: unknown[]) => {
-    calls.push({ method, args });
-  };
-
-  const summary: MockSummary = {
-    buffer: [],
-    written: false,
-    addHeading(text: string, level?: number) {
-      this.buffer.push(`h${level ?? 1}:${text}`);
-      record("summary.addHeading", text, level);
-      return this;
-    },
-    addTable(rows: unknown[][]) {
-      this.buffer.push(`table:${JSON.stringify(rows)}`);
-      record("summary.addTable", rows);
-      return this;
-    },
-    addDetails(label: string, content: string) {
-      this.buffer.push(`details:${label}`);
-      record("summary.addDetails", label, content);
-      return this;
-    },
-    addRaw(text: string) {
-      this.buffer.push(`raw:${text.substring(0, 50)}`);
-      record("summary.addRaw", text);
-      return this;
-    },
-    addList(items: string[]) {
-      this.buffer.push(`list:${JSON.stringify(items)}`);
-      record("summary.addList", items);
-      return this;
-    },
-    write() {
-      this.written = true;
-      record("summary.write");
-      return Promise.resolve(this);
-    },
-  };
-
-  const core: ActionsCore = {
-    debug: (msg: string) => record("debug", msg),
-    info: (msg: string) => record("info", msg),
-    warning: (msg: string | Error, props?: unknown) =>
-      record("warning", msg, props),
-    error: (msg: string | Error, props?: unknown) =>
-      record("error", msg, props),
-    notice: (msg: string | Error, props?: unknown) =>
-      record("notice", msg, props),
-    startGroup: (name: string) => record("startGroup", name),
-    endGroup: () => record("endGroup"),
-    group: async <T>(name: string, fn: () => Promise<T>): Promise<T> => {
-      record("group", name);
-      return await fn();
-    },
-    setFailed: (msg: string | Error) => record("setFailed", msg),
-    summary,
-  };
-
-  return { core, calls };
+  const { core, calls } = createMockActionsCore();
+  return { core: core as unknown as ActionsCore, calls };
 }
 
 // =============================================================================
