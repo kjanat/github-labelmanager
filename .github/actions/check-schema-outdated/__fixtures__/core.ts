@@ -211,4 +211,5 @@ export function clearCoreMocks(): void {
   summary.addDetails.mockClear();
   summary.write.mockClear();
   summary._reset();
+  webSourceContent = null;
 }
