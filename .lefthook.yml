@@ -65,7 +65,19 @@ pre-commit:
     fmt:
       priority: 3
       glob: "*.{ts,md,yml,yaml,json,jsonc}"
+      exclude: ".github/actions/**/*.ts"
       run: deno fmt {staged_files}
+      stage_fixed: true
+
+    fmt-actions:
+      priority: 3
+      glob: ".github/actions/{check-schema-outdated,comment-pkg-pr}/**/*.ts"
+      run: |
+        for dir in .github/actions/check-schema-outdated .github/actions/comment-pkg-pr; do
+          if echo "{staged_files}" | grep -q "$dir/"; then
+            (cd "$dir" && bun run format:write)
+          fi
+        done
       stage_fixed: true
 
     typecheck:
