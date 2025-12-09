@@ -148,7 +148,7 @@ ${bold(cyan("Options:"))}
   ${bold("-o")}, ${bold("--output")} FILE   Write output to FILE
 
 ${bold(cyan("Environment:"))}
-  ${yellow("NO_SPINNER_DELAY")}=1  Disable 1-second demo delay
+  ${yellow("SPINNER_DELAY")}=1     Enable 1-second demo delay
   ${yellow("NO_COLOR")}=1          Disable colored output
 
 ${bold(cyan("Key Priority Order:"))}

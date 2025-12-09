@@ -83,6 +83,7 @@ runs:
 
     - name: Update npm
       id: update-npm
+      if: ${{ inputs.install-node == 'true' }}
       shell: bash
       run: |
         if [[ "${{ inputs.update-npm }}" == "true" ]]; then

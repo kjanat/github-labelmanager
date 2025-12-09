@@ -77,7 +77,7 @@ ${Bold}Scopes:${Color_Off}
 
 ${Bold}Examples:${Color_Off}
   ${PROG_NAME}                  ${Dim}# View all local changes${Color_Off}
-  ${PROG_NAME} branch           ${Dim}# Compare to main${Color_Off}
+  ${PROG_NAME} branch           ${Dim}# Compare to master${Color_Off}
   ${PROG_NAME} commit a1b2c3d   ${Dim}# Inspect commit${Color_Off}
   ${PROG_NAME} pr 42            ${Dim}# View PR details${Color_Off}
 EOF

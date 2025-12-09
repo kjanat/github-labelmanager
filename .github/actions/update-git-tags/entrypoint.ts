@@ -35,6 +35,7 @@ import { spawnSync } from "node:child_process";
 import * as readline from "node:readline";
 import { parseArgs as utilParseArgs } from "node:util";
 import process from "node:process";
+import stripJsonComments from "strip-json-comments";
 
 // === Mode Detection ===
 const CI_MODE = process.env.GITHUB_ACTIONS === "true";
@@ -143,9 +144,9 @@ function findVersionFile(specified: string): string | null {
 function validateVersionFile(tag: string, file: string): void {
   let content = readFileSync(file, "utf-8");
 
-  // Strip comments for jsonc files (negative lookbehind avoids matching URLs like https://)
+  // Strip comments for jsonc files using proper parser
   if (file.endsWith(".jsonc")) {
-    content = content.replace(/(?<!:)\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
+    content = stripJsonComments(content);
   }
 
   let fileVersion: string | undefined;
