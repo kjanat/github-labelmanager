@@ -24,27 +24,24 @@ arguments.
 Make sure the commit message includes a prefix like
 
 ```plaintext
-build:
-chore:
-docs:
-feat:
-fix:
-perf:
-refactor:
-revert:
-style:
-test:
-core:
-site:
-ignore:
-wip:
+action:     # action.yml (GitHub Action definition)
+build:      # deno.json, scripts/build_npm.ts
+chore:      # general maintenance, .gitignore
+ci:         # .github/workflows/*
+docker:     # Dockerfile
+docs:       # README.md, AGENTS.md, markdown
+feat:       # new features in src/
+fix:        # bug fixes
+perf:       # performance improvements
+refactor:   # code restructuring
+revert:     # reverting changes
+style:      # formatting (deno fmt)
+test:       # test files (*_test.ts)
 ```
 
-For anything web/react use the `site:` prefix.
+This is a Deno-based GitHub label management tool.
 
-For anything in the src/core use the `core:` prefix.
-
-prefer to explain WHY something was done from an end user perspective instead of
+Prefer to explain WHY something was done from an end user perspective instead of
 WHAT was done.
 
 do not do generic messages like "improved agent experience" be very specific
@@ -66,3 +63,5 @@ Here is the status:
 !`git --no-pager diff --stat --staged`
 
 </git_diff_stat_staged>
+
+<!-- markdownlint-disable-file MD033 MD041 -->

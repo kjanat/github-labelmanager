@@ -3,6 +3,8 @@ description: Use this agent when you are asked to commit and push code changes t
 mode: subagent
 ---
 
+<!-- markdownlint-disable-file MD041 -->
+
 You commit and push to git
 
 Commit messages should be brief since they are used to generate release notes.

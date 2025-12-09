@@ -2,28 +2,35 @@ name: github-labelmanager
 description: Manage GitHub labels
 author: Kaj Kowalski
 
-runs:
-  using: "docker"
-  image: "Dockerfile"
-  env:
-    GITHUB_TOKEN: ${{ inputs.token }}
-    REPO: ${{ inputs.repository }}
-    DRY_RUN: ${{ inputs.dry-run }}
-    CONFIG_PATH: ${{ inputs.config-path }}
-
 inputs:
   token:
-    required: true
-    description: GitHub Personal Access Token
+    description: "GitHub Personal Access Token (must have issues: write permission)"
+    required: false
+    default: ${{ github.token }}
   repository:
-    required: false
     description: Repository in 'owner/repo' format
-    default: "${{ github.repository }}"
-  dry-run:
     required: false
+    default: ${{ github.repository }}
+  dry-run:
     description: Run without making changes to GitHub
+    required: false
     default: "false"
   config-path:
-    required: false
     description: Path to the configuration file
-    default: ".github/labels.yml"
+    required: false
+    default: .github/labels.yml
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Deno
+      uses: denoland/setup-deno@v2
+
+    - name: Run label sync
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        REPO: ${{ inputs.repository }}
+        DRY_RUN: ${{ inputs.dry-run }}
+        CONFIG_PATH: ${{ inputs.config-path }}
+      run: deno run -A main.ts

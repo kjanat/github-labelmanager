@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+---
+name: Check schema is up-to-date
+description: |
+  Generates schema and checks for changes via git diff.
+  Requires: deno in PATH, git checkout with tracked schema file.
+author: Kaj Kowalski
+# Add your action's branding here.
+# This will appear on the GitHub Marketplace.
+branding: { icon: check-circle, color: green }
+
+# Define your inputs here.
+inputs:
+  file:
+    description: File to check
+    default: .github/labels.schema.json
+    required: true
+
+# Define your outputs here.
+outputs:
+  file:
+    description: Checked file
+  outdated:
+    description: Whether schema is outdated
+  up-to-date:
+    description: Whether schema is up-to-date
+  commit-hash:
+    description: Current commit hash
+  git-diff:
+    description: Git diff of schema file
+
+runs:
+  using: node24
+  main: dist/index.mjs

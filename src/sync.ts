@@ -3,18 +3,54 @@
  * @module
  */
 
-import type {
-  GitHubLabel,
-  LabelConfig,
-  SyncOperation,
-  SyncResult,
-} from "./types.ts";
+import type { LabelConfig, SyncOperation, SyncResult } from "./types.ts";
+import type { GitHubLabel } from "./adapters/client/mod.ts";
+import type { AnnotationProperties } from "./adapters/logger/mod.ts";
 import { LabelManager } from "./client.ts";
-import { logger } from "./logger.ts";
 
-/** Normalize color to lowercase 6-char hex without # */
-function normalizeColor(color: string): string {
-  return String(color).replace(/^#/, "").toLowerCase().padStart(6, "0");
+/**
+ * Normalize color to lowercase hex without #
+ *
+ * Returns undefined if color is falsy, allowing API defaults to apply.
+ *
+ * Note: Schema validation ensures 6-char hex format, but we pad
+ * as a safeguard in case validation is bypassed or colors like
+ * "fff" are passed.
+ */
+function normalizeColor(color: string | undefined): string | undefined {
+  if (!color) return undefined;
+  const hex = color.replace(/^#/, "").toLowerCase();
+  if (hex.length === 3) {
+    return hex.split("").map((c) => c + c).join("");
+  }
+  return hex;
+}
+
+/**
+ * Build annotation properties for a label operation
+ * @param config - Label config with metadata
+ * @param labelName - Name of the label
+ * @param title - Annotation title
+ * @param isDelete - Whether this is a delete operation
+ */
+function getAnnotation(
+  config: LabelConfig,
+  labelName: string,
+  title: string,
+  isDelete = false,
+): AnnotationProperties {
+  const meta = config._meta;
+  if (!meta) return { title };
+
+  const line = isDelete
+    ? meta.deleteLines[labelName]
+    : meta.labelLines[labelName];
+
+  return {
+    title,
+    file: meta.filePath,
+    startLine: line,
+  };
 }
 
 /**
@@ -24,6 +60,7 @@ export async function syncLabels(
   manager: LabelManager,
   config: LabelConfig,
 ): Promise<SyncResult> {
+  const logger = manager.getLogger();
   const operations: SyncOperation[] = [];
   const summary = {
     created: 0,
@@ -37,7 +74,7 @@ export async function syncLabels(
   const { owner, repo } = manager.repoInfo;
   logger.info(`Syncing labels for ${owner}/${repo}`);
   if (manager.isDryRun) {
-    logger.warn("DRY RUN MODE - no changes will be made");
+    logger.info("[dry-run] No changes will be made");
   }
 
   // Fetch current labels from GitHub
@@ -67,19 +104,30 @@ export async function syncLabels(
     const cleanColor = normalizeColor(desired.color);
 
     // Check for renames via aliases
-    let matchedName = desired.name;
+    const matchedName = desired.name;
     let skipLabel = false;
 
     if (!existingMap.has(desired.name) && desired.aliases) {
       for (const alias of desired.aliases) {
         if (existingMap.has(alias)) {
           // Rename the label
-          logger.warn(`Renaming: "${alias}" -> "${desired.name}"`);
+          const msg = `Renaming: "${alias}" -> "${desired.name}"`;
+          if (manager.isDryRun) {
+            logger.info(
+              `[dry-run] Would rename: "${alias}" -> "${desired.name}"`,
+            );
+            logger.debug(msg);
+          } else {
+            logger.notice(
+              `"${alias}" -> "${desired.name}"`,
+              getAnnotation(config, desired.name, "Label Renamed"),
+            );
+          }
           try {
             await manager.update(alias, {
               name: alias,
               new_name: desired.name,
-              color: desired.color,
+              color: cleanColor,
               description: desired.description,
             });
             operations.push({
@@ -87,19 +135,26 @@ export async function syncLabels(
               label: desired.name,
               from: alias,
               success: true,
+              details: { color: cleanColor, description: desired.description },
             });
             summary.renamed++;
 
-            // Update local map
+            // Update local map - rename already updated color/description
             const movedLabel = existingMap.get(alias)!;
             existingMap.delete(alias);
             existingMap.set(desired.name, {
               ...movedLabel,
               name: desired.name,
+              color: cleanColor ?? movedLabel.color,
+              description: desired.description ?? null,
             });
-            matchedName = desired.name;
+            // Skip update check - rename already applied all changes
+            skipLabel = true;
           } catch (err) {
-            logger.error(`Rename failed: ${LabelManager.formatError(err)}`);
+            logger.error(
+              `Rename failed: ${LabelManager.formatError(err)}`,
+              getAnnotation(config, desired.name, "Rename Failed"),
+            );
             operations.push({
               type: "rename",
               label: desired.name,
@@ -125,18 +180,35 @@ export async function syncLabels(
 
     if (!existing) {
       // Create new label
-      logger.success(`Creating: "${desired.name}"`);
+      const colorDisplay = cleanColor ? `#${cleanColor}` : "default";
+      const msg = `Creating: "${desired.name}" (${colorDisplay})`;
+      if (manager.isDryRun) {
+        logger.info(
+          `[dry-run] Would create: "${desired.name}" (${colorDisplay})`,
+        );
+        logger.debug(msg);
+      } else {
+        logger.success(msg);
+      }
       try {
         await manager.create(desired);
-        operations.push({ type: "create", label: desired.name, success: true });
+        operations.push({
+          type: "create",
+          label: desired.name,
+          success: true,
+          details: { color: cleanColor, description: desired.description },
+        });
         summary.created++;
         existingMap.set(desired.name, {
           name: desired.name,
-          color: cleanColor,
-          description: desired.description,
+          color: cleanColor ?? "ededed", // GitHub's default label color
+          description: desired.description ?? null,
         });
       } catch (err) {
-        logger.error(`Create failed: ${LabelManager.formatError(err)}`);
+        logger.error(
+          `Create failed: ${LabelManager.formatError(err)}`,
+          getAnnotation(config, desired.name, "Create Failed"),
+        );
         operations.push({
           type: "create",
           label: desired.name,
@@ -146,27 +218,55 @@ export async function syncLabels(
         summary.failed++;
       }
     } else {
-      // Check if update needed
-      const isColorDiff = existing.color.toLowerCase() !== cleanColor;
+      // Check if update needed (undefined cleanColor means no color change requested)
+      const isColorDiff = cleanColor !== undefined &&
+        existing.color.toLowerCase() !== cleanColor;
       const isDescDiff = (existing.description || "") !== desired.description;
 
       if (isColorDiff || isDescDiff) {
-        logger.info(`Updating: "${desired.name}"`);
+        // Build detailed change message
+        const changes: string[] = [];
+        if (isColorDiff) {
+          changes.push(`color: #${existing.color} -> #${cleanColor}`);
+        }
+        if (isDescDiff) {
+          changes.push("description changed");
+        }
+        const changeStr = changes.join(", ");
+        const msg = `Updating: "${desired.name}" (${changeStr})`;
+
+        if (manager.isDryRun) {
+          logger.info(
+            `[dry-run] Would update: "${desired.name}" (${changeStr})`,
+          );
+          logger.debug(msg);
+        } else {
+          logger.info(msg);
+        }
         try {
           await manager.update(existing.name, desired);
           operations.push({
             type: "update",
             label: desired.name,
             success: true,
+            details: {
+              color: cleanColor,
+              description: desired.description ?? undefined,
+              oldColor: existing.color,
+              oldDescription: existing.description ?? undefined,
+            },
           });
           summary.updated++;
           existingMap.set(desired.name, {
             ...existing,
-            color: cleanColor,
-            description: desired.description,
+            color: cleanColor ?? existing.color,
+            description: desired.description ?? null,
           });
         } catch (err) {
-          logger.error(`Update failed: ${LabelManager.formatError(err)}`);
+          logger.error(
+            `Update failed: ${LabelManager.formatError(err)}`,
+            getAnnotation(config, desired.name, "Update Failed"),
+          );
           operations.push({
             type: "update",
             label: desired.name,
@@ -187,14 +287,35 @@ export async function syncLabels(
   if (config.delete) {
     for (const name of config.delete) {
       if (existingMap.has(name)) {
-        logger.warn(`Deleting: "${name}"`);
+        const existing = existingMap.get(name)!;
+        const msg = `Deleting: "${name}"`;
+        if (manager.isDryRun) {
+          logger.info(`[dry-run] Would delete: "${name}"`);
+          logger.debug(msg);
+        } else {
+          logger.notice(
+            `"${name}"`,
+            getAnnotation(config, name, "Label Deleted", true),
+          );
+        }
         try {
           await manager.delete(name);
-          operations.push({ type: "delete", label: name, success: true });
+          operations.push({
+            type: "delete",
+            label: name,
+            success: true,
+            details: {
+              color: existing.color,
+              description: existing.description ?? undefined,
+            },
+          });
           summary.deleted++;
           existingMap.delete(name);
         } catch (err) {
-          logger.error(`Delete failed: ${LabelManager.formatError(err)}`);
+          logger.error(
+            `Delete failed: ${LabelManager.formatError(err)}`,
+            getAnnotation(config, name, "Delete Failed", true),
+          );
           operations.push({
             type: "delete",
             label: name,
@@ -204,7 +325,8 @@ export async function syncLabels(
           summary.failed++;
         }
       } else {
-        logger.skip(`Delete target not found: "${name}"`);
+        // Label already doesn't exist - not an error, just skip
+        logger.info(`Delete target not found: "${name}" (already removed)`);
         operations.push({ type: "skip", label: name, success: true });
         summary.skipped++;
       }

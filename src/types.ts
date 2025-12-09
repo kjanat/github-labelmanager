@@ -3,44 +3,12 @@
  * @module
  */
 
-/** Label definition from labels.yml config file */
-export interface LabelDefinition {
-  /** The name of the label */
-  name: string;
-  /** The color as 6 character hex code (with or without '#') */
-  color: string;
-  /** Description of the label */
-  description: string;
-  /** Optional aliases for renaming from old label names */
-  aliases?: string[];
-}
-
-/** Root configuration schema from labels.yml */
-export interface LabelConfig {
-  /** Labels to create/update */
-  labels: LabelDefinition[];
-  /** Labels to delete (by name) */
-  delete?: string[];
-}
-
-/** Options for GitHub label API operations */
-export interface LabelOptions {
-  /** The name of the label */
-  name: string;
-  /** The color of the label as 6 character hex code, without '#' */
-  color?: string;
-  /** The description of the label */
-  description?: string;
-  /** The new name of the label (for renames) */
-  new_name?: string;
-}
-
-/** Label as returned by GitHub API */
-export interface GitHubLabel {
-  name: string;
-  color: string;
-  description: string | null;
-}
+// Re-export from schema source (single source of truth)
+export type {
+  LabelConfig,
+  LabelConfigMeta,
+  LabelDefinition,
+} from "./schema.ts";
 
 /** Environment/CLI configuration */
 export interface EnvConfig {
@@ -59,6 +27,14 @@ export interface SyncOperation {
   from?: string;
   success: boolean;
   error?: string;
+  /** Details for summary display */
+  details?: {
+    color?: string;
+    description?: string;
+    /** For updates: previous values */
+    oldColor?: string;
+    oldDescription?: string;
+  };
 }
 
 /** Result of a sync operation - extensible for different output formats */

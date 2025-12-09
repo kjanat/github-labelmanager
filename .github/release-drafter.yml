@@ -14,15 +14,128 @@ categories:
     labels:
       - bug
       - fix
+  - title: "Performance"
+    labels:
+      - perf
+      - performance
   - title: "Documentation"
     labels:
       - docs
       - documentation
+  - title: "CI/CD"
+    labels:
+      - ci
+      - github-actions
+  - title: "Build & Docker"
+    labels:
+      - build
+      - docker
+  - title: "Tests"
+    labels:
+      - test
   - title: "Maintenance"
+    collapse-after: 5
     labels:
       - chore
       - maintenance
+      - refactor
       - dependencies
+
+exclude-labels:
+  - skip-changelog
+
+exclude-contributors:
+  - dependabot[bot]
+  - github-actions[bot]
+  - renovate[bot]
+  - codecov[bot]
+  - allcontributors[bot]
+  - copilot-swe-agent[bot]
+  - Claude
+
+no-changes-template: "* No changes"
+
+replacers:
+  # Auto-link issue/PR references (avoid double-linking already linked refs)
+  - search: '/(?<![[\/#])#(\d+)(?!\])/g'
+    replace: "[#$1](https://github.com/kjanat/github-labelmanager/issues/$1)"
+  # Auto-link CVE references
+  - search: '/CVE-(\d{4})-(\d+)/g'
+    replace: "[CVE-$1-$2](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-$1-$2)"
+
+autolabeler:
+  # Breaking changes (conventional commit with !)
+  - label: breaking
+    title:
+      - '/^[a-z]+(\(.+\))?!:/'
+
+  # Features
+  - label: feature
+    title:
+      - '/^feat(\(.+\))?:/'
+
+  # Bug fixes
+  - label: bug
+    title:
+      - '/^fix(\(.+\))?:/'
+
+  # Performance
+  - label: perf
+    title:
+      - '/^perf(\(.+\))?:/'
+
+  # Documentation
+  - label: docs
+    title:
+      - '/^docs(\(.+\))?:/'
+    files:
+      - "*.md"
+      - "docs/**"
+
+  # CI/GitHub Actions
+  - label: ci
+    title:
+      - '/^ci(\(.+\))?:/'
+      - '/^action(\(.+\))?:/'
+    files:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+      - "action.yml"
+
+  # Build/Docker
+  - label: build
+    title:
+      - '/^build(\(.+\))?:/'
+      - '/^docker(\(.+\))?:/'
+    files:
+      - Dockerfile
+      - "scripts/**"
+
+  # Tests
+  - label: test
+    title:
+      - '/^test(\(.+\))?:/'
+    files:
+      - "**/*_test.ts"
+      - "__tests__/**"
+
+  # Maintenance/chore
+  - label: chore
+    title:
+      - '/^chore(\(.+\))?:/'
+      - '/^style(\(.+\))?:/'
+      - '/^revert(\(.+\))?:/'
+
+  # Refactor
+  - label: refactor
+    title:
+      - '/^refactor(\(.+\))?:/'
+
+  # Dependencies
+  - label: dependencies
+    files:
+      - deno.lock
+      - deno.json
 
 change-template: "- $TITLE @$AUTHOR (#$NUMBER)"
 change-title-escapes: '\<*_&'
@@ -42,11 +155,20 @@ version-resolver:
       - fix
       - chore
       - docs
+      - perf
+      - ci
+      - build
+      - test
+      - refactor
   default: patch
 
 template: |
   ## Changes
 
   $CHANGES
+
+  ## Contributors
+
+  $CONTRIBUTORS
 
   **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

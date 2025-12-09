@@ -4,10 +4,25 @@
  * @module
  */
 
-import type { EnvConfig, GitHubLabel, LabelOptions } from "./types.ts";
-import type { IGitHubClient } from "./interfaces/github-client.ts";
-import type { ILogger } from "./interfaces/logger.ts";
+import type { EnvConfig } from "./types.ts";
+import type {
+  GitHubLabel,
+  IGitHubClient,
+  LabelOptions,
+} from "./adapters/client/mod.ts";
+import type { ILogger } from "./adapters/logger/mod.ts";
 import { createGitHubClient, createLogger } from "./factory.ts";
+
+/**
+ * Options for LabelManager constructor
+ * Used for dependency injection and testing
+ */
+export interface LabelManagerOptions {
+  /** Custom GitHub client implementation */
+  client?: IGitHubClient;
+  /** Custom logger implementation */
+  logger?: ILogger;
+}
 
 /**
  * GitHub label manager client
@@ -20,9 +35,18 @@ export class LabelManager {
   private client: IGitHubClient;
   private logger: ILogger;
 
-  constructor(env: EnvConfig) {
-    this.logger = createLogger();
-    this.client = createGitHubClient(
+  /**
+   * Create a new LabelManager
+   *
+   * @param env - Environment configuration
+   * @param options - Optional client and logger for testing/DI
+   */
+  constructor(
+    env: EnvConfig,
+    options: LabelManagerOptions = {},
+  ) {
+    this.logger = options.logger ?? createLogger();
+    this.client = options.client ?? createGitHubClient(
       {
         token: env.token,
         owner: env.owner,

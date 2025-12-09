@@ -1,0 +1,40 @@
+name: Update Git Tags
+description: Updates major/minor version tags for GitHub Action releases
+author: kjanat
+
+inputs:
+  tag:
+    description: "Version tag to process (e.g., v1.2.3)"
+    required: true
+  major:
+    description: "Update major version tag (e.g., v1)"
+    required: false
+    default: "true"
+  minor:
+    description: "Update minor version tag (e.g., v1.2)"
+    required: false
+    default: "false"
+  create-branch:
+    description: "Create releases/vX branch for major releases"
+    required: false
+    default: "false"
+  version-file:
+    description: "Path to version file - auto-detects package.json, deno.json(c), jsr.json(c)"
+    required: false
+    default: "auto"
+
+outputs:
+  major-tag:
+    description: "Major version tag that was updated (e.g., v1)"
+  minor-tag:
+    description: "Minor version tag that was updated (e.g., v1.2)"
+  is-major-release:
+    description: "Whether this was a new major version (true/false)"
+
+runs:
+  using: docker
+  image: Dockerfile
+
+branding:
+  icon: tag
+  color: blue
