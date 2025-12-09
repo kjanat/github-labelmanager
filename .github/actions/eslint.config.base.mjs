@@ -68,8 +68,18 @@ export function createConfig({
         camelcase: "off",
         "import/no-namespace": "off",
         "no-console": "off",
+        // Disable base rules in favor of TypeScript-aware versions
         "no-shadow": "off",
         "no-unused-vars": "off",
+        "@typescript-eslint/no-shadow": "error",
+        "@typescript-eslint/no-unused-vars": [
+          "error",
+          {
+            argsIgnorePattern: "^_",
+            varsIgnorePattern: "^_",
+            ignoreRestSiblings: true,
+          },
+        ],
       },
     },
   ];
