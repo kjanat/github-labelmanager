@@ -701,6 +701,28 @@ export function createTestEnv(
   };
 }
 
+/**
+ * Create an envGet function from a record of environment variables
+ *
+ * Use this to create a custom environment getter for testing without
+ * mutating global state.
+ *
+ * @param env - Record of environment variable names to values
+ * @returns Function that looks up keys in the provided record
+ *
+ * @example
+ * ```ts
+ * const envGet = createEnvGet({ GITHUB_TOKEN: "test-token", DEBUG: undefined });
+ * assertEquals(envGet("GITHUB_TOKEN"), "test-token");
+ * assertEquals(envGet("DEBUG"), undefined);
+ * ```
+ */
+export function createEnvGet(
+  env: Record<string, string | undefined>,
+): (key: string) => string | undefined {
+  return (key: string) => env[key];
+}
+
 // =============================================================================
 // Mock Octokit for testing OctokitClient
 // =============================================================================

@@ -10,14 +10,7 @@
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import { main } from "github-labelmanager";
-import { MockLogger } from "~/testing.ts";
-
-/** Helper to create envGet function from a record */
-function createEnvGet(
-  env: Record<string, string | undefined>,
-): (key: string) => string | undefined {
-  return (key: string) => env[key];
-}
+import { createEnvGet, MockLogger } from "~/testing.ts";
 
 // =============================================================================
 // Missing token tests
