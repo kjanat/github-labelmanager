@@ -314,7 +314,7 @@ Deno.test("create - passes correct params to API", async () => {
 // update() tests
 // =============================================================================
 
-Deno.test("update - updates label and returns result", async () => {
+Deno.test("update - updates label without rename when new_name not provided", async () => {
   const { octokit } = createMockOctokit();
   const client = new TestableBaseClient(
     { token: "test", owner: "owner", repo: "repo", dryRun: false },
