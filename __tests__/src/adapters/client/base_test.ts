@@ -369,7 +369,7 @@ Deno.test("update - returns null in dry-run mode", async () => {
   assertEquals(calls.length, 0);
 });
 
-Deno.test("update - logs rename action in dry-run mode", async () => {
+Deno.test("update - skips API call for rename in dry-run mode", async () => {
   const { octokit, calls } = createMockOctokit();
   const client = new TestableBaseClient(
     { token: "test", owner: "owner", repo: "repo", dryRun: true },
