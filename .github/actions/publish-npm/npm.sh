@@ -37,6 +37,14 @@ fi
 # Output package info
 echo "package-name=${PKG_NAME}" | tee -a "${GITHUB_OUTPUT}"
 echo "package-version=${PKG_VERSION}" | tee -a "${GITHUB_OUTPUT}"
+
+# Check if version already published (skip on re-run)
+if [[ "${DRY_RUN}" != "true" ]] && npm view "${PKG_NAME}@${PKG_VERSION}" version &>/dev/null; then
+  echo "::notice::${PKG_NAME}@${PKG_VERSION} already published, skipping"
+  echo "Skipped: ${PKG_NAME}@${PKG_VERSION} already published" >> "${GITHUB_STEP_SUMMARY}"
+  exit 0
+fi
+
 echo "Publishing ${PKG_NAME}@${PKG_VERSION} with tag '${TAG}'" | tee -a "${GITHUB_STEP_SUMMARY}"
 
 # Build publish flags after validation
