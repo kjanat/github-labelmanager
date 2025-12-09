@@ -328,7 +328,7 @@ describe("main.ts (bun:test)", () => {
         throw new Error("ENOENT: no such file or directory");
       });
 
-      expect(run(mockReadFile)).rejects.toThrow("ENOENT");
+      await expect(run(mockReadFile)).rejects.toThrow("ENOENT");
     });
 
     it("propagates error when readFile throws permission denied", async () => {
@@ -341,7 +341,7 @@ describe("main.ts (bun:test)", () => {
         throw new Error("EACCES: permission denied");
       });
 
-      expect(run(mockReadFile)).rejects.toThrow("EACCES");
+      await expect(run(mockReadFile)).rejects.toThrow("EACCES");
     });
   });
 
@@ -354,7 +354,7 @@ describe("main.ts (bun:test)", () => {
 
       // When schema is outdated, run() tries to read the file
       // Since file doesn't exist, it throws ENOENT
-      expect(run()).rejects.toThrow("ENOENT");
+      await expect(run()).rejects.toThrow("ENOENT");
     });
   });
 });
