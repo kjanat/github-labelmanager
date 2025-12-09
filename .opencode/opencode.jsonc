@@ -4,7 +4,7 @@
     "gh-actions": {
       "command": [
         "bunx",
-        "gh-actions-language-server@0.0.3",
+        "gh-actions-language-server",
         "--stdio"
       ],
       "extensions": [

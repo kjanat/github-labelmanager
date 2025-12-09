@@ -104,7 +104,7 @@ __tests__/runner/*
 # JUnit
 junit.xml
 
-# Other shit
+# Miscellaneous config files
 .checkov.yml
 .licensed.yml
 .node-version
