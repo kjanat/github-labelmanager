@@ -87,22 +87,28 @@ export const LabelNameUtils = {
   },
 } as const;
 
+/**
+ * Normalize a hex color candidate: strip leading #, expand 3-char to 6-char.
+ * Used by both parse() and is() to ensure consistent behavior.
+ */
+function normalizeHexCandidate(value: string): string {
+  let normalized = value.replace(/^#/, "");
+  if (normalized.length === 3) {
+    normalized = normalized
+      .split("")
+      .map((c) => c + c)
+      .join("");
+  }
+  return normalized;
+}
+
 export const LabelColorUtils = {
   /**
    * Parses a string into a LabelColor.
    * @throws {Error} If not a valid 6-character hex code
    */
   parse(value: string): LabelColor {
-    // Strip leading # if present (common mistake)
-    let normalized = value.replace(/^#/, "");
-
-    // Expand 3-char hex to 6-char
-    if (normalized.length === 3) {
-      normalized = normalized
-        .split("")
-        .map((c) => c + c)
-        .join("");
-    }
+    const normalized = normalizeHexCandidate(value);
 
     if (!HEX_COLOR_REGEX.test(normalized)) {
       throw new Error(
@@ -118,11 +124,7 @@ export const LabelColorUtils = {
    * in canonical form. Use parse() to get a properly branded LabelColor.
    */
   is(value: string): boolean {
-    let normalized = value.replace(/^#/, "");
-    if (normalized.length === 3) {
-      normalized = normalized.split("").map((c) => c + c).join("");
-    }
-    return HEX_COLOR_REGEX.test(normalized);
+    return HEX_COLOR_REGEX.test(normalizeHexCandidate(value));
   },
 } as const;
 
