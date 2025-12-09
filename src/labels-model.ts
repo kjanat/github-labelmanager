@@ -112,9 +112,13 @@ export const LabelColorUtils = {
     return normalized.toLowerCase() as LabelColor;
   },
 
-  /** Returns true if the value is a valid hex color */
+  /** Returns true if the value is a valid hex color (3 or 6 hex chars) */
   is(value: string): value is LabelColor {
-    return HEX_COLOR_REGEX.test(value.replace(/^#/, ""));
+    let normalized = value.replace(/^#/, "");
+    if (normalized.length === 3) {
+      normalized = normalized.split("").map((c) => c + c).join("");
+    }
+    return HEX_COLOR_REGEX.test(normalized);
   },
 } as const;
 
