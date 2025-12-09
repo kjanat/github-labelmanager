@@ -46,6 +46,7 @@ labels:
   - name: perf
     color: "#fef2c0"
     description: Performance or memory improvements
+    aliases: [performance]
 
   - name: chore
     color: "#c5def5"
@@ -94,6 +95,29 @@ labels:
   - name: blocked
     color: "#bdb76b"
     description: Work cannot proceed due to an external dependency
+
+  - name: breaking
+    color: "#b60205"
+    description: Breaking changes that require major version bump
+    aliases: [breaking-change]
+
+  - name: ci
+    color: "#006b75"
+    description: CI/CD and GitHub Actions changes
+    aliases: [github-actions]
+
+  - name: build
+    color: "#bfdadc"
+    description: Build system, scripts, and Docker changes
+    aliases: [docker]
+
+  - name: dependencies
+    color: "#0366d6"
+    description: Dependency updates and package management
+
+  - name: skip-changelog
+    color: "#ededed"
+    description: Exclude this PR from release notes
 
 # Clean up old area labels that were replaced by area: prefixed versions
 delete:

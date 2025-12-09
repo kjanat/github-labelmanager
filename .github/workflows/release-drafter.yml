@@ -3,8 +3,11 @@ name: Release Drafter
 on:
   push:
     branches: [master]
-  pull_request_target:
-    types: [opened, reopened, synchronize]
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
+
+permissions:
+  contents: read
 
 jobs:
   update-release-draft:
@@ -15,7 +18,5 @@ jobs:
       pull-requests: write
     steps:
       - uses: release-drafter/release-drafter@v6
-        with:
-          disable-autolabeler: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
