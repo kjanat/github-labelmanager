@@ -19,6 +19,29 @@ export function formatTemplates(
 }
 
 /**
+ * Render the shared body block (packages, templates, commit link)
+ * @internal
+ */
+function renderBodyBlock(
+  output: OutputMetadata,
+  commitUrl: string,
+  headingLevel: "##" | "###",
+): string {
+  const packages = formatPackages(output.packages);
+  const templates = formatTemplates(output.templates);
+
+  return `${headingLevel} Published Packages
+
+${packages}
+
+${headingLevel} Templates
+
+${templates}
+
+[View Commit](${commitUrl})`;
+}
+
+/**
  * Build the full comment body
  */
 export function buildCommentBody(
@@ -26,20 +49,9 @@ export function buildCommentBody(
   commitUrl: string,
   identifier: string,
 ): string {
-  const packages = formatPackages(output.packages);
-  const templates = formatTemplates(output.templates);
-
   return `${identifier}
 
-### Published Packages
-
-${packages}
-
-### Templates
-
-${templates}
-
-[View Commit](${commitUrl})`;
+${renderBodyBlock(output, commitUrl, "###")}`;
 }
 
 /**
@@ -50,8 +62,6 @@ export function buildStepSummary(
   commitUrl: string,
   prFound: boolean,
 ): string {
-  const packages = formatPackages(output.packages);
-  const templates = formatTemplates(output.templates);
   const prStatus = prFound
     ? ":white_check_mark: Comment posted to PR"
     : ":information_source: No PR found, logged to console only";
@@ -60,15 +70,7 @@ export function buildStepSummary(
 
 ${prStatus}
 
-## Published Packages
-
-${packages}
-
-## Templates
-
-${templates}
-
-[View Commit](${commitUrl})`;
+${renderBodyBlock(output, commitUrl, "##")}`;
 }
 
 /**
