@@ -49,9 +49,12 @@ if (import.meta.main) {
     await Deno.writeTextFile(OUTPUT_PATH, content);
     console.log(`Generated ${OUTPUT_PATH}`);
   } catch (err) {
-    console.error(
-      `Failed to generate schema: ${err instanceof Error ? err.message : err}`,
-    );
+    if (err instanceof Error) {
+      console.error(`Failed to generate schema: ${err.message}`);
+      console.error(err.stack);
+    } else {
+      console.error(`Failed to generate schema: ${err}`);
+    }
     Deno.exit(1);
   }
 }

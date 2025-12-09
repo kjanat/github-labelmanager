@@ -50,8 +50,13 @@ export class ActionsGitHubClient extends BaseGitHubClient {
 
       return labels.map((l: GitHubLabelSchema) => this.mapLabelResponse(l));
     } catch (error) {
-      // Type guard for Octokit errors (has status property)
-      if (error !== null && typeof error === "object" && "status" in error) {
+      // Type guard for Octokit errors (has numeric status property)
+      if (
+        error !== null &&
+        typeof error === "object" &&
+        "status" in error &&
+        typeof (error as { status: unknown }).status === "number"
+      ) {
         const octokitError = error as { status: number; message?: string };
         throw new Error(
           `Failed to list labels for ${this.owner}/${this.repo}: ` +

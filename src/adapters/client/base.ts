@@ -128,9 +128,7 @@ export abstract class BaseGitHubClient implements IGitHubClient {
   /**
    * Map Octokit label response to GitHubLabel
    */
-  protected mapLabelResponse(
-    data: { name: string; color: string; description: string | null },
-  ): GitHubLabel {
+  protected mapLabelResponse(data: GitHubLabel): GitHubLabel {
     return {
       name: data.name,
       color: data.color,
