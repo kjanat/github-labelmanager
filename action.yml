@@ -33,4 +33,4 @@ runs:
         REPO: ${{ inputs.repository }}
         DRY_RUN: ${{ inputs.dry-run }}
         CONFIG_PATH: ${{ inputs.config-path }}
-      run: deno run -A main.ts
+      run: deno run -A cli/main.ts

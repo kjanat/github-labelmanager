@@ -7,7 +7,7 @@
 
 import { z } from "zod";
 import { labelConfigSchema } from "~/schema.ts";
-import { type JsonValue, sortSchema } from "./sort-schema.ts";
+import { type JsonValue, sortSchema } from "~/tools/sort-schema.ts";
 
 export const GIT_BRANCH = "master";
 export const GIT_REPO = "kjanat/github-labelmanager";

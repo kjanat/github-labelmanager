@@ -5,7 +5,7 @@
 
 import { isMap, isScalar, isSeq, LineCounter, parseDocument } from "yaml";
 import { fromError } from "zod-validation-error";
-import type { EnvConfig, LabelConfig } from "./types.ts";
+import type { EnvConfig, LabelConfig } from "./domain/types.ts";
 import { labelConfig } from "./schema.ts";
 
 /** Default config file path */
@@ -25,24 +25,13 @@ export class ConfigError extends Error {
 }
 
 /**
- * Print help message
+ * Thrown when --help or -h flag is provided
  */
-export function printHelp(): void {
-  console.log(`
-Usage: github-labelmanager [OWNER/REPO] [OPTIONS]
-
-Options:
-  --dry-run           Run without making changes to GitHub
-  --config <path>     Path to labels.yml config file
-  --config=<path>     Path to labels.yml config file (alternate syntax)
-  --help, -h          Show this help message
-
-Environment Variables:
-  GITHUB_TOKEN        Required. GitHub Personal Access Token
-  REPO                Optional. Repository in 'owner/repo' format
-  CONFIG_PATH         Optional. Path to config file (default: .github/labels.yml)
-  DRY_RUN             Optional. Set to 'true' for dry run mode
-`);
+export class HelpRequested extends Error {
+  constructor() {
+    super("Help requested");
+    this.name = "HelpRequested";
+  }
 }
 
 /**
@@ -126,10 +115,9 @@ export function getEnv(options?: GetEnvOptions): EnvConfig {
   const args = options?.args ?? Deno.args;
   const envGet = options?.envGet ?? ((k: string) => Deno.env.get(k));
 
-  // Handle help flag (exit is acceptable here)
+  // Handle help flag - let CLI handle display
   if (args.includes("--help") || args.includes("-h")) {
-    printHelp();
-    Deno.exit(0);
+    throw new HelpRequested();
   }
 
   // Token is required

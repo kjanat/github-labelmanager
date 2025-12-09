@@ -4,14 +4,11 @@
 
 import { assertEquals, assertRejects } from "@std/assert";
 import { BaseGitHubClient } from "~/adapters/client/base.ts";
-import type {
-  GitHubClientConfig,
-  GitHubLabel,
-} from "~/adapters/client/types.ts";
+import type { GitHubClientConfig, GitHubLabel } from "~/ports/github.ts";
 import {
   createMockOctokit as createSharedMockOctokit,
   NullLogger,
-} from "~/testing.ts";
+} from "~/testing/mod.ts";
 
 // =============================================================================
 // Mock Octokit Wrapper

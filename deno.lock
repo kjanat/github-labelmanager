@@ -17,7 +17,8 @@
     "jsr:@std/yaml@*": "1.0.10",
     "jsr:@ts-morph/bootstrap@0.27": "0.27.0",
     "jsr:@ts-morph/common@0.27": "0.27.0",
-    "npm:@actions/core@^1.11.1": "1.11.1",
+    "npm:@actions/core@*": "2.0.0",
+    "npm:@actions/core@2": "2.0.0",
     "npm:@actions/github@^6.0.1": "6.0.1_@octokit+core@5.2.2",
     "npm:@commitlint/cli@*": "20.2.0_@types+node@24.2.0",
     "npm:@commitlint/cli@^20.2.0": "20.2.0_@types+node@24.2.0",
@@ -30,6 +31,7 @@
     "npm:lefthook@^2.0.9": "2.0.9",
     "npm:octokit@^5.0.5": "5.0.5_@octokit+core@7.0.6",
     "npm:zod-validation-error@5": "5.0.0_zod@4.1.13",
+    "npm:zod@4.1.13": "4.1.13",
     "npm:zod@^4.1.13": "4.1.13"
   },
   "jsr": {
@@ -107,11 +109,11 @@
     }
   },
   "npm": {
-    "@actions/core@1.11.1": {
-      "integrity": "sha512-hXJCSrkwfA46Vd9Z3q4cpEpHB1rL5NG04+/rbqW9d3+CSvtB1tYe8UTpAlixa1vj0m/ULglfEK2UKxMGxCxv5A==",
+    "@actions/core@2.0.0": {
+      "integrity": "sha512-iGW52/zqhPUFnYl0s1ioXfJu86LGs7b+GYuO38JMPpsh14FQrNj3n2JBpC+vZ2CFS4lERQyn5koLDopY+6V/PQ==",
       "dependencies": [
         "@actions/exec",
-        "@actions/http-client"
+        "@actions/http-client@3.0.0"
       ]
     },
     "@actions/exec@1.1.1": {
@@ -123,7 +125,7 @@
     "@actions/github@6.0.1_@octokit+core@5.2.2": {
       "integrity": "sha512-xbZVcaqD4XnQAe35qSQqskb3SqIAfRyLBrHMd/8TuL7hJSz2QtbDwnNM8zWx4zO5l2fnGtseNE3MbEvD7BxVMw==",
       "dependencies": [
-        "@actions/http-client",
+        "@actions/http-client@2.2.3",
         "@octokit/core@5.2.2",
         "@octokit/plugin-paginate-rest@9.2.2_@octokit+core@5.2.2",
         "@octokit/plugin-rest-endpoint-methods@10.4.1_@octokit+core@5.2.2",
@@ -134,6 +136,13 @@
     },
     "@actions/http-client@2.2.3": {
       "integrity": "sha512-mx8hyJi/hjFvbPokCg4uRd4ZX78t+YyRPtnKWwIl+RzNaVuFpQHfmlGVfsKEJN8LwTCvL+DfVgAM04XaHkm6bA==",
+      "dependencies": [
+        "tunnel",
+        "undici"
+      ]
+    },
+    "@actions/http-client@3.0.0": {
+      "integrity": "sha512-1s3tXAfVMSz9a4ZEBkXXRQD4QhY3+GAsWSbaYpeknPOKEeyRiU3lH+bHiLMZdo2x/fIeQ/hscL1wCkDLVM2DZQ==",
       "dependencies": [
         "tunnel",
         "undici"
@@ -1096,7 +1105,7 @@
       "jsr:@std/cli@^1.0.24",
       "jsr:@std/fmt@^1.0.8",
       "jsr:@std/json@^1.0.2",
-      "npm:@actions/core@^1.11.1",
+      "npm:@actions/core@2",
       "npm:@actions/github@^6.0.1",
       "npm:@commitlint/cli@^20.2.0",
       "npm:@commitlint/config-conventional@^20.2.0",

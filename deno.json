@@ -18,8 +18,8 @@
     "@octokit/webhooks-types": "npm:@octokit/webhooks-types@^7.6.1",
     "~/": "./src/",
     "$/": "./",
-    "github-labelmanager": "./main.ts",
-    "@actions/core": "npm:@actions/core@^1.11.1",
+    "github-labelmanager": "./cli/main.ts",
+    "@actions/core": "npm:@actions/core@^2.0.0",
     "@actions/github": "npm:@actions/github@^6.0.1",
     "@commitlint/cli": "npm:@commitlint/cli@^20.2.0",
     "@commitlint/config-conventional": "npm:@commitlint/config-conventional@^20.2.0",
@@ -39,14 +39,14 @@
   },
   "exports": {
     ".": "./src/mod.ts",
-    "./cli": "./main.ts"
+    "./cli": "./cli/main.ts"
   },
   "exclude": ["npm", ".github/actions", "dist", "node_modules"],
   "fmt": {
     "exclude": ["npm", ".github/actions"]
   },
   "lint": {
-    "include": ["main.ts", "src", "scripts", "__tests__"],
+    "include": ["cli", "src", "__tests__"],
     "exclude": ["npm"],
     "rules": { "exclude": ["no-import-prefix"] }
   },
@@ -57,7 +57,7 @@
       "read": [
         "./.github",
         "./src",
-        "./scripts",
+        "./cli",
         "./__tests__",
         "/tmp",
         "./nonexistent.yml",
@@ -103,38 +103,39 @@
     }
   },
   "bin": {
-    "github-labelmanager": "./esm/main.js"
+    "github-labelmanager": "./esm/cli/main.js"
   },
   "nodeModulesDir": "auto",
   "publish": {
     "include": [
       ".github/labels.schema.json",
+      "cli",
       "deno.json",
       "deno.lock",
+      "JSR_README.md",
       "LICENSE",
-      "main.ts",
-      "README.md",
-      "scripts",
       "src"
     ]
   },
-  "readme": "README.md",
+  "readme": "JSR_README.md",
   "tasks": {
-    "build": "deno run -A scripts/build_npm.ts",
-    "compile": "deno compile --allow-net=api.github.com -RE -o github-labelmanager main.ts",
-    "dev": "deno run --watch main.ts",
+    "build": "deno run -A cli/build/npm.ts",
+    "compile": "deno compile --allow-net=api.github.com -RE -o github-labelmanager cli/main.ts",
+    "dev": "deno run --watch cli/main.ts",
     "hooks": "lefthook install",
-    "labels": "deno run --allow-net=api.github.com -RE main.ts",
-    "labels:dry-run": "deno run --allow-net=api.github.com -RE main.ts --dry-run kjanat/github-labelmanager",
-    "schema": "deno run -A scripts/build_schema.ts",
+    "labels": "deno run --allow-net=api.github.com -RE cli/main.ts",
+    "labels:dry-run": "deno run --allow-net=api.github.com -RE cli/main.ts --dry-run kjanat/github-labelmanager",
+    "schema": "deno run -A cli/build/schema.ts",
     "test:coverage": "deno test -RWE __tests__/ --coverage",
     "test": "deno test -RWE __tests__/"
   },
   "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": true,
     "paths": {
       "~/*": ["./src/*"],
       "$/*": ["./*"],
-      "github-labelmanager": ["./main.ts"]
+      "github-labelmanager": ["./cli/main.ts"]
     }
   }
 }

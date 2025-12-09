@@ -14,7 +14,7 @@ import {
 import { parse } from "yaml";
 import { Ajv, type ValidateFunction } from "ajv";
 import { ConfigError, getEnv, isLabelConfig, loadConfig } from "~/config.ts";
-import { stubEnv } from "~/testing.ts";
+import { stubEnv } from "~/testing/mod.ts";
 
 // =============================================================================
 // isLabelConfig tests

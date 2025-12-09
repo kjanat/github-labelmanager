@@ -8,7 +8,7 @@ export type {
   LabelConfig,
   LabelConfigMeta,
   LabelDefinition,
-} from "./schema.ts";
+} from "../schema.ts";
 
 /** Environment/CLI configuration */
 export interface EnvConfig {

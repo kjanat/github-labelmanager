@@ -11,7 +11,7 @@ import {
 } from "~/factory.ts";
 import { ActionsLogger, ConsoleLogger } from "~/adapters/logger/mod.ts";
 import { ActionsGitHubClient } from "~/adapters/client/mod.ts";
-import { stubEnv } from "~/testing.ts";
+import { stubEnv } from "~/testing/mod.ts";
 
 // =============================================================================
 // isGitHubActions tests

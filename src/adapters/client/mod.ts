@@ -3,7 +3,7 @@
  * @module
  */
 
-// Types
+// Types (re-exported from ports for convenience)
 export type {
   GitHubClientConfig,
   GitHubLabel,
@@ -11,7 +11,7 @@ export type {
   IGitHubClient,
   LabelOptions,
   OctokitLike,
-} from "./types.ts";
+} from "~/ports/github.ts";
 
 // Base class (for extension)
 export { BaseGitHubClient } from "./base.ts";

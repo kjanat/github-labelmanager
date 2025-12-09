@@ -13,7 +13,7 @@
 ## Code Style
 
 - Deno runtime (not Node.js) - use Deno APIs
-- Imports: JSR (`jsr:@std/*`) for stdlib, esm.sh for npm packages
+- Imports: JSR (`jsr:@std/*`) for stdlib, npm specifiers for npm packages
 - Types: `interface` for shapes, `as const` for readonly objects
 - Naming: camelCase (vars/funcs), PascalCase (types/classes)
 - Error handling: try/catch with type guards for Octokit errors
@@ -30,31 +30,57 @@
 ## Config
 
 - Default config: `.github/labels.yml` (YAML format)
-- Entry point: `main.ts`
+- CLI entry point: `cli/main.ts`
+- Library entry point: `src/mod.ts`
 
 ## Structure
 
 ```tree
+cli/
+  build/
+    npm.ts             # NPM package build script
+    schema.ts          # JSON schema generation
+  help.ts              # CLI help text and printHelp()
+  main.ts              # CLI entry point
+
 src/
-  adapters/
-    client/          # GitHub API clients
-      mod.ts         # Barrel exports
-      types.ts       # IGitHubClient, GitHubClientConfig, LabelOptions
-      base.ts        # BaseGitHubClient (shared CRUD logic)
-      actions.ts     # ActionsGitHubClient (CI: proxy, GHES support)
-      octokit.ts     # OctokitClient (CLI: throttling, retry)
-    logger/          # Logging adapters
-      mod.ts         # Barrel exports
-      types.ts       # ILogger, AnnotationProperties
-      actions.ts     # ActionsLogger (@actions/core)
-      console.ts     # ConsoleLogger (colored CLI output)
-  client.ts          # LabelManager (high-level API with DI)
-  config.ts          # Config loading and validation
-  factory.ts         # Environment detection, service creation
-  mod.ts             # Public API exports
-  sync.ts            # Label sync orchestration
-  testing.ts         # Test utilities (MockGitHubClient, NullLogger)
-  types.ts           # Domain types (LabelConfig, SyncResult, etc.)
+  domain/              # Pure business logic (no dependencies)
+    labels.ts          # LabelDefinition, LabelColorUtils, LabelNameUtils
+    types.ts           # LabelConfig, SyncResult, SyncCounts
+    mod.ts             # Barrel export
+
+  ports/               # Interface contracts (dependency inversion)
+    github.ts          # IGitHubClient, GitHubClientConfig, LabelOptions
+    logger.ts          # ILogger, AnnotationProperties
+    mod.ts             # Barrel export
+
+  adapters/            # Infrastructure implementations
+    client/            # GitHub API clients
+      mod.ts           # Barrel exports
+      base.ts          # BaseGitHubClient (shared CRUD logic)
+      actions.ts       # ActionsGitHubClient (CI: proxy, GHES support)
+      octokit.ts       # OctokitClient (CLI: throttling, retry)
+    logger/            # Logging adapters
+      mod.ts           # Barrel exports
+      actions.ts       # ActionsLogger (@actions/core)
+      console.ts       # ConsoleLogger (colored CLI output)
+
+  testing/             # Test utilities
+    mocks.ts           # MockGitHubClient, MockLogger
+    stubs.ts           # NullLogger, env stubs
+    fixtures.ts        # Test fixtures, mock helpers
+    mod.ts             # Barrel export
+
+  tools/               # Build/dev utilities
+    sort-schema.ts     # JSON schema sorter
+    mod.ts             # Barrel export
+
+  client.ts            # LabelManager (high-level API with DI)
+  config.ts            # Config loading and validation
+  factory.ts           # Environment detection, service creation
+  schema.ts            # JSON schema validation
+  sync.ts              # Label sync orchestration
+  mod.ts               # Public API exports
 ```
 
 ## Repository
@@ -62,6 +88,11 @@ src/
 - name: `github-labelmanager`
 - owner: `kjanat`
 - url: `https://github.com/kjanat/github-labelmanager`
+
+## Import Aliases
+
+- `~/` - maps to `./src/`
+- `$/` - maps to `./` (project root)
 
 ## Git Operations
 

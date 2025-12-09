@@ -5,105 +5,25 @@
 [![NPM Version][badge:npm:@kjanat/github-labelmanager]][npm:@kjanat/github-labelmanager]
 [![pkg.pr.new][badge:pkg.pr.new]][pkg.pr.new]
 
-<!-- [![JSR Score][badge:jsr:score]][jsr:@kjanat/github-labelmanager] -->
-
 Declaratively sync GitHub issue labels from a YAML config file.
-
----
 
 ## Features
 
 - Create, update, and delete labels from a single config file
 - Rename labels via aliases (preserves issue associations)
 - Dry-run mode for safe previews
-- Works as CLI or GitHub Action
+- Works as CLI, GitHub Action, or library
+- Clean Architecture with dependency injection
 
----
+## Quick Start
 
-## Install / Run
-
-### Deno
-
-```bash
-# Install globally
-deno install -Agn github-labelmanager jsr:@kjanat/github-labelmanager/cli
-
-# Run
-deno run -A jsr:@kjanat/github-labelmanager/cli owner/repo
-```
-
-### npm
-
-```bash
-# Install globally
-npm install -g @kjanat/github-labelmanager
-
-# Run
-npx -y @kjanat/github-labelmanager owner/repo
-```
-
-### Docker
-
-```bash
-# Pull the image
-docker pull ghcr.io/kjanat/github-labelmanager:latest
-
-# Run
-docker run --rm \
-  -e GITHUB_TOKEN=ghp_xxx \
-  -v $(git rev-parse --show-toplevel)/.github:/app/.github \
-  ghcr.io/kjanat/github-labelmanager owner/repo
-```
-
----
-
-## Use as CLI
-
-```bash
-GITHUB_TOKEN=ghp_xxx github-labelmanager owner/repo
-```
-
-Preview changes without applying:
-
-```bash
-github-labelmanager owner/repo --dry-run
-```
-
-<details>
-<summary>Alternative ways to run</summary>
-
-> **npx (without installing)**
->
-> ```bash
-> GITHUB_TOKEN=ghp_xxx npx -y @kjanat/github-labelmanager owner/repo
-> ```
-
-> **Deno (without installing)**
->
-> ```bash
-> GITHUB_TOKEN=ghp_xxx deno run -A jsr:@kjanat/github-labelmanager/cli owner/repo
-> ```
-
-> **Docker**
->
-> ```bash
-> docker run --rm -e GITHUB_TOKEN=ghp_xxx -v $(pwd)/.github:/app/.github ghcr.io/kjanat/github-labelmanager owner/repo
-> ```
-
-</details>
-
----
-
-## Use as GitHub Action
+### GitHub Action
 
 ```yaml
 name: Sync Labels
 on:
   push:
-    # Optional: trigger only when the labels file changes
-    # This will however not sync manually modified labels through the GitHub UI
-    paths:
-      - ".github/labels.yml"
+    paths: [".github/labels.yml"]
   workflow_dispatch:
 
 jobs:
@@ -113,26 +33,50 @@ jobs:
       contents: read
       issues: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       - uses: kjanat/github-labelmanager@v1
         with:
           token: ${{ github.token }}
 ```
 
-### Inputs
+### CLI
 
-| Input         | Required | Default              | Description                    |
-| ------------- | -------- | -------------------- | ------------------------------ |
-| `token`       | Yes      | -                    | GitHub token with repo access  |
-| `repository`  | No       | `github.repository`  | Target repo in `owner/repo`    |
-| `dry-run`     | No       | `false`              | Preview without making changes |
-| `config-path` | No       | `.github/labels.yml` | Path to label config file      |
+```bash
+# Deno
+deno run -A jsr:@kjanat/github-labelmanager/cli owner/repo
 
----
+# npm
+npx @kjanat/github-labelmanager owner/repo
 
-## Configure
+# Docker
+docker run --rm -e GITHUB_TOKEN=ghp_xxx \
+  -v $(pwd)/.github:/app/.github \
+  ghcr.io/kjanat/github-labelmanager owner/repo
+```
 
-Create [`.github/labels.yml`][labels.yml] in your repository:
+## Installation
+
+### Deno
+
+```bash
+deno install -Agn github-labelmanager jsr:@kjanat/github-labelmanager/cli
+```
+
+### npm
+
+```bash
+npm install -g @kjanat/github-labelmanager
+```
+
+### Docker
+
+```bash
+docker pull ghcr.io/kjanat/github-labelmanager:latest
+```
+
+## Configuration
+
+Create `.github/labels.yml` in your repository:
 
 ```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/kjanat/github-labelmanager/master/.github/labels.schema.json
@@ -150,14 +94,12 @@ labels:
   - name: docs
     color: "#0075ca"
     description: Documentation improvements
-    aliases: [documentation]
 
 delete:
   - obsolete-label
-  - another-old-label
 ```
 
-### Label schema
+### Label Schema
 
 | Field         | Required | Description                     |
 | ------------- | -------- | ------------------------------- |
@@ -166,25 +108,86 @@ delete:
 | `description` | Yes      | Short description               |
 | `aliases`     | No       | Old names to rename from        |
 
-### Delete labels
+## GitHub Action
 
-Add label names to the `delete` array to remove them.
+### Inputs
 
----
+| Input         | Required | Default              | Description                    |
+| ------------- | -------- | -------------------- | ------------------------------ |
+| `token`       | No       | `github.token`       | GitHub token with repo access  |
+| `repository`  | No       | `github.repository`  | Target repo in `owner/repo`    |
+| `dry-run`     | No       | `false`              | Preview without making changes |
+| `config-path` | No       | `.github/labels.yml` | Path to label config file      |
 
-## Environment variables
+## CLI Usage
+
+```bash
+# Set token
+export GITHUB_TOKEN=ghp_xxx
+
+# Sync labels
+github-labelmanager owner/repo
+
+# Preview changes
+github-labelmanager owner/repo --dry-run
+
+# Custom config
+github-labelmanager owner/repo --config ./labels.yml
+```
+
+### Environment Variables
 
 | Variable       | Required | Description                             |
 | -------------- | -------- | --------------------------------------- |
 | `GITHUB_TOKEN` | Yes      | Personal access token or `github.token` |
 | `REPO`         | No       | Fallback if not passed as argument      |
 | `DRY_RUN`      | No       | Set to `true` for dry-run mode          |
+| `CONFIG_PATH`  | No       | Path to config file                     |
 
----
+## Library Usage
+
+```typescript
+import {
+  LabelManager,
+  loadConfig,
+  syncLabels,
+} from "@kjanat/github-labelmanager";
+
+const config = await loadConfig(".github/labels.yml");
+const manager = new LabelManager({
+  token: Deno.env.get("GITHUB_TOKEN")!,
+  owner: "owner",
+  repo: "repo",
+  dryRun: false,
+});
+
+const result = await syncLabels(manager, config);
+console.log(result.summary);
+```
+
+See [JSR docs][jsr:@kjanat/github-labelmanager] for full API reference.
+
+## Architecture
+
+```
+cli/                    # CLI entry point and build scripts
+src/
+  domain/               # Pure business logic (labels, types)
+  ports/                # Interface contracts (IGitHubClient, ILogger)
+  adapters/             # Infrastructure implementations
+    client/             # GitHub API clients (Actions, Octokit)
+    logger/             # Logging (Actions, Console)
+  testing/              # Test utilities (mocks, stubs, fixtures)
+  client.ts             # LabelManager (high-level API)
+  config.ts             # Config loading and validation
+  factory.ts            # Service creation and DI
+  sync.ts               # Label sync orchestration
+  mod.ts                # Public API exports
+```
 
 ## Development
 
-```sh
+```bash
 # Run locally
 deno task labels owner/repo
 
@@ -194,17 +197,15 @@ deno task labels:dry-run owner/repo
 # Type check
 deno check --all
 
-# Format
-deno fmt
+# Format & Lint
+deno fmt && deno lint
 
-# Lint
-deno lint
+# Test
+deno task test
 
 # Build npm package
 deno task build
 ```
-
----
 
 ## License
 
@@ -221,13 +222,5 @@ deno task build
 [badge:npm:@kjanat/github-labelmanager]: https://img.shields.io/npm/v/@kjanat/github-labelmanager?logo=npm&logoColor=white&logoSize=auto&label=&labelColor=CB3837&color=black
 [jsr:@kjanat/github-labelmanager]: https://jsr.io/@kjanat/github-labelmanager
 [npm:@kjanat/github-labelmanager]: https://www.npmjs.com/package/@kjanat/github-labelmanager
-[labels.yml]: https://github.com/kjanat/github-labelmanager/blob/master/.github/labels.yml "Click to view this repository's label configuration"
 [badge:pkg.pr.new]: https://pkg.pr.new/badge/kjanat/github-labelmanager
 [pkg.pr.new]: https://pkg.pr.new/~/kjanat/github-labelmanager
-
-<!--
-markdownlint-configure-file {
-  "no-blanks-blockquote": false,
-  "no-inline-html": false
-}
--->

@@ -4,7 +4,7 @@
  * @module
  */
 
-import type { EnvConfig } from "./types.ts";
+import type { EnvConfig } from "./domain/types.ts";
 import type {
   GitHubLabel,
   IGitHubClient,

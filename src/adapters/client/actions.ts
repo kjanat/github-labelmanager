@@ -4,17 +4,17 @@
  * @module
  */
 
-import * as github from "@actions/github";
+import { getOctokit } from "@actions/github";
 import type { ILogger } from "~/adapters/logger/mod.ts";
 import type {
   GitHubClientConfig,
   GitHubLabel,
   GitHubLabelSchema,
-} from "./types.ts";
+} from "~/ports/github.ts";
 import { BaseGitHubClient } from "./base.ts";
 
 /** Octokit instance type from @actions/github */
-type ActionsOctokit = ReturnType<typeof github.getOctokit>;
+type ActionsOctokit = ReturnType<typeof getOctokit>;
 
 /**
  * GitHub Actions client using @actions/github
@@ -34,7 +34,7 @@ export class ActionsGitHubClient extends BaseGitHubClient {
   constructor(config: GitHubClientConfig, logger: ILogger) {
     super(config, logger);
     // @actions/github handles authentication and proxy configuration
-    this.octokit = github.getOctokit(config.token);
+    this.octokit = getOctokit(config.token);
   }
 
   async list(): Promise<GitHubLabel[]> {

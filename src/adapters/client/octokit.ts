@@ -10,7 +10,7 @@ import type {
   GitHubClientConfig,
   GitHubLabel,
   GitHubLabelSchema,
-} from "./types.ts";
+} from "~/ports/github.ts";
 import { BaseGitHubClient } from "./base.ts";
 
 /**

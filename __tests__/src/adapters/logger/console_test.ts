@@ -4,7 +4,12 @@
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import { ConsoleLogger } from "~/adapters/logger/console.ts";
-import { captureConsole, ExitStubError, stubEnv, stubExit } from "~/testing.ts";
+import {
+  captureConsole,
+  ExitStubError,
+  stubEnv,
+  stubExit,
+} from "~/testing/mod.ts";
 
 // --- Basic logging tests ---
 

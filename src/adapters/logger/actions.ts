@@ -3,9 +3,10 @@
  * @module
  */
 
+import type { AnnotationProperties as ActionsAnnotationProperties } from "@actions/core";
 import * as defaultCore from "@actions/core";
-import type { AnnotationProperties, ILogger } from "./types.ts";
-import type { SyncOperation, SyncResult } from "~/types.ts";
+import type { AnnotationProperties, ILogger } from "~/ports/logger.ts";
+import type { SyncOperation, SyncResult } from "~/domain/types.ts";
 
 /** Minimum number of operations before collapsing details in summary */
 const COLLAPSE_THRESHOLD = 5;
@@ -18,15 +19,15 @@ export interface ActionsCore {
   info(message: string): void;
   warning(
     message: string | Error,
-    properties?: defaultCore.AnnotationProperties,
+    properties?: ActionsAnnotationProperties,
   ): void;
   error(
     message: string | Error,
-    properties?: defaultCore.AnnotationProperties,
+    properties?: ActionsAnnotationProperties,
   ): void;
   notice(
     message: string | Error,
-    properties?: defaultCore.AnnotationProperties,
+    properties?: ActionsAnnotationProperties,
   ): void;
   startGroup(name: string): void;
   endGroup(): void;
@@ -47,7 +48,7 @@ export interface ActionsCore {
  */
 export function toActionsAnnotation(
   properties?: AnnotationProperties,
-): defaultCore.AnnotationProperties | undefined {
+): ActionsAnnotationProperties | undefined {
   if (!properties) return undefined;
   return {
     title: properties.title,

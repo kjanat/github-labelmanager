@@ -3,8 +3,8 @@
  * @module
  */
 
-import type { AnnotationProperties, ILogger } from "./types.ts";
-import type { SyncResult } from "~/types.ts";
+import type { AnnotationProperties, ILogger } from "~/ports/logger.ts";
+import type { SyncResult } from "~/domain/types.ts";
 
 /** ANSI color codes */
 const COLORS = {

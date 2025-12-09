@@ -9,13 +9,14 @@ import {
   ConfigError,
   getEnv,
   type GetEnvOptions,
+  HelpRequested,
   loadConfig,
-  printHelp,
 } from "~/config.ts";
 import { LabelManager } from "~/client.ts";
 import { syncLabels } from "~/sync.ts";
 import { createLogger } from "~/factory.ts";
 import type { ILogger } from "~/adapters/logger/mod.ts";
+import { printHelp } from "./help.ts";
 
 /** Options for main() to enable testing without global state mutation */
 export interface MainOptions {
@@ -56,6 +57,11 @@ export async function main(options?: MainOptions): Promise<void> {
       log.setFailed("One or more operations failed");
     }
   } catch (err) {
+    if (err instanceof HelpRequested) {
+      printHelp();
+      return;
+    }
+
     if (err instanceof ConfigError) {
       log.setFailed(err.message);
       if (err.showHelp) {

@@ -3,28 +3,11 @@
  * @module
  */
 
-import type { LabelConfig, SyncOperation, SyncResult } from "./types.ts";
+import type { LabelConfig, SyncOperation, SyncResult } from "./domain/types.ts";
 import type { GitHubLabel } from "./adapters/client/mod.ts";
 import type { AnnotationProperties } from "./adapters/logger/mod.ts";
 import { LabelManager } from "./client.ts";
-
-/**
- * Normalize color to lowercase hex without #
- *
- * Returns undefined if color is falsy, allowing API defaults to apply.
- *
- * Note: Schema validation ensures 6-char hex format, but we pad
- * as a safeguard in case validation is bypassed or colors like
- * "fff" are passed.
- */
-function normalizeColor(color: string | undefined): string | undefined {
-  if (!color) return undefined;
-  const hex = color.replace(/^#/, "").toLowerCase();
-  if (hex.length === 3) {
-    return hex.split("").map((c) => c + c).join("");
-  }
-  return hex;
-}
+import { LabelColorUtils } from "./domain/labels.ts";
 
 /**
  * Build annotation properties for a label operation
@@ -101,7 +84,7 @@ export async function syncLabels(
 
   // Process each desired label
   for (const desired of config.labels) {
-    const cleanColor = normalizeColor(desired.color);
+    const cleanColor = LabelColorUtils.normalize(desired.color);
 
     // Check for renames via aliases
     const matchedName = desired.name;

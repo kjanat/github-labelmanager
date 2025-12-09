@@ -10,7 +10,7 @@
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import { main } from "github-labelmanager";
-import { createEnvGet, MockLogger } from "~/testing.ts";
+import { createEnvGet, MockLogger } from "~/testing/mod.ts";
 
 // =============================================================================
 // Missing token tests

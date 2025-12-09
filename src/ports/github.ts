@@ -4,7 +4,7 @@
  */
 
 import type { Octokit } from "octokit";
-import type * as github from "@actions/github";
+import type { getOctokit } from "@actions/github";
 import type { components } from "@octokit/openapi-types";
 
 // ============================================================================
@@ -119,7 +119,7 @@ export interface IGitHubClient {
 // ============================================================================
 
 /** Octokit instance from @actions/github */
-type ActionsOctokit = ReturnType<typeof github.getOctokit>;
+type ActionsOctokit = ReturnType<typeof getOctokit>;
 
 /**
  * Union of both Octokit types - ensures type compatibility.

@@ -11,7 +11,7 @@ import type {
   IGitHubClient,
   LabelOptions,
   OctokitLike,
-} from "./types.ts";
+} from "~/ports/github.ts";
 
 /**
  * Abstract base class for GitHub clients

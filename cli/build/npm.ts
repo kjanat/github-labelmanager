@@ -16,7 +16,7 @@ interface DenoConfig {
   [key: string]: unknown;
 }
 
-const mainPath: string = "main.ts";
+const mainPath: string = "cli/main.ts";
 
 await emptyDir("npm");
 
@@ -96,19 +96,17 @@ try {
       repository: pkg.repository,
       license: pkg.license,
       author: pkg.author,
-      publish: pkg.publish,
-      readme: pkg.readme,
       bin: pkg.bin,
       type: "module",
       scripts: pkg.tasks,
     },
     postBuild(): void {
       // Copy readme/license
-      Deno.copyFileSync("README.md", "npm/README.md");
+      Deno.copyFileSync("NPM_README.md", "npm/README.md");
       Deno.copyFileSync("LICENSE", "npm/LICENSE");
 
       // Add Node.js shebang to bin entry for npx compatibility
-      const binPath = "npm/esm/main.js";
+      const binPath = "npm/esm/cli/main.js";
       const binContent = Deno.readTextFileSync(binPath);
       Deno.writeTextFileSync(binPath, `#!/usr/bin/env node\n${binContent}`);
     },

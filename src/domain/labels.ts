@@ -69,7 +69,15 @@ export type LabelColor = Brand<HexColor, "LabelColor">;
 const HEX_COLOR_REGEX = /^[0-9a-fA-F]{6}$/;
 const MAX_DESCRIPTION_LENGTH = 100;
 
-export const LabelNameUtils = {
+/** Interface for LabelName validation utilities */
+interface ILabelNameUtils {
+  /** Parses a string into a LabelName */
+  parse(value: string): LabelName;
+  /** Returns true if the value is a valid label name */
+  is(value: string): value is LabelName;
+}
+
+export const LabelNameUtils: ILabelNameUtils = {
   /**
    * Parses a string into a LabelName.
    * @throws {Error} If the name is empty or whitespace-only
@@ -86,7 +94,7 @@ export const LabelNameUtils = {
   is(value: string): value is LabelName {
     return value.trim().length > 0;
   },
-} as const;
+};
 
 /**
  * Normalize a hex color candidate: strip leading #, expand 3-char to 6-char.
@@ -103,7 +111,17 @@ function normalizeHexCandidate(value: string): string {
   return normalized;
 }
 
-export const LabelColorUtils = {
+/** Interface for LabelColor validation utilities */
+interface ILabelColorUtils {
+  /** Parses a string into a LabelColor */
+  parse(value: string): LabelColor;
+  /** Returns true if the value can be parsed as a valid hex color */
+  is(value: string): boolean;
+  /** Normalizes a color to lowercase hex without `#` */
+  normalize(color: string | undefined): string | undefined;
+}
+
+export const LabelColorUtils: ILabelColorUtils = {
   /**
    * Parses a string into a LabelColor.
    * @throws {Error} If not a valid 6-character hex code
@@ -127,9 +145,31 @@ export const LabelColorUtils = {
   is(value: string): boolean {
     return HEX_COLOR_REGEX.test(normalizeHexCandidate(value));
   },
-} as const;
 
-export const LabelDescriptionUtils = {
+  /**
+   * Normalizes a color to lowercase hex without `#`.
+   * Returns undefined if color is falsy, allowing API defaults to apply.
+   * Does not throw - returns undefined for invalid colors.
+   */
+  normalize(color: string | undefined): string | undefined {
+    if (!color) return undefined;
+    const hex = color.replace(/^#/, "").toLowerCase();
+    if (hex.length === 3) {
+      return hex.split("").map((c) => c + c).join("");
+    }
+    return hex;
+  },
+};
+
+/** Interface for LabelDescription validation utilities */
+interface ILabelDescriptionUtils {
+  /** Parses a string into a LabelDescription */
+  parse(value: string): LabelDescription;
+  /** Returns true if the value is a valid description */
+  is(value: string): value is LabelDescription;
+}
+
+export const LabelDescriptionUtils: ILabelDescriptionUtils = {
   /**
    * Parses a string into a LabelDescription.
    * @throws {Error} If longer than 100 characters
@@ -147,7 +187,7 @@ export const LabelDescriptionUtils = {
   is(value: string): value is LabelDescription {
     return value.length <= MAX_DESCRIPTION_LENGTH;
   },
-} as const;
+};
 
 // Label Definition
 
@@ -161,7 +201,7 @@ export interface Label {
    * The name of the label.
    *
    * Emoji can be added using either native emoji or colon-style markup.
-   * For example, typing `:strawberry:` will render the emoji 🍓.
+   * For example, typing `:strawberry:` will render the emoji.
    */
   name: LabelName;
 
@@ -273,6 +313,18 @@ export function parseLabelConfig(raw: RawLabelConfig): LabelConfig {
 
 // Builder Pattern (for ergonomic construction)
 
+/** Fluent builder interface for creating type-safe labels */
+export interface LabelBuilder {
+  /** Set the label color (hex format) */
+  color(value: string): LabelBuilder;
+  /** Set the label description (max 100 chars) */
+  description(value: string): LabelBuilder;
+  /** Set alias names for label renaming */
+  aliases(...values: string[]): LabelBuilder;
+  /** Build the final Label object */
+  build(): Label;
+}
+
 /**
  * Fluent builder for creating type-safe labels.
  *
@@ -285,26 +337,24 @@ export function parseLabelConfig(raw: RawLabelConfig): LabelConfig {
  *   .build();
  * ```
  */
-export function label(name: string) {
+export function label(name: string): LabelBuilder {
   const _name = LabelNameUtils.parse(name);
   let _color: LabelColor | undefined;
   let _description: LabelDescription | undefined;
   let _aliases: LabelName[] | undefined;
 
-  return {
-    color<T extends string>(
-      value: T extends ValidateHex<T> ? T : ValidateHex<T>,
-    ) {
-      _color = LabelColorUtils.parse(value as string);
-      return this;
+  const builder: LabelBuilder = {
+    color(value: string): LabelBuilder {
+      _color = LabelColorUtils.parse(value);
+      return builder;
     },
-    description(value: string) {
+    description(value: string): LabelBuilder {
       _description = LabelDescriptionUtils.parse(value);
-      return this;
+      return builder;
     },
-    aliases(...values: string[]) {
+    aliases(...values: string[]): LabelBuilder {
       _aliases = values.map(LabelNameUtils.parse);
-      return this;
+      return builder;
     },
     build(): Label {
       return {
@@ -315,6 +365,8 @@ export function label(name: string) {
       };
     },
   };
+
+  return builder;
 }
 
 // Default Export

@@ -29,59 +29,26 @@
  * @module
  */
 
-// Types
-export type {
-  EnvConfig,
-  LabelConfig,
-  LabelDefinition,
-  SyncOperation,
-  SyncResult,
-} from "./types.ts";
+// Domain
+export * from "./domain/mod.ts";
 
-// Client types
-export type {
-  GitHubClientConfig,
-  GitHubLabel,
-  IGitHubClient,
-  LabelOptions,
-} from "./adapters/client/mod.ts";
+// Ports (interfaces)
+export * from "./ports/mod.ts";
 
-// Logger types
-export type { AnnotationProperties, ILogger } from "./adapters/logger/mod.ts";
+// Infrastructure (adapters)
+export * from "./adapters/client/mod.ts";
+export * from "./adapters/logger/mod.ts";
 
-// Config
-export {
-  ConfigError,
-  getEnv,
-  isLabelConfig,
-  loadConfig,
-  printHelp,
-} from "./config.ts";
-export type { GetEnvOptions } from "./config.ts";
+// Application
+export * from "./client.ts";
+export * from "./sync.ts";
+export * from "./config.ts";
+export * from "./factory.ts";
+export * from "./schema.ts";
 
-// Client (high-level API with auto-detection)
-export { LabelManager } from "./client.ts";
-export type { LabelManagerOptions } from "./client.ts";
-
-// Factory (for manual control over implementations)
-export {
-  createGitHubClient,
-  createLogger,
-  createServices,
-  isGitHubActions,
-} from "./factory.ts";
-
-// Adapters (for direct instantiation)
-export { ActionsLogger, ConsoleLogger } from "./adapters/logger/mod.ts";
-export { ActionsGitHubClient, OctokitClient } from "./adapters/client/mod.ts";
-
-// Sync
-export { syncLabels } from "./sync.ts";
+// Testing (separate export in deno.json, but also available here)
+export * from "./testing/mod.ts";
 
 // CLI entry point
-export { main } from "$/main.ts";
-export type { MainOptions } from "$/main.ts";
-
-// Test utilities (for consumers writing tests)
-export { createTestEnv, MockGitHubClient, NullLogger } from "./testing.ts";
-export type { ApiCall, MockGitHubClientOptions } from "./testing.ts";
+export { main } from "$/cli/main.ts";
+export type { MainOptions } from "$/cli/main.ts";

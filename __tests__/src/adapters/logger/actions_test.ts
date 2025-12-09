@@ -10,8 +10,8 @@ import {
   ActionsLogger,
   toActionsAnnotation,
 } from "~/adapters/logger/actions.ts";
-import type { SyncOperation, SyncResult } from "~/types.ts";
-import { type CoreCall, createMockActionsCore } from "~/testing.ts";
+import type { SyncOperation, SyncResult } from "~/domain/types.ts";
+import { type CoreCall, createMockActionsCore } from "~/testing/mod.ts";
 
 /** Helper to create mock core with ActionsCore typing */
 function createMockCore(): { core: ActionsCore; calls: CoreCall[] } {

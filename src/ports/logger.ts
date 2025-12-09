@@ -3,7 +3,7 @@
  * @module
  */
 
-import type { SyncResult } from "~/types.ts";
+import type { SyncResult } from "~/domain/types.ts";
 
 /**
  * Annotation properties for marking specific file locations
