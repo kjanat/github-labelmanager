@@ -112,7 +112,7 @@ export const LabelColorUtils = {
 
     if (!HEX_COLOR_REGEX.test(normalized)) {
       throw new Error(
-        `Invalid hex color "${value}". Expected 3 or 6 hex characters without #`,
+        `Invalid hex color "${value}". Expected 3 or 6 hex characters (with optional leading #)`,
       );
     }
     return normalized.toLowerCase() as LabelColor;
