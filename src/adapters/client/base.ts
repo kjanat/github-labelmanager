@@ -50,11 +50,7 @@ export abstract class BaseGitHubClient implements IGitHubClient {
         repo: this.repo,
         name,
       });
-      return {
-        name: data.name,
-        color: data.color,
-        description: data.description,
-      };
+      return this.mapLabelResponse(data);
     } catch (err) {
       if (this.isNotFoundError(err)) {
         return null;
@@ -77,11 +73,7 @@ export abstract class BaseGitHubClient implements IGitHubClient {
       description: options.description,
     });
 
-    return {
-      name: data.name,
-      color: data.color,
-      description: data.description,
-    };
+    return this.mapLabelResponse(data);
   }
 
   async update(
@@ -105,11 +97,7 @@ export abstract class BaseGitHubClient implements IGitHubClient {
       description: options.description,
     });
 
-    return {
-      name: data.name,
-      color: data.color,
-      description: data.description,
-    };
+    return this.mapLabelResponse(data);
   }
 
   async delete(name: string): Promise<void> {
@@ -135,5 +123,18 @@ export abstract class BaseGitHubClient implements IGitHubClient {
       "status" in err &&
       err.status === 404
     );
+  }
+
+  /**
+   * Map Octokit label response to GitHubLabel
+   */
+  protected mapLabelResponse(
+    data: { name: string; color: string; description: string | null },
+  ): GitHubLabel {
+    return {
+      name: data.name,
+      color: data.color,
+      description: data.description,
+    };
   }
 }
