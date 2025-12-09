@@ -152,6 +152,16 @@ function createMockOctokit(): MockOctokit {
   };
 }
 
+// ============================================================================
+// WARNING: SHARED SINGLETON MOCKS - CROSS-TEST CONTAMINATION RISK
+// ============================================================================
+// The mockOctokit and getOctokit below are SHARED SINGLETONS. Mock call counts
+// and state persist across tests unless explicitly reset.
+//
+// TESTS MUST call clearGitHubMocks() in beforeEach/afterEach to avoid flaky
+// tests caused by leftover state from previous test runs.
+// ============================================================================
+
 /** Singleton mock Octokit instance */
 export const mockOctokit: MockOctokit = createMockOctokit();
 
