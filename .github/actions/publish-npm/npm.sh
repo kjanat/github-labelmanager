@@ -24,12 +24,8 @@ if [[ -z "${PKG_VERSION}" ]]; then
   exit 1
 fi
 
-# Validate TAG (default to "latest" if unset)
+# Default TAG to "latest" if unset
 TAG="${TAG:-latest}"
-if [[ -z "${TAG}" ]]; then
-  echo "::error::TAG is empty"
-  exit 1
-fi
 
 # Validate DRY_RUN is boolean
 DRY_RUN="${DRY_RUN:-false}"
