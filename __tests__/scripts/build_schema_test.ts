@@ -3,7 +3,12 @@
  * @module
  */
 
-import { assertEquals, assertExists, assertStringIncludes } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertExists,
+  assertStringIncludes,
+} from "@std/assert";
 import {
   DEFAULT_SCHEMA_ID,
   generateSchema,
@@ -109,7 +114,7 @@ Deno.test("schema - Root object has correct structure", async () => {
 
   // Check required
   const required = schema.required as string[];
-  assertEquals(required.includes("labels"), true);
+  assert(required.includes("labels"), "labels should be required");
 
   // Check uniqueItems (not enforced by Zod schema)
   // assertEquals(props.labels.uniqueItems, true);
