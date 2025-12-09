@@ -89,10 +89,13 @@ function output(name: string, value: string): void {
 }
 
 // === Git Helpers ===
-function git(...args: string[]): { stdout: string; success: boolean } {
+function git(
+  ...args: string[]
+): { stdout: string; stderr: string; success: boolean } {
   const result = spawnSync("git", args, { encoding: "utf-8" });
   return {
     stdout: result.stdout?.trim() ?? "",
+    stderr: result.stderr?.trim() ?? "",
     success: result.status === 0,
   };
 }
@@ -100,7 +103,8 @@ function git(...args: string[]): { stdout: string; success: boolean } {
 function gitOrFail(...args: string[]): string {
   const result = git(...args);
   if (!result.success) {
-    error(`git ${args.join(" ")} failed`);
+    const msg = result.stderr ? `: ${result.stderr}` : "";
+    error(`git ${args.join(" ")} failed${msg}`);
   }
   return result.stdout;
 }
