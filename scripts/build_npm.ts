@@ -46,14 +46,17 @@ if (versionArg) {
 
 // Swap jsr:@eemeli/yaml -> npm:yaml for npm build
 if (isJsrYaml) {
+  if (!originalYamlImport) {
+    throw new Error("Expected yaml import in deno.json imports but found none");
+  }
   const denoJsonContent = await Deno.readTextFile("./deno.json");
-  await Deno.writeTextFile(
-    "./deno.json",
-    denoJsonContent.replace(
-      originalYamlImport!,
-      "npm:yaml" + originalYamlImport!.replace(/^jsr:@eemeli\/yaml/, ""),
-    ),
-  );
+  const denoConfig = JSON.parse(denoJsonContent) as Record<string, unknown>;
+  if (!denoConfig.imports || typeof denoConfig.imports !== "object") {
+    throw new Error("Expected imports object in deno.json");
+  }
+  const imports = denoConfig.imports as Record<string, string>;
+  imports.yaml = "npm:yaml" + originalYamlImport.replace(/^jsr:@eemeli\/yaml/, "");
+  await Deno.writeTextFile("./deno.json", JSON.stringify(denoConfig, null, 2) + "\n");
 }
 
 try {
@@ -115,12 +118,11 @@ try {
   // Restore original yaml import
   if (isJsrYaml && originalYamlImport) {
     const denoJsonContent = Deno.readTextFileSync("./deno.json");
-    Deno.writeTextFileSync(
-      "./deno.json",
-      denoJsonContent.replace(
-        "npm:yaml" + originalYamlImport.replace(/^jsr:@eemeli\/yaml/, ""),
-        originalYamlImport,
-      ),
-    );
+    const denoConfig = JSON.parse(denoJsonContent) as Record<string, unknown>;
+    if (denoConfig.imports && typeof denoConfig.imports === "object") {
+      const imports = denoConfig.imports as Record<string, string>;
+      imports.yaml = originalYamlImport;
+      Deno.writeTextFileSync("./deno.json", JSON.stringify(denoConfig, null, 2) + "\n");
+    }
   }
 }
