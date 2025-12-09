@@ -578,8 +578,8 @@ describe("run - step summary content", () => {
   it("summary contains package info", async () => {
     await run(mockReadFile);
 
-    const addRawCall = mockSummary.addRaw.mock.calls[0];
-    const summaryContent = addRawCall?.[0] as string;
+    expect(mockSummary.addRaw).toHaveBeenCalled();
+    const summaryContent = mockSummary.addRaw.mock.calls[0][0] as string;
 
     expect(summaryContent).toContain("@kjanat/github-labelmanager");
   });
@@ -587,8 +587,8 @@ describe("run - step summary content", () => {
   it("summary contains template info", async () => {
     await run(mockReadFile);
 
-    const addRawCall = mockSummary.addRaw.mock.calls[0];
-    const summaryContent = addRawCall?.[0] as string;
+    expect(mockSummary.addRaw).toHaveBeenCalled();
+    const summaryContent = mockSummary.addRaw.mock.calls[0][0] as string;
 
     expect(summaryContent).toContain("basic");
   });
@@ -596,8 +596,8 @@ describe("run - step summary content", () => {
   it("summary contains commit link", async () => {
     await run(mockReadFile);
 
-    const addRawCall = mockSummary.addRaw.mock.calls[0];
-    const summaryContent = addRawCall?.[0] as string;
+    expect(mockSummary.addRaw).toHaveBeenCalled();
+    const summaryContent = mockSummary.addRaw.mock.calls[0][0] as string;
 
     expect(summaryContent).toContain("[View Commit]");
   });
@@ -605,8 +605,8 @@ describe("run - step summary content", () => {
   it("summary shows success status when PR found", async () => {
     await run(mockReadFile);
 
-    const addRawCall = mockSummary.addRaw.mock.calls[0];
-    const summaryContent = addRawCall?.[0] as string;
+    expect(mockSummary.addRaw).toHaveBeenCalled();
+    const summaryContent = mockSummary.addRaw.mock.calls[0][0] as string;
 
     expect(summaryContent).toContain(":white_check_mark:");
   });
