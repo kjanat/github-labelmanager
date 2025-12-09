@@ -43,9 +43,15 @@ export function generateSchema(): Record<string, unknown> {
 }
 
 if (import.meta.main) {
-  const schema = generateSchema();
-  const sorted = sortSchema(schema as JsonValue);
-  const content = `${JSON.stringify(sorted, null, 2)}\n`;
-  await Deno.writeTextFile(OUTPUT_PATH, content);
-  console.log(`Generated ${OUTPUT_PATH}`);
+  try {
+    const schema = generateSchema();
+    const content = `${JSON.stringify(schema, null, 2)}\n`;
+    await Deno.writeTextFile(OUTPUT_PATH, content);
+    console.log(`Generated ${OUTPUT_PATH}`);
+  } catch (err) {
+    console.error(
+      `Failed to generate schema: ${err instanceof Error ? err.message : err}`,
+    );
+    Deno.exit(1);
+  }
 }
