@@ -23,7 +23,7 @@ export async function main(logger?: ILogger): Promise<void> {
   try {
     const env = getEnv();
     const config = await loadConfig(env.configPath);
-    const manager = new LabelManager(env, undefined, log);
+    const manager = new LabelManager(env, { logger: log });
     const result = await syncLabels(manager, config);
 
     // Print summary

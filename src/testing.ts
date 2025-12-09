@@ -10,7 +10,7 @@
  *
  * const client = new MockGitHubClient({ labels: [{ name: "bug", color: "d73a4a", description: "Bug" }] });
  * const logger = new NullLogger();
- * const manager = new LabelManager(createTestEnv(), client, logger);
+ * const manager = new LabelManager(createTestEnv(), { client, logger });
  * ```
  *
  * @module

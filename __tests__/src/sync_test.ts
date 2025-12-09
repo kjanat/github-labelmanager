@@ -19,7 +19,7 @@ function createTestManager(
     repo: client.repo,
     dryRun: client.isDryRun,
   });
-  return new LabelManager(env, client, new NullLogger());
+  return new LabelManager(env, { client, logger: new NullLogger() });
 }
 
 // =============================================================================
