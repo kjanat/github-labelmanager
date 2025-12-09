@@ -109,7 +109,9 @@ export async function run(
   // Get commit info
   const sha = getCommitSha();
   if (!sha) {
-    core.info("Skipping comment - no commit SHA available for this event type");
+    core.warning(
+      "Skipping comment - no commit SHA available for this event type",
+    );
     core.setOutput("pr-found", "false");
     core.setOutput("comment-id", "");
     core.setOutput("comment-url", "");
