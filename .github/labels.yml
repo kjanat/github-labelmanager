@@ -95,4 +95,9 @@ labels:
     color: "#bdb76b"
     description: Work cannot proceed due to an external dependency
 
-# delete:
+# Clean up old area labels that were replaced by area: prefixed versions
+delete:
+  - core-vm
+  - ui
+  - labs
+  - content
