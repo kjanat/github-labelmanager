@@ -219,7 +219,7 @@ export class ActionsLogger implements ILogger {
     const rows = operations.map((op) => {
       const color = op.details?.color ?? "";
       const colorSwatch = color
-        ? `<span style="background-color:#${color};width:1em;height:1em;display:inline-block;border-radius:50%;border:1px solid #666;vertical-align:middle;margin-right:0.3em;" title="#${color}"></span>`
+        ? `<span style="background-color:#${color};width:1em;height:1em;display:inline-block;border-radius:50%;border:1px solid #666;vertical-align:middle;margin-right:0.3em;" title="#${color}"></span>#${color}`
         : "";
       const desc = op.details?.description
         ? op.details.description.length > 50
