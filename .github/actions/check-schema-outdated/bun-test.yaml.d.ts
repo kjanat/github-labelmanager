@@ -1,6 +1,6 @@
-const contents: {
-  "dump-raw-summaries": boolean | undefined;
-  "codeblock-web-source": string | undefined;
+declare const contents: {
+  "dump-raw-summaries"?: boolean;
+  "codeblock-web-source"?: string;
 };
 
-export = contents;
+export default contents;
