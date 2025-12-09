@@ -14,6 +14,17 @@ import type { ILogger } from "./adapters/logger/mod.ts";
 import { createGitHubClient, createLogger } from "./factory.ts";
 
 /**
+ * Options for LabelManager constructor
+ * Used for dependency injection and testing
+ */
+export interface LabelManagerOptions {
+  /** Custom GitHub client implementation */
+  client?: IGitHubClient;
+  /** Custom logger implementation */
+  logger?: ILogger;
+}
+
+/**
  * GitHub label manager client
  *
  * Automatically selects the appropriate implementation based on environment:
@@ -32,7 +43,7 @@ export class LabelManager {
    */
   constructor(
     env: EnvConfig,
-    options: { client?: IGitHubClient; logger?: ILogger } = {},
+    options: LabelManagerOptions = {},
   ) {
     this.logger = options.logger ?? createLogger();
     this.client = options.client ?? createGitHubClient(

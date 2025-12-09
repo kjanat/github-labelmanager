@@ -59,6 +59,7 @@ export type { GetEnvOptions } from "./config.ts";
 
 // Client (high-level API with auto-detection)
 export { LabelManager } from "./client.ts";
+export type { LabelManagerOptions } from "./client.ts";
 
 // Factory (for manual control over implementations)
 export {
