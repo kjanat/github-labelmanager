@@ -20,7 +20,7 @@ set -euo pipefail
 # 2. Display the latest release tag
 # 3. Prompt the user for a new release tag (CLI mode) or use INPUT_TAG (CI mode)
 # 4. Validate the new release tag
-# 5. Validate version file (package.json, deno.json, jsr.json) if present
+# 5. Validate version file (package.json, deno.json, deno.jsonc, jsr.json, jsr.jsonc) if present
 # 6. Tag a new release
 # 7. Set 'is_major_release' variable
 # 8. Point separate major release tag (e.g. v1, v2) to the new release
@@ -122,7 +122,14 @@ validate_version_file() {
   local file_version
   if [[ "${file}" == *.jsonc ]]; then
     # JSONC files need proper parsing - use Deno's JSONC support
-    file_version=$(deno eval "import { parse } from 'jsr:@std/jsonc'; console.log(parse(Deno.readTextFileSync('${file}')).version ?? '')" 2>/dev/null)
+    # Pass file as argument to avoid injection via filename
+    file_version=$(
+      deno eval '
+        import { parse } from "jsr:@std/jsonc";
+        const data = parse(Deno.readTextFileSync(Deno.args[0]));
+        console.log(data.version ?? "");
+      ' -- "${file}" 2>/dev/null
+    )
   elif [[ "${file}" == *.json ]]; then
     # Standard JSON - jq handles it directly
     file_version=$(jq -r '.version // empty' "${file}")
