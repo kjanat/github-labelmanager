@@ -8,17 +8,22 @@ import type {
   GitHubClientConfig,
   GitHubLabel,
 } from "~/adapters/client/types.ts";
-import { NullLogger } from "~/testing.ts";
+import {
+  createMockOctokit as createSharedMockOctokit,
+  NullLogger,
+} from "~/testing.ts";
 
 // =============================================================================
-// Mock Octokit
+// Mock Octokit Wrapper
 // =============================================================================
 
+/** Call record format used by tests */
 interface MockOctokitCall {
   method: string;
   args: unknown;
 }
 
+/** Options using method-based error keys for convenience */
 interface MockOctokitOptions {
   labels?: GitHubLabel[];
   errors?: {
@@ -32,76 +37,56 @@ interface MockOctokitOptions {
 // deno-lint-ignore no-explicit-any
 type MockOctokit = any;
 
+/** Maps method names to route strings */
+const methodToRoute: Record<string, string> = {
+  getLabel: "GET /repos/{owner}/{repo}/labels/{name}",
+  createLabel: "POST /repos/{owner}/{repo}/labels",
+  updateLabel: "PATCH /repos/{owner}/{repo}/labels/{name}",
+  deleteLabel: "DELETE /repos/{owner}/{repo}/labels/{name}",
+};
+
+/** Maps route strings to method names */
+const routeToMethod: Record<string, string> = {
+  "GET /repos/{owner}/{repo}/labels/{name}": "getLabel",
+  "POST /repos/{owner}/{repo}/labels": "createLabel",
+  "PATCH /repos/{owner}/{repo}/labels/{name}": "updateLabel",
+  "DELETE /repos/{owner}/{repo}/labels/{name}": "deleteLabel",
+};
+
+/**
+ * Wrapper around shared createMockOctokit that provides method-based interface.
+ * Uses the shared helper from ~/testing.ts but adapts the API for these tests.
+ */
 function createMockOctokit(options: MockOctokitOptions = {}): {
   octokit: MockOctokit;
   calls: MockOctokitCall[];
 } {
-  const calls: MockOctokitCall[] = [];
-  const labels = options.labels ?? [];
+  // Convert method-based errors to route-based errors
+  const routeErrors: Record<string, Error> = {};
+  if (options.errors) {
+    for (const [method, error] of Object.entries(options.errors)) {
+      const route = methodToRoute[method];
+      if (route && error) {
+        routeErrors[route] = error;
+      }
+    }
+  }
 
-  const octokit = {
-    rest: {
-      issues: {
-        getLabel: (args: unknown) => {
-          calls.push({ method: "getLabel", args });
-          if (options.errors?.getLabel) throw options.errors.getLabel;
+  const { octokit, requests } = createSharedMockOctokit({
+    labels: options.labels,
+    errors: routeErrors,
+  });
 
-          const { name } = args as { name: string };
-          const label = labels.find((l) => l.name === name);
-          if (!label) {
-            const err = new Error("Not found");
-            (err as Error & { status: number }).status = 404;
-            throw err;
-          }
-          return Promise.resolve({
-            data: {
-              name: label.name,
-              color: label.color,
-              description: label.description,
-            },
-          });
-        },
-        createLabel: (args: unknown) => {
-          calls.push({ method: "createLabel", args });
-          if (options.errors?.createLabel) throw options.errors.createLabel;
-
-          const { name, color, description } = args as {
-            name: string;
-            color: string;
-            description?: string;
-          };
-          return Promise.resolve({
-            data: { name, color, description: description ?? null },
-          });
-        },
-        updateLabel: (args: unknown) => {
-          calls.push({ method: "updateLabel", args });
-          if (options.errors?.updateLabel) throw options.errors.updateLabel;
-
-          const { name, new_name, color, description } = args as {
-            name: string;
-            new_name?: string;
-            color: string;
-            description?: string;
-          };
-          return Promise.resolve({
-            data: {
-              name: new_name ?? name,
-              color,
-              description: description ?? null,
-            },
-          });
-        },
-        deleteLabel: (args: unknown) => {
-          calls.push({ method: "deleteLabel", args });
-          if (options.errors?.deleteLabel) throw options.errors.deleteLabel;
-          return Promise.resolve();
-        },
-      },
+  // Return calls as a live-mapped view of requests
+  return {
+    octokit,
+    get calls(): MockOctokitCall[] {
+      return requests.map((r) => ({
+        method: routeToMethod[r.route] ?? r.route,
+        args: r.params,
+      }));
     },
   };
-
-  return { octokit, calls };
 }
 
 // =============================================================================
