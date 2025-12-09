@@ -7,12 +7,12 @@ import { OctokitClient } from "~/adapters/client/octokit.ts";
 import { createMockOctokit, NullLogger } from "~/testing.ts";
 import type { GitHubClientConfig } from "~/adapters/client/types.ts";
 
-const testConfig: GitHubClientConfig = {
+const testConfig = {
   token: "test-token",
   owner: "test-owner",
   repo: "test-repo",
   dryRun: false,
-};
+} as const satisfies GitHubClientConfig;
 
 // =============================================================================
 // Constructor tests
