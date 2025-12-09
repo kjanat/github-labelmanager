@@ -377,9 +377,9 @@ Deno.test("syncLabels - expands 3-char hex", async () => {
   });
   const manager = createTestManager(client);
 
+  // Construct directly to test 3-char hex expansion without builder's type restrictions
   const config: LabelConfig = {
-    // deno-lint-ignore no-explicit-any
-    labels: [label("bug").color("fab" as any).description("Bug").build()],
+    labels: [{ name: "bug", color: "fab", description: "Bug" }],
   };
 
   const result = await syncLabels(manager, config);
