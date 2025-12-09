@@ -7,6 +7,7 @@ async function main(): Promise<void> {
     await run();
   } catch (error) {
     if (error instanceof Error) {
+      core.error(error.stack ?? error.message);
       core.setFailed(error.message);
     } else {
       core.setFailed(String(error));

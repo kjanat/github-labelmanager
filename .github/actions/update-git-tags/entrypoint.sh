@@ -352,6 +352,7 @@ log "Pushing tags to origin..."
 COMMIT_SHA=$(git rev-parse --short HEAD)
 git push origin "${TAG}" --force-with-lease 2>/dev/null || git push origin "${TAG}"
 
+# Force push required: major/minor tags (v1, v1.2) are moved to latest release
 if [[ "${MAJOR}" == "true" ]]; then
   git push origin "${MAJOR_TAG}" --force
   notice "Major tag ${MAJOR_TAG} moved to ${COMMIT_SHA}"

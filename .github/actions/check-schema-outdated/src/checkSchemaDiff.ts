@@ -11,8 +11,10 @@ export async function checkSchemaDiff(
       ["diff", "--exit-code", "--color=never", file],
       { ignoreReturnCode: true },
     );
-    setOutput("git-diff", stdout.trim());
-    return { exitCode, diff: stdout.trim(), error: stderr };
+    const diff = stdout.trim();
+    const error = stderr.trim();
+    setOutput("git-diff", diff);
+    return { exitCode, diff, error };
   } catch (error) {
     setFailed(`Failed to get git diff: ${error}`);
     return { exitCode: 128, diff: "", error: String(error) };
