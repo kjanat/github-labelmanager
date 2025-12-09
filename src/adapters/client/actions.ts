@@ -38,19 +38,24 @@ export class ActionsGitHubClient extends BaseGitHubClient {
   }
 
   async list(): Promise<GitHubLabel[]> {
-    const labels = await this.octokit.paginate(
-      this.octokit.rest.issues.listLabelsForRepo,
-      {
-        owner: this.owner,
-        repo: this.repo,
-        per_page: 100,
-      },
-    );
+    try {
+      const labels = await this.octokit.paginate(
+        this.octokit.rest.issues.listLabelsForRepo,
+        {
+          owner: this.owner,
+          repo: this.repo,
+          per_page: 100,
+        },
+      );
 
-    return labels.map((l: GitHubLabelSchema) => ({
-      name: l.name,
-      color: l.color,
-      description: l.description,
-    }));
+      return labels.map((l: GitHubLabelSchema) => this.mapLabelResponse(l));
+    } catch (error) {
+      // Type guard for Octokit errors (matches isNotFoundError pattern)
+      // Unlike get(), list() has no 404 case - errors propagate
+      if (error !== null && typeof error === "object" && "status" in error) {
+        throw error;
+      }
+      throw error;
+    }
   }
 }
