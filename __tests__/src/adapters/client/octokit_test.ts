@@ -2,7 +2,7 @@
  * Tests for OctokitClient
  */
 
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 import { OctokitClient } from "~/adapters/client/octokit.ts";
 import { createMockOctokit, NullLogger } from "~/testing/mod.ts";
 import type { GitHubClientConfig } from "~/ports/github.ts";
@@ -71,6 +71,41 @@ Deno.test("OctokitClient.list - returns empty array when no labels", async () =>
   const labels = await client.list();
 
   assertEquals(labels, []);
+});
+
+Deno.test("OctokitClient.list - wraps octokit error with status", async () => {
+  const { octokit } = createMockOctokit({
+    errors: {
+      "GET /repos/{owner}/{repo}/labels": Object.assign(
+        new Error("Forbidden"),
+        { status: 403 },
+      ),
+    },
+  });
+  const logger = new NullLogger();
+  const client = new OctokitClient(testConfig, logger, octokit);
+
+  await assertRejects(
+    () => client.list(),
+    Error,
+    "HTTP 403",
+  );
+});
+
+Deno.test("OctokitClient.list - wraps generic error without status", async () => {
+  const { octokit } = createMockOctokit({
+    errors: {
+      "GET /repos/{owner}/{repo}/labels": new Error("boom"),
+    },
+  });
+  const logger = new NullLogger();
+  const client = new OctokitClient(testConfig, logger, octokit);
+
+  await assertRejects(
+    () => client.list(),
+    Error,
+    "boom",
+  );
 });
 
 // =============================================================================
