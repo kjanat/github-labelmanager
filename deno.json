@@ -119,19 +119,58 @@
   },
   "readme": "JSR_README.md",
   "tasks": {
-    "build": "deno run -A cli/build/npm.ts",
-    "compile": "deno compile --allow-net=api.github.com -RE -o github-labelmanager cli/main.ts",
-    "dev": "deno run --watch cli/main.ts",
-    "hooks": "lefthook install",
-    "labels": "deno run --allow-net=api.github.com -RE cli/main.ts",
-    "labels:dry-run": "deno run --allow-net=api.github.com -RE cli/main.ts --dry-run kjanat/github-labelmanager",
-    "schema": "deno run -A cli/build/schema.ts",
-    "fmt": "deno fmt",
-    "lint": "deno lint",
-    "test:coverage": "deno test -RWE __tests__ --coverage",
-    "test": "deno test -RWE __tests__",
-    "biome:lint": "deno run -A npm:@biomejs/biome lint --write",
-    "biome:check": "deno run -A npm:@biomejs/biome check --write"
+    "biome:check": {
+      "description": "Run Biome check with auto-fix",
+      "command": "deno run -A npm:@biomejs/biome check --write"
+    },
+    "biome:lint": {
+      "description": "Run Biome linter with auto-fix",
+      "command": "deno run -A npm:@biomejs/biome lint --write"
+    },
+    "build": {
+      "description": "Build NPM package",
+      "command": "deno run -A cli/build/npm.ts"
+    },
+    "compile": {
+      "description": "Compile to standalone executable",
+      "command": "deno compile --allow-net=api.github.com -RE -o github-labelmanager cli/main.ts"
+    },
+    "dev": {
+      "description": "Run CLI in watch mode",
+      "command": "deno run --watch cli/main.ts"
+    },
+    "fmt": {
+      "description": "Format source files",
+      "command": "deno fmt"
+    },
+    "hooks": {
+      "description": "Install git hooks via lefthook",
+      "command": "lefthook install"
+    },
+    "labels": {
+      "description": "Sync labels for a repository",
+      "command": "deno run --allow-net=api.github.com -RE cli/main.ts"
+    },
+    "labels:dry-run": {
+      "description": "Preview label sync without making changes",
+      "command": "deno run --allow-net=api.github.com -RE cli/main.ts --dry-run kjanat/github-labelmanager"
+    },
+    "lint": {
+      "description": "Run linter",
+      "command": "deno lint"
+    },
+    "schema": {
+      "description": "Generate JSON schema for labels config",
+      "command": "deno run -A cli/build/schema.ts"
+    },
+    "test": {
+      "description": "Run tests",
+      "command": "deno test -RWE __tests__"
+    },
+    "test:coverage": {
+      "description": "Run tests with coverage",
+      "command": "deno test -RWE __tests__ --coverage"
+    }
   },
 
   "compilerOptions": {
