@@ -1,3 +1,5 @@
+import { globToRegExp } from "jsr:@std/path@^1/glob-to-regexp";
+
 // Branded Type Utilities
 
 declare const __brand: unique symbol;
@@ -315,7 +317,16 @@ export function parseLabelConfig(raw: RawLabelConfig): LabelConfig {
       if (typeof pattern !== "string") {
         throw new Error(`ignore[${index}] must be a string`);
       }
-      return LabelNameUtils.parse(pattern);
+      const parsed = LabelNameUtils.parse(pattern);
+      try {
+        globToRegExp(parsed, { extended: true, globstar: false });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `ignore[${index}] has invalid glob pattern: ${message}`,
+        );
+      }
+      return parsed;
     });
   }
 

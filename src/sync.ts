@@ -16,7 +16,11 @@ import { LabelColorUtils } from "./domain/labels.ts";
 function matchesIgnorePattern(name: string, patterns: string[]): boolean {
   for (const pattern of patterns) {
     // Convert glob to regex for matching
-    const regex = globToRegExp(pattern, { extended: true, globstar: false });
+    const regex = globToRegExp(pattern, {
+      extended: true,
+      globstar: false,
+      caseInsensitive: true,
+    });
     if (regex.test(name)) {
       return true;
     }

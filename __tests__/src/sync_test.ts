@@ -203,7 +203,7 @@ Deno.test("syncLabels - rename with color and description change updates all in 
 // Delete tests
 // =============================================================================
 
-Deno.test("syncLabels - deletes existing label", async () => {
+Deno.test("syncLabels - deletes existing label (declarative)", async () => {
   const client = new MockGitHubClient({
     labels: [{ name: "obsolete", color: "000000", description: "Old" }],
   });
@@ -211,7 +211,6 @@ Deno.test("syncLabels - deletes existing label", async () => {
 
   const config: LabelConfig = {
     labels: [],
-    delete: [LabelNameUtils.parse("obsolete")],
   };
 
   const result = await syncLabels(manager, config);
@@ -469,6 +468,29 @@ Deno.test("syncLabels - v2: ignore patterns protect labels from deletion", async
   ]);
 });
 
+Deno.test("syncLabels - v2: ignore patterns are case-insensitive", async () => {
+  const client = new MockGitHubClient({
+    labels: [
+      { name: "Dependabot", color: "0075ca", description: "Bot" },
+      { name: "DEPENDABOT-preview", color: "0075ca", description: "Preview" },
+      { name: "bug", color: "d73a4a", description: "Bug" },
+    ],
+  });
+  const manager = createTestManager(client);
+  const config: LabelConfig = {
+    labels: [],
+    ignore: [LabelNameUtils.parse("dependabot*")],
+  };
+
+  const result = await syncLabels(manager, config);
+
+  assertEquals(result.success, true);
+  assertEquals(result.summary.deleted, 1); // Only "bug" should be deleted
+  assertEquals(client.labels.map((l) => l.name).sort(), [
+    "DEPENDABOT-preview",
+    "Dependabot",
+  ]);
+});
 Deno.test("syncLabels - v2: aliases are protected during sync", async () => {
   // Aliases should NOT be deleted before rename occurs
   const client = new MockGitHubClient({
