@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://raw.githubusercontent.com/kjanat/github-labelmanager/master/.github/labels.schema.json",
-  "title": "GitHub Label Manager Configuration",
+  "title": "GitHub Label Manager Configuration (v2)",
   "description": "Schema for declaratively managing GitHub issue labels via kjanat/github-labelmanager.",
   "type": "object",
   "properties": {
@@ -9,8 +9,8 @@
       "type": "string"
     },
     "delete": {
-      "title": "Labels to Delete",
-      "description": "Array of label names to remove from the repository. Use with caution: deleted labels will be removed from all issues. Labels listed here should NOT also appear in the 'labels' array.",
+      "title": "Labels to Delete (DEPRECATED)",
+      "description": "DEPRECATED in v2: This field is ignored. Labels are now deleted automatically if not defined in 'labels' array and not matched by 'ignore' patterns. This is declarative sync - your config file is the source of truth.",
       "type": "array",
       "items": {
         "title": "Label Name",
@@ -34,11 +34,40 @@
           "deprecated",
           "wontfix"
         ]
+      ],
+      "deprecated": true
+    },
+    "ignore": {
+      "title": "Labels to Ignore",
+      "description": "Array of label name patterns to ignore during sync. Supports glob patterns (e.g., 'dependabot*', 'github-*'). Labels matching these patterns will NOT be deleted, even if not defined in 'labels'. Useful for preserving labels managed by external tools like Dependabot or GitHub Apps.",
+      "type": "array",
+      "items": {
+        "title": "Label Name",
+        "description": "GitHub label name. Maximum 50 characters. May contain letters, numbers, spaces, hyphens, underscores, colons, and other printable characters. Cannot be empty or consist only of whitespace.",
+        "type": "string",
+        "pattern": "^(?!\\s).*(?<!\\s)$",
+        "minLength": 1,
+        "maxLength": 50,
+        "examples": [
+          "bug",
+          "feature",
+          "P0: critical",
+          "area: ui",
+          "good first issue"
+        ]
+      },
+      "uniqueItems": true,
+      "examples": [
+        [
+          "dependabot*",
+          "github-actions",
+          "stale"
+        ]
       ]
     },
     "labels": {
       "title": "Labels to Create or Update",
-      "description": "Array of label definitions. Each label will be created if it doesn't exist, or updated if it does. Use 'aliases' to rename existing labels while preserving issue associations.",
+      "description": "Array of label definitions. Each label will be created if it doesn't exist, or updated if it does. Use 'aliases' to rename existing labels while preserving issue associations. Labels in the repository that are NOT defined here will be DELETED (unless matched by 'ignore' patterns).",
       "type": "array",
       "items": {
         "title": "Label Definition",
@@ -153,10 +182,9 @@
   "additionalProperties": false,
   "examples": [
     {
-      "delete": [
-        "dependencies",
-        "javascript",
-        "obsolete-label"
+      "ignore": [
+        "dependabot*",
+        "github-actions"
       ],
       "labels": [
         {

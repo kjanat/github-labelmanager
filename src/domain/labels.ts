@@ -227,7 +227,17 @@ export interface LabelConfig {
   /** Labels to create or update */
   labels: Label[];
 
-  /** Label names to delete from the repository */
+  /**
+   * Label name patterns to ignore during sync.
+   * Supports glob patterns (e.g., "dependabot*", "github-*").
+   * Labels matching these patterns will not be deleted.
+   */
+  ignore?: LabelName[];
+
+  /**
+   * @deprecated v2 uses declarative sync - labels not in config are deleted automatically.
+   * This field is ignored but kept for schema compatibility.
+   */
   delete?: LabelName[];
 }
 
@@ -236,6 +246,7 @@ export interface LabelConfig {
 /** Raw JSON input before validation */
 export interface RawLabelConfig {
   labels?: unknown;
+  ignore?: unknown;
   delete?: unknown;
 }
 
@@ -295,6 +306,18 @@ export function parseLabelConfig(raw: RawLabelConfig): LabelConfig {
   });
 
   const result: LabelConfig = { labels };
+
+  if (raw.ignore !== undefined) {
+    if (!Array.isArray(raw.ignore)) {
+      throw new Error("'ignore' must be an array");
+    }
+    result.ignore = raw.ignore.map((pattern, index) => {
+      if (typeof pattern !== "string") {
+        throw new Error(`ignore[${index}] must be a string`);
+      }
+      return LabelNameUtils.parse(pattern);
+    });
+  }
 
   if (raw.delete !== undefined) {
     if (!Array.isArray(raw.delete)) {

@@ -76,6 +76,8 @@ export const labelDescription: z.ZodType<LabelDescription, string> =
 export interface LabelConfigMeta {
   filePath: string;
   labelLines: Record<string, number>;
+  ignoreLines: Record<string, number>;
+  /** @deprecated v2 ignores delete array */
   deleteLines: Record<string, number>;
 }
 
@@ -146,6 +148,7 @@ export const labelDefinition: z.ZodTypeAny = z.strictObject({
 export const labelConfigMeta: z.ZodTypeAny = z.object({
   filePath: z.string(),
   labelLines: z.record(z.string(), z.number()),
+  ignoreLines: z.record(z.string(), z.number()),
   deleteLines: z.record(z.string(), z.number()),
 });
 
@@ -156,7 +159,7 @@ export const labelConfigSchema: z.ZodTypeAny = z.strictObject({
   labels: z.array(labelDefinitionSchema).meta({
     title: "Labels to Create or Update",
     description:
-      "Array of label definitions. Each label will be created if it doesn't exist, or updated if it does. Use 'aliases' to rename existing labels while preserving issue associations.",
+      "Array of label definitions. Each label will be created if it doesn't exist, or updated if it does. Use 'aliases' to rename existing labels while preserving issue associations. Labels in the repository that are NOT defined here will be DELETED (unless matched by 'ignore' patterns).",
     examples: [[
       { name: "bug", color: "#d73a4a", description: "Something isn't working" },
       {
@@ -168,17 +171,25 @@ export const labelConfigSchema: z.ZodTypeAny = z.strictObject({
     ]],
     uniqueItems: true,
   }),
-  delete: z.array(labelNameBase).optional().meta({
-    title: "Labels to Delete",
+  ignore: z.array(labelNameBase).optional().meta({
+    title: "Labels to Ignore",
     description:
-      "Array of label names to remove from the repository. Use with caution: deleted labels will be removed from all issues. Labels listed here should NOT also appear in the 'labels' array.",
-    examples: [["obsolete-label", "deprecated", "wontfix"]],
+      "Array of label name patterns to ignore during sync. Supports glob patterns (e.g., 'dependabot*', 'github-*'). Labels matching these patterns will NOT be deleted, even if not defined in 'labels'. Useful for preserving labels managed by external tools like Dependabot or GitHub Apps.",
+    examples: [["dependabot*", "github-actions", "stale"]],
     uniqueItems: true,
   }),
+  delete: z.array(labelNameBase).optional().meta({
+    title: "Labels to Delete (DEPRECATED)",
+    description:
+      "DEPRECATED in v2: This field is ignored. Labels are now deleted automatically if not defined in 'labels' array and not matched by 'ignore' patterns. This is declarative sync - your config file is the source of truth.",
+    examples: [["obsolete-label", "deprecated", "wontfix"]],
+    uniqueItems: true,
+    deprecated: true,
+  }),
 }).meta({
-  title: "GitHub Label Manager Configuration",
+  title: "GitHub Label Manager Configuration (v2)",
   description:
-    "Schema for declaratively managing GitHub issue labels via kjanat/github-labelmanager.",
+    "Schema for declaratively managing GitHub issue labels via kjanat/github-labelmanager. Your config file is the source of truth - labels not defined here will be DELETED (unless matched by 'ignore' patterns).",
   examples: [{
     labels: [
       { name: "bug", color: "#d73a4a", description: "Something isn't working" },
@@ -200,7 +211,7 @@ export const labelConfigSchema: z.ZodTypeAny = z.strictObject({
         description: "Broken core flows, must fix ASAP",
       },
     ],
-    delete: ["dependencies", "javascript", "obsolete-label"],
+    ignore: ["dependabot*", "github-actions"],
   }],
 });
 
@@ -209,6 +220,7 @@ export const labelConfigSchema: z.ZodTypeAny = z.strictObject({
 export const labelConfig: z.ZodType<LabelConfig> = z.strictObject({
   $schema: z.string().optional(),
   labels: z.array(labelDefinition).describe("labels"),
+  ignore: z.array(labelName).describe("ignore").optional(),
   delete: z.array(labelName).describe("delete").optional(),
   _meta: labelConfigMeta.optional(),
 }).describe("labelConfig") as z.ZodType<LabelConfig>;

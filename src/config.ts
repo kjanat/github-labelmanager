@@ -207,6 +207,7 @@ export async function loadConfig(path?: string): Promise<LabelConfig> {
 
   // Build line number maps for annotations
   const labelLines: Record<string, number> = {};
+  const ignoreLines: Record<string, number> = {};
   const deleteLines: Record<string, number> = {};
 
   // Extract line numbers for labels
@@ -225,7 +226,20 @@ export async function loadConfig(path?: string): Promise<LabelConfig> {
     }
   }
 
-  // Extract line numbers for delete entries
+  // Extract line numbers for ignore entries
+  const ignoreNode = doc.get("ignore", true);
+  if (isSeq(ignoreNode)) {
+    for (const item of ignoreNode.items) {
+      if (isScalar(item) && item.range) {
+        const value = item.value;
+        if (value == null) continue;
+        const pattern = typeof value === "string" ? value : String(value);
+        ignoreLines[pattern] = lineCounter.linePos(item.range[0]).line;
+      }
+    }
+  }
+
+  // Extract line numbers for delete entries (deprecated, but still tracked)
   const deleteNode = doc.get("delete", true);
   if (isSeq(deleteNode)) {
     for (const item of deleteNode.items) {
@@ -241,6 +255,6 @@ export async function loadConfig(path?: string): Promise<LabelConfig> {
   // Attach metadata via spread to avoid mutating validation.data
   return {
     ...validation.data,
-    _meta: { filePath: configPath, labelLines, deleteLines },
+    _meta: { filePath: configPath, labelLines, ignoreLines, deleteLines },
   } as LabelConfig;
 }
