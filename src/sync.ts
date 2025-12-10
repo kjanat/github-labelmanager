@@ -3,11 +3,26 @@
  * @module
  */
 
+import { globToRegExp } from "jsr:@std/path@^1/glob-to-regexp";
 import type { LabelConfig, SyncOperation, SyncResult } from "./domain/types.ts";
 import type { GitHubLabel } from "./adapters/client/mod.ts";
 import type { AnnotationProperties } from "./adapters/logger/mod.ts";
 import { LabelManager } from "./client.ts";
 import { LabelColorUtils } from "./domain/labels.ts";
+
+/**
+ * Check if a label name matches any of the ignore patterns (glob support)
+ */
+function matchesIgnorePattern(name: string, patterns: string[]): boolean {
+  for (const pattern of patterns) {
+    // Convert glob to regex for matching
+    const regex = globToRegExp(pattern, { extended: true, globstar: false });
+    if (regex.test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Build annotation properties for a label operation
@@ -266,53 +281,80 @@ export async function syncLabels(
     }
   }
 
-  // Process deletions
-  if (config.delete) {
-    for (const name of config.delete) {
-      if (existingMap.has(name)) {
-        const existing = existingMap.get(name)!;
-        const msg = `Deleting: "${name}"`;
-        if (manager.isDryRun) {
-          logger.info(`[dry-run] Would delete: "${name}"`);
-          logger.debug(msg);
-        } else {
-          logger.notice(
-            `"${name}"`,
-            getAnnotation(config, name, "Label Deleted", true),
-          );
-        }
-        try {
-          await manager.delete(name);
-          operations.push({
-            type: "delete",
-            label: name,
-            success: true,
-            details: {
-              color: existing.color,
-              description: existing.description ?? undefined,
-            },
-          });
-          summary.deleted++;
-          existingMap.delete(name);
-        } catch (err) {
-          logger.error(
-            `Delete failed: ${LabelManager.formatError(err)}`,
-            getAnnotation(config, name, "Delete Failed", true),
-          );
-          operations.push({
-            type: "delete",
-            label: name,
-            success: false,
-            error: LabelManager.formatError(err),
-          });
-          summary.failed++;
-        }
-      } else {
-        // Label already doesn't exist - not an error, just skip
-        logger.info(`Delete target not found: "${name}" (already removed)`);
-        operations.push({ type: "skip", label: name, success: true });
-        summary.skipped++;
+  // Deprecation warning for old delete array
+  if (config.delete && config.delete.length > 0) {
+    logger.warn(
+      "'delete:' is deprecated in v2 and ignored. Labels not in config are deleted automatically.",
+    );
+  }
+
+  // Build set of protected names (labels that should NOT be deleted)
+  const protectedNames = new Set<string>();
+  for (const label of config.labels) {
+    protectedNames.add(label.name);
+    // Aliases are also protected during sync (they get renamed, not deleted)
+    if (label.aliases) {
+      for (const alias of label.aliases) {
+        protectedNames.add(alias);
       }
+    }
+  }
+
+  // Get ignore patterns for glob matching
+  const ignorePatterns = config.ignore ?? [];
+
+  // Declarative deletion: remove labels not in config and not matching ignore patterns
+  const labelsToDelete: string[] = [];
+  for (const [name] of existingMap) {
+    if (
+      !protectedNames.has(name) && !matchesIgnorePattern(name, ignorePatterns)
+    ) {
+      labelsToDelete.push(name);
+    }
+  }
+
+  // Show summary for dry-run
+  if (manager.isDryRun && labelsToDelete.length > 0) {
+    logger.info(
+      `[dry-run] Would delete ${labelsToDelete.length} unlisted label(s): ${
+        labelsToDelete.join(", ")
+      }`,
+    );
+  }
+
+  // Process deletions
+  for (const name of labelsToDelete) {
+    const existing = existingMap.get(name)!;
+    if (manager.isDryRun) {
+      logger.debug(`[dry-run] Would delete: "${name}"`);
+    } else {
+      logger.notice(`"${name}"`, { title: "Label Deleted (not in config)" });
+    }
+    try {
+      await manager.delete(name);
+      operations.push({
+        type: "delete",
+        label: name,
+        success: true,
+        details: {
+          color: existing.color,
+          description: existing.description ?? undefined,
+        },
+      });
+      summary.deleted++;
+      existingMap.delete(name);
+    } catch (err) {
+      logger.error(
+        `Delete failed: ${LabelManager.formatError(err)}`,
+        { title: "Delete Failed" },
+      );
+      operations.push({
+        type: "delete",
+        label: name,
+        success: false,
+        error: LabelManager.formatError(err),
+      });
+      summary.failed++;
     }
   }
 
