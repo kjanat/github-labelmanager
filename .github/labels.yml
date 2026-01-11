@@ -119,9 +119,8 @@ labels:
     color: "#ededed"
     description: Exclude this PR from release notes
 
-# Clean up old area labels that were replaced by area: prefixed versions
-delete:
-  - core-vm
-  - ui
-  - labs
-  - content
+# v2: Labels not defined above will be automatically deleted.
+# Use 'ignore' to protect external labels from deletion (supports glob patterns).
+# ignore:
+#   - dependabot*
+#   - github-actions
