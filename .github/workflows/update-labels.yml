@@ -3,12 +3,10 @@ name: Update Labels
 on:
   push:
     branches: [master]
-    paths:
-      - ".github/labels.yml"
+    paths: [".github/**/labels.y*ml"]
   pull_request:
     branches: [master]
-    paths:
-      - ".github/labels.yml"
+    paths: [".github/**/labels.y*ml"]
   workflow_dispatch:
 
 jobs:

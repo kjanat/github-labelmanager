@@ -16,6 +16,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with: { fetch-depth: 0 }
+      - uses: kjanat/install-dprint@v1
+      - uses: kjanat/install-shfmt@v1
 
       - name: Setup Deno
         uses: ./.github/actions/setup-deno
