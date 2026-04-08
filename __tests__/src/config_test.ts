@@ -2,10 +2,10 @@
  * Tests for config module (loadConfig, isLabelConfig, schema validation)
  */
 
+import { isLabelConfig, loadConfig } from '#src/config.ts';
 import { assertEquals, assertExists, assertRejects } from '@std/assert';
 import { Ajv, type ValidateFunction } from 'ajv';
 import { parse } from 'yaml';
-import { isLabelConfig, loadConfig } from '~/config.ts';
 
 // =============================================================================
 // isLabelConfig tests

@@ -2,9 +2,9 @@
  * Tests for ConsoleLogger
  */
 
+import { ConsoleLogger } from '#src/adapters/logger/console.ts';
+import { captureConsole } from '#src/testing/mod.ts';
 import { assertEquals, assertStringIncludes } from '@std/assert';
-import { ConsoleLogger } from '~/adapters/logger/console.ts';
-import { captureConsole } from '~/testing/mod.ts';
 
 let captured: ReturnType<typeof captureConsole>;
 

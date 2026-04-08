@@ -3,9 +3,9 @@
  * @module
  */
 
-import type { SyncResult } from '~/domain/types.ts';
-import type { GitHubLabel, IGitHubClient, LabelOptions } from '~/ports/github.ts';
-import type { AnnotationProperties, ILogger } from '~/ports/logger.ts';
+import type { SyncResult } from '#src/domain/types.ts';
+import type { GitHubLabel, IGitHubClient, LabelOptions } from '#src/ports/github.ts';
+import type { AnnotationProperties, ILogger } from '#src/ports/logger.ts';
 
 /** Recorded API call for assertions */
 export interface ApiCall {

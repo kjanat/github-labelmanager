@@ -3,12 +3,12 @@
  * @module
  */
 
+import { LabelManager } from '#src/client.ts';
+import { loadConfig } from '#src/config.ts';
+import type { EnvConfig } from '#src/domain/types.ts';
+import { createLogger } from '#src/factory.ts';
+import { syncLabels } from '#src/sync.ts';
 import { arg, CLIError, command, type CommandBuilder, flag } from '@kjanat/dreamcli';
-import { LabelManager } from '~/client.ts';
-import { loadConfig } from '~/config.ts';
-import type { EnvConfig } from '~/domain/types.ts';
-import { createLogger } from '~/factory.ts';
-import { syncLabels } from '~/sync.ts';
 
 /** Parsed repository argument */
 export interface RepoArg {

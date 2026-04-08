@@ -2,10 +2,10 @@
  * Tests for BaseGitHubClient
  */
 
+import { BaseGitHubClient } from '#src/adapters/client/base.ts';
+import type { GitHubClientConfig, GitHubLabel } from '#src/ports/github.ts';
+import { createMockOctokit as createSharedMockOctokit, NullLogger } from '#src/testing/mod.ts';
 import { assertEquals, assertRejects } from '@std/assert';
-import { BaseGitHubClient } from '~/adapters/client/base.ts';
-import type { GitHubClientConfig, GitHubLabel } from '~/ports/github.ts';
-import { createMockOctokit as createSharedMockOctokit, NullLogger } from '~/testing/mod.ts';
 
 // =============================================================================
 // Mock Octokit Wrapper

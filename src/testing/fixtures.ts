@@ -3,7 +3,7 @@
  * @module
  */
 
-import type { EnvConfig } from '~/domain/types.ts';
+import type { EnvConfig } from '#src/domain/types.ts';
 
 // =============================================================================
 // Console Capture Utilities

@@ -180,12 +180,7 @@
 	},
 	"compilerOptions": {
 		"strict": true,
-		"skipLibCheck": true,
-		"paths": {
-			"github-labelmanager": ["./cli/main.ts"],
-			"#src/*": ["./src/*"],
-			"#/*": ["./*"]
-		}
+		"skipLibCheck": true
 	},
 	"allowScripts": ["npm:lefthook@2.1.5"]
 }

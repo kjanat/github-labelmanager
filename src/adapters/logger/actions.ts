@@ -3,10 +3,10 @@
  * @module
  */
 
+import type { SyncOperation, SyncResult } from '#src/domain/types.ts';
+import type { AnnotationProperties, ILogger } from '#src/ports/logger.ts';
 import type { AnnotationProperties as ActionsAnnotationProperties } from '@actions/core';
 import * as defaultCore from '@actions/core';
-import type { SyncOperation, SyncResult } from '~/domain/types.ts';
-import type { AnnotationProperties, ILogger } from '~/ports/logger.ts';
 
 /** Minimum number of operations before collapsing details in summary */
 const COLLAPSE_THRESHOLD = 5;

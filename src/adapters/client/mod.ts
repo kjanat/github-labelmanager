@@ -11,11 +11,9 @@ export type {
 	IGitHubClient,
 	LabelOptions,
 	OctokitLike,
-} from '~/ports/github.ts';
-
-// Base class (for extension)
-export { BaseGitHubClient } from './base.ts';
-
+} from '#src/ports/github.ts';
 // Implementations
 export { ActionsGitHubClient } from './actions.ts';
+// Base class (for extension)
+export { BaseGitHubClient } from './base.ts';
 export { OctokitClient } from './octokit.ts';

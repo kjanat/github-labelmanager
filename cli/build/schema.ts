@@ -1,13 +1,12 @@
 #!/usr/bin/env -S deno run -A
-
 /**
  * Generate JSON Schema from TypeScript types
  * @module
  */
 
+import { labelConfigSchema } from '#src/schema.ts';
+import { type JsonValue, sortSchema } from '#src/tools/sort-schema.ts';
 import { z } from 'zod';
-import { labelConfigSchema } from '~/schema.ts';
-import { type JsonValue, sortSchema } from '~/tools/sort-schema.ts';
 
 export const GIT_BRANCH = 'master';
 export const GIT_REPO = 'kjanat/github-labelmanager';
@@ -43,7 +42,7 @@ export function generateSchema(): Record<string, unknown> {
 if (import.meta.main) {
 	try {
 		const schema = generateSchema();
-		const content = `${JSON.stringify(schema, null, 2)}\n`;
+		const content = `${JSON.stringify(schema, null, '\t')}\n`;
 		await Deno.writeTextFile(OUTPUT_PATH, content);
 		console.log(`Generated ${OUTPUT_PATH}`);
 	} catch (err) {

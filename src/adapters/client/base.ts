@@ -3,7 +3,7 @@
  * @module
  */
 
-import type { ILogger } from '~/adapters/logger/mod.ts';
+import type { ILogger } from '#src/adapters/logger/mod.ts';
 import type {
 	GitHubClientConfig,
 	GitHubLabel,
@@ -11,7 +11,7 @@ import type {
 	IGitHubClient,
 	LabelOptions,
 	OctokitLike,
-} from '~/ports/github.ts';
+} from '#src/ports/github.ts';
 
 /**
  * Abstract base class for GitHub clients

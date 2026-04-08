@@ -1,11 +1,10 @@
 #!/usr/bin/env -S deno run --allow-net=api.github.com --allow-read --allow-env
-
 /**
  * CLI entrypoint for github-labelmanager
  * @module
  */
 
-import denoJson from '$/deno.json' with { type: 'json' };
+import denoJson from '#/deno.json' with { type: 'json' };
 import { cli } from '@kjanat/dreamcli';
 import { syncCommand } from './command.ts';
 

@@ -4,10 +4,10 @@
  * Uses createMockActionsCore from testing.ts for mock @actions/core.
  */
 
+import { type ActionsCore, ActionsLogger, toActionsAnnotation } from '#src/adapters/logger/actions.ts';
+import type { SyncOperation, SyncResult } from '#src/domain/types.ts';
+import { type CoreCall, createMockActionsCore } from '#src/testing/mod.ts';
 import { assertEquals, assertStringIncludes } from '@std/assert';
-import { type ActionsCore, ActionsLogger, toActionsAnnotation } from '~/adapters/logger/actions.ts';
-import type { SyncOperation, SyncResult } from '~/domain/types.ts';
-import { type CoreCall, createMockActionsCore } from '~/testing/mod.ts';
 
 /** Helper to create mock core with ActionsCore typing */
 function createMockCore(): { core: ActionsCore; calls: CoreCall[] } {

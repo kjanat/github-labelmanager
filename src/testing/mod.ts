@@ -16,12 +16,6 @@
  * @module
  */
 
-// Mocks
-export { type ApiCall, MockGitHubClient, type MockGitHubClientOptions, MockLogger } from './mocks.ts';
-
-// Stubs
-export { NullLogger } from './stubs.ts';
-
 // Fixtures
 export {
 	captureConsole,
@@ -38,3 +32,7 @@ export {
 	type MockSummary,
 	type OctokitRequest,
 } from './fixtures.ts';
+// Mocks
+export { type ApiCall, MockGitHubClient, type MockGitHubClientOptions, MockLogger } from './mocks.ts';
+// Stubs
+export { NullLogger } from './stubs.ts';

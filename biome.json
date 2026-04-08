@@ -7,7 +7,7 @@
 		"defaultBranch": "master"
 	},
 	"files": {
-		"includes": ["**", "!!**/dist", "!!npm", "!!.github"]
+		"includes": ["**", "!!npm", "!!.github", "!**/node_modules", "!!**/dist"]
 	},
 	"formatter": {
 		"enabled": false,

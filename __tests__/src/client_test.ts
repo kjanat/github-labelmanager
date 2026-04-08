@@ -3,8 +3,8 @@
  * @module
  */
 
+import { LabelManager } from '#src/client.ts';
 import { assertEquals } from '@std/assert';
-import { LabelManager } from '~/client.ts';
 
 // =============================================================================
 // LabelManager.formatError tests

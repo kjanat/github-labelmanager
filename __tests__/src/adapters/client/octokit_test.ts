@@ -2,10 +2,10 @@
  * Tests for OctokitClient
  */
 
+import { OctokitClient } from '#src/adapters/client/octokit.ts';
+import type { GitHubClientConfig } from '#src/ports/github.ts';
+import { createMockOctokit, NullLogger } from '#src/testing/mod.ts';
 import { assertEquals, assertRejects } from '@std/assert';
-import { OctokitClient } from '~/adapters/client/octokit.ts';
-import type { GitHubClientConfig } from '~/ports/github.ts';
-import { createMockOctokit, NullLogger } from '~/testing/mod.ts';
 
 const testConfig = {
 	token: 'test-token',

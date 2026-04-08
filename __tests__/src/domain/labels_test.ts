@@ -2,8 +2,8 @@
  * Tests for label domain utilities
  */
 
+import { label, LabelColorUtils, LabelDescriptionUtils, LabelNameUtils } from '#src/domain/labels.ts';
 import { assertEquals, assertThrows } from '@std/assert';
-import { label, LabelColorUtils, LabelDescriptionUtils, LabelNameUtils } from '~/domain/labels.ts';
 
 Deno.test('LabelNameUtils.parse - trims and validates', () => {
 	const parsed = LabelNameUtils.parse('  feature  ');

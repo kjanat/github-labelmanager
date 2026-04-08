@@ -4,9 +4,9 @@
  * @module
  */
 
+import type { ILogger } from '#src/adapters/logger/mod.ts';
+import type { GitHubClientConfig, GitHubLabel, GitHubLabelSchema } from '#src/ports/github.ts';
 import { Octokit } from 'octokit';
-import type { ILogger } from '~/adapters/logger/mod.ts';
-import type { GitHubClientConfig, GitHubLabel, GitHubLabelSchema } from '~/ports/github.ts';
 import { BaseGitHubClient } from './base.ts';
 
 /**
