@@ -5,7 +5,7 @@
 
 import { arg, CLIError, command, type CommandBuilder, flag } from '@kjanat/dreamcli';
 import { LabelManager } from '~/client.ts';
-import { ConfigError, loadConfig } from '~/config.ts';
+import { loadConfig } from '~/config.ts';
 import type { EnvConfig } from '~/domain/types.ts';
 import { createLogger } from '~/factory.ts';
 import { syncLabels } from '~/sync.ts';
@@ -87,9 +87,6 @@ export const syncCommand: CommandBuilder = command('sync')
 			}
 			if (err instanceof Deno.errors.InvalidData) {
 				throw new CLIError(err.message, { code: 'INVALID_CONFIG', cause: err });
-			}
-			if (err instanceof ConfigError) {
-				throw new CLIError(err.message, { code: 'CONFIG_ERROR', cause: err });
 			}
 			throw err;
 		}

@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run -A
 
 import { build, emptyDir } from '@deno/dnt';
+import { fromFileUrl } from '@std/path';
 
 type DenoJson = {
 	name: string;
@@ -15,8 +16,8 @@ type DenoJson = {
 	imports?: Record<string, string>;
 };
 
-const mainPath = new URL(import.meta.resolve('github-labelmanager'));
-const denoJsonPath = new URL(import.meta.resolve('$/deno.json'));
+const mainPath = fromFileUrl(import.meta.resolve('github-labelmanager'));
+const denoJsonPath = fromFileUrl(import.meta.resolve('$/deno.json'));
 const outDir = 'npm';
 
 // Read deno.json once as text + parsed JSON
@@ -88,9 +89,9 @@ try {
 	);
 
 	await build({
-		entryPoints: [mainPath.href],
+		entryPoints: [mainPath],
 		outDir,
-		importMap: denoJsonPath.href,
+		importMap: denoJsonPath,
 		esModule: true,
 		typeCheck: 'both',
 		declaration: 'inline',

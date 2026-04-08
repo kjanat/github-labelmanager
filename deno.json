@@ -19,8 +19,8 @@
 		"@kjanat/dreamcli": "jsr:@kjanat/dreamcli@^2",
 		"@kjanat/dreamcli/testkit": "jsr:@kjanat/dreamcli@^2/testkit",
 		"@octokit/webhooks-types": "npm:@octokit/webhooks-types@^7",
-		"~/": "./src/",
-		"$/": "./",
+		"#src/": "./src/",
+		"#/": "./",
 		"github-labelmanager": "./cli/main.ts",
 		"@actions/core": "npm:@actions/core@^3",
 		"@actions/github": "npm:@actions/github@^9",
@@ -183,8 +183,8 @@
 		"skipLibCheck": true,
 		"paths": {
 			"github-labelmanager": ["./cli/main.ts"],
-			"~/*": ["./src/*"],
-			"$/*": ["./*"]
+			"#src/*": ["./src/*"],
+			"#/*": ["./*"]
 		}
 	},
 	"allowScripts": ["npm:lefthook@2.1.5"]
