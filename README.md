@@ -205,11 +205,11 @@ deno task build
 
 ## License
 
-[MIT][license]
+[MIT][LICENSE] © 2025 Kaj Kowalski
 
 <!-- link definitions -->
 
-[license]: https://github.com/kjanat/github-labelmanager/blob/master/LICENSE
+[LICENSE]: https://github.com/kjanat/github-labelmanager/blob/master/LICENSE
 [actions:ci]: https://github.com/kjanat/github-labelmanager/actions/workflows/ci.yml
 [actions:docker]: https://github.com/kjanat/github-labelmanager/actions/workflows/docker-publish.yml
 [badge:ci]: https://img.shields.io/github/actions/workflow/status/kjanat/github-labelmanager/ci.yml?logo=githubactions&logoColor=2088FF&logoSize=auto&label=CI&labelColor=181717

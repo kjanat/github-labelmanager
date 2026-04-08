@@ -1,4 +1,7 @@
-# @kjanat/github-labelmanager
+# github-labelmanager
+
+[![NPM](https://img.shields.io/npm/v/@kjanat/github-labelmanager?logo=npm&labelColor=CB3837&color=black)][npm]
+[![JSR](https://img.shields.io/jsr/v/@kjanat/github-labelmanager?logoColor=083344&logo=jsr&logoSize=auto&label=&labelColor=f7df1e&color=black)][jsr]
 
 Declaratively sync GitHub issue labels from a YAML config file.
 
@@ -7,6 +10,19 @@ Declaratively sync GitHub issue labels from a YAML config file.
 ```bash
 npm install @kjanat/github-labelmanager
 ```
+
+<details><summary>bun/deno</summary>
+
+```bash
+bun add @kjanat/github-labelmanager
+```
+
+```bash
+deno add npm:@kjanat/github-labelmanager
+# or jsr:@kjanat/github-labelmanager
+```
+
+</details>
 
 ## CLI Usage
 
@@ -157,4 +173,8 @@ This package is also available as a GitHub Action:
 
 ## License
 
-MIT
+[MIT][LICENSE] © 2025 Kaj Kowalski
+
+[LICENSE]: https://github.com/kjanat/dreamcli/blob/master/LICENSE
+[npm]: https://npm.im/@kjanat/github-labelmanager
+[jsr]: https://jsr.io/@kjanat/github-labelmanager

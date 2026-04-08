@@ -6,5 +6,6 @@
 	"fenced-code-language": false,
 	"blanks-around-fences": false,
 	"heading-increment": false,
-	"no-duplicate-heading": false
+	"no-duplicate-heading": false,
+	"no-inline-html": false
 }
