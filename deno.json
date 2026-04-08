@@ -47,6 +47,8 @@
 	},
 	"exclude": ["npm", ".github/actions", "dist", "node_modules"],
 	"fmt": {
+		"useTabs": true,
+		"singleQuote": true,
 		"exclude": ["npm", ".github/actions"]
 	},
 	"lint": {

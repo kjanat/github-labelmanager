@@ -6,7 +6,8 @@
 - Dry run: `deno task labels:dry-run OWNER/REPO`
 - Build: `deno task build`
 - Type check: `deno check --all`
-- Format: `deno fmt`
+- Format: `dprint fmt .` or `dprint fmt $FILE`/ `dprint check .` for checking
+  only
 - Lint: `deno lint`
 - Test: `deno task test`
 
