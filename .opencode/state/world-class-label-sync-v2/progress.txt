@@ -13,6 +13,7 @@ Started: 2026-04-08
 - v2 contract is hard-break: no shim period, explicit break matrix required in docs.
 - Core design types are anchored in specs/types.ts before implementation.
 - Legacy unresolved items moved to specs/backlog.md for visibility.
+- D7 doctor write-check now has explicit defaults, error-code mapping, and cleanup semantics.
 
 ---
 <!-- Task logs below - APPEND ONLY -->

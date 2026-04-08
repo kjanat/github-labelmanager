@@ -86,6 +86,13 @@ export interface Diagnostics {
 	validateConfig(path: string): Promise<ValidationReport>;
 	doctor(target: RepoTarget, options?: DoctorOptions): Promise<DoctorReport>;
 }
+
+export interface DoctorOptions {
+	mode?: 'plan' | 'apply';
+	writeProbe?: 'auto' | 'canary' | 'none';
+	probeLabelPrefix?: string;
+	probeTimeoutMs?: number;
+}
 ```
 
 `specs/types.ts` is the contract source for planner, executor, and diagnostics.
@@ -136,10 +143,45 @@ export interface Diagnostics {
 
 - Check `token-present`: token is non-empty.
 - Check `labels-read-access`: repo labels can be listed.
-- Check `labels-write-capability` when `mode=apply`.
+- Check `labels-write-capability` when required by mode matrix.
 - Check `config-valid`: schema and semantic validation pass.
 - Check `plan-buildable`: planner can produce non-conflict plan.
 - Exit code is `0` only when all required checks pass, else `1`.
+
+##### Required-check matrix
+
+| Mode    | token-present | labels-read-access | labels-write-capability | config-valid | plan-buildable |
+| ------- | ------------- | ------------------ | ----------------------- | ------------ | -------------- |
+| `plan`  | required      | required           | optional                | required     | required       |
+| `apply` | required      | required           | required                | required     | required       |
+
+##### Defaults
+
+- `mode='plan'`
+- `writeProbe='auto'`
+- `probeLabelPrefix='__glm_probe__'`
+- `probeTimeoutMs=5000`
+
+##### `labels-write-capability` check algorithm
+
+1. Normalize options using defaults.
+2. If `writeProbe=none`:
+   - required check -> `failed` with `failureCode='validation'`.
+   - optional check -> `skipped`.
+3. If `writeProbe=auto`, introspect repository permissions via `GET /repos/{owner}/{repo}`:
+   - pass when `permissions.admin || permissions.maintain || permissions.push` is `true`.
+   - if permissions are absent or inconclusive, continue to canary probe.
+4. Canary probe (`writeProbe=canary` or `auto` fallback):
+   - Create temporary label `<probeLabelPrefix><timestamp>-<rand4>`.
+   - On create `401`, fail with `failureCode='auth'` and `Try:` token remediation.
+   - On create `403`, fail with `failureCode='permission'` and `Try:` permission remediation.
+   - On create timeout/network error, fail with `failureCode='transport'`.
+   - On create `422`, retry once only when response includes `errors[].code='already_exists'` for `field='name'`; otherwise fail with `failureCode='validation'`.
+5. Cleanup semantics after successful create:
+   - Delete temporary label in `finally` block.
+   - Retry delete up to 2 times with bounded backoff.
+   - If delete still fails, mark check `failed` with `failureCode='auth' | 'permission' | 'transport'` based on response and include leaked label name in `detail`.
+6. Doctor run exits `0` only if every required check status is `passed`; otherwise exits `1`.
 
 #### Stretch
 
@@ -184,20 +226,20 @@ export interface Diagnostics {
 
 ## Deliverable-Level Acceptance Criteria
 
-| Deliverable | Acceptance criteria                                                                                                                                                   |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1          | ADR set merged; invariants include determinism, idempotency, conflict-first semantics, destructive-op visibility.                                                     |
-| D2          | `specs/types.ts` committed; `PlanOp`, `Conflict`, `AppliedOp`, and `ApplyResult` are discriminated unions with no illegal state combinations.                         |
-| D3          | Identical inputs produce byte-stable plan output and same `inputHash` in repeated runs.                                                                               |
-| D4          | Applying the same successful plan twice yields zero mutations on second run.                                                                                          |
-| D5          | Duplicate target, case collision, alias cycle, and alias-target collisions all fail preflight before API calls.                                                       |
-| D6          | Every failure maps to stable code (`auth`,`permission`,`validation`,`conflict`,`transport`) and remediation starts with `Try:`.                                       |
-| D7          | `doctor` emits checks `token-present`,`labels-read-access`,`labels-write-capability`,`config-valid`,`plan-buildable` and exits with `0/1` exactly per check outcomes. |
-| D8          | Public API exports only planner/executor diagnostics contracts; legacy sync-first exports removed.                                                                    |
-| D9          | JSON and markdown report outputs share identical summary counts and operation totals.                                                                                 |
-| D10         | CI blocks on: line coverage >= 90%, branch coverage >= 80%, npm artifact smoke test, action smoke test.                                                               |
-| D11         | README, JSR README, and NPM README examples are executed in CI and have zero stale API names.                                                                         |
-| D12         | Org runner executes only after D10 and D11 completion, supports explicit repo list with concurrency `1..16` (default `4`), and preserves per-repo isolation.          |
+| Deliverable | Acceptance criteria                                                                                                                                                                                                                                                                                         |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1          | ADR set merged; invariants include determinism, idempotency, conflict-first semantics, destructive-op visibility.                                                                                                                                                                                           |
+| D2          | `specs/types.ts` committed; `PlanOp`, `Conflict`, `AppliedOp`, and `ApplyResult` are discriminated unions with no illegal state combinations.                                                                                                                                                               |
+| D3          | Identical inputs produce byte-stable plan output and same `inputHash` in repeated runs.                                                                                                                                                                                                                     |
+| D4          | Applying the same successful plan twice yields zero mutations on second run.                                                                                                                                                                                                                                |
+| D5          | Duplicate target, case collision, alias cycle, and alias-target collisions all fail preflight before API calls.                                                                                                                                                                                             |
+| D6          | Every failure maps to stable code (`auth`,`permission`,`validation`,`conflict`,`transport`) and remediation starts with `Try:`.                                                                                                                                                                             |
+| D7          | `doctor` applies defaults (`mode=plan`,`writeProbe=auto`,`probeLabelPrefix=__glm_probe__`,`probeTimeoutMs=5000`), emits five check IDs with `required/status/failureCode`, splits `401->auth` and `403->permission`, enforces canary cleanup retries, and exits `0/1` exactly from required-check outcomes. |
+| D8          | Public API exports only planner/executor diagnostics contracts; legacy sync-first exports removed.                                                                                                                                                                                                          |
+| D9          | JSON and markdown report outputs share identical summary counts and operation totals.                                                                                                                                                                                                                       |
+| D10         | CI blocks on: line coverage >= 90%, branch coverage >= 80%, npm artifact smoke test, action smoke test.                                                                                                                                                                                                     |
+| D11         | README, JSR README, and NPM README examples are executed in CI and have zero stale API names.                                                                                                                                                                                                               |
+| D12         | Org runner executes only after D10 and D11 completion, supports explicit repo list with concurrency `1..16` (default `4`), and preserves per-repo isolation.                                                                                                                                                |
 
 ## Carryover Backlog (From Legacy TODO Plan)
 

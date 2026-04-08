@@ -172,7 +172,21 @@ export interface ValidationReport {
 }
 
 export interface DoctorOptions {
+	/** default: 'plan' */
 	readonly mode?: 'plan' | 'apply';
+	/** default: 'auto' */
+	readonly writeProbe?: 'auto' | 'canary' | 'none';
+	/** default: '__glm_probe__' */
+	readonly probeLabelPrefix?: string;
+	/** default: 5000 */
+	readonly probeTimeoutMs?: number;
+}
+
+export interface EffectiveDoctorOptions {
+	readonly mode: 'plan' | 'apply';
+	readonly writeProbe: 'auto' | 'canary' | 'none';
+	readonly probeLabelPrefix: string;
+	readonly probeTimeoutMs: number;
 }
 
 export interface DoctorCheck {
@@ -182,8 +196,11 @@ export interface DoctorCheck {
 		| 'labels-write-capability'
 		| 'config-valid'
 		| 'plan-buildable';
-	readonly passed: boolean;
+	readonly required: boolean;
+	readonly status: 'passed' | 'failed' | 'skipped';
+	readonly failureCode?: ApplyFailureCode;
 	readonly detail: string;
+	readonly remediation?: string;
 }
 
 export interface DoctorReport {

@@ -73,7 +73,7 @@
 			"id": "redesign-cli-plan-apply",
 			"phase": 4,
 			"title": "Redesign CLI around plan and apply",
-			"description": "Replace monolithic sync entrypoint with plan, apply, validate, and doctor commands. Acceptance: doctor emits checks `token-present`, `labels-read-access`, `labels-write-capability`, `config-valid`, `plan-buildable`; exit code is `0` only when all required checks pass.",
+			"description": "Replace monolithic sync entrypoint with plan, apply, validate, and doctor commands. Acceptance: doctor emits checks `token-present`, `labels-read-access`, `labels-write-capability`, `config-valid`, `plan-buildable` with `required/status/failureCode`; defaults are `mode=plan`, `writeProbe=auto`, `probeLabelPrefix=__glm_probe__`, `probeTimeoutMs=5000`; mode matrix is enforced (`plan` optional write check, `apply` required write check); write probe splits `401->auth` and `403->permission`, handles `422` retry only for name-collision, retries cleanup delete twice, and exits `0` only when all required checks pass.",
 			"depends": [
 				"build-deterministic-planner",
 				"build-idempotent-executor",
