@@ -177,7 +177,6 @@
 			"command": "deno test -RWE __tests__ --coverage"
 		}
 	},
-
 	"compilerOptions": {
 		"strict": true,
 		"skipLibCheck": true,
