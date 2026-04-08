@@ -92,10 +92,7 @@ function createMockOctokit(options: MockOctokitOptions = {}): {
 class TestableBaseClient extends BaseGitHubClient {
 	protected readonly octokit: MockOctokit;
 
-	constructor(
-		config: GitHubClientConfig,
-		octokit: MockOctokit,
-	) {
+	constructor(config: GitHubClientConfig, octokit: MockOctokit) {
 		super(config, new NullLogger());
 		this.octokit = octokit;
 	}
@@ -137,10 +134,7 @@ Deno.test('BaseGitHubClient - stores repo from config', () => {
 
 Deno.test('BaseGitHubClient - stores isDryRun from config', () => {
 	const { octokit } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: true },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: true }, octokit);
 
 	assertEquals(client.isDryRun, true);
 });
@@ -153,10 +147,7 @@ Deno.test('get - returns label when found', async () => {
 	const { octokit } = createMockOctokit({
 		labels: [{ name: 'bug', color: 'd73a4a', description: 'Bug report' }],
 	});
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
 	const result = await client.get('bug');
 
@@ -169,10 +160,7 @@ Deno.test('get - returns label when found', async () => {
 
 Deno.test('get - returns null when label not found (404)', async () => {
 	const { octokit } = createMockOctokit({ labels: [] });
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
 	const result = await client.get('nonexistent');
 
@@ -183,26 +171,16 @@ Deno.test('get - throws on non-404 error', async () => {
 	const { octokit } = createMockOctokit({
 		errors: { getLabel: new Error('Server error') },
 	});
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
-	await assertRejects(
-		() => client.get('bug'),
-		Error,
-		'Server error',
-	);
+	await assertRejects(() => client.get('bug'), Error, 'Server error');
 });
 
 Deno.test('get - passes correct owner/repo/name to API', async () => {
 	const { octokit, calls } = createMockOctokit({
 		labels: [{ name: 'bug', color: 'd73a4a', description: null }],
 	});
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'my-org', repo: 'my-repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'my-org', repo: 'my-repo', dryRun: false }, octokit);
 
 	await client.get('bug');
 
@@ -220,10 +198,7 @@ Deno.test('get - passes correct owner/repo/name to API', async () => {
 
 Deno.test('create - creates label and returns result', async () => {
 	const { octokit } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
 	const result = await client.create({
 		name: 'bug',
@@ -240,10 +215,7 @@ Deno.test('create - creates label and returns result', async () => {
 
 Deno.test('create - strips # from color', async () => {
 	const { octokit, calls } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
 	await client.create({ name: 'test', color: '#ff0000', description: 'Test' });
 
@@ -253,10 +225,7 @@ Deno.test('create - strips # from color', async () => {
 
 Deno.test('create - returns null in dry-run mode', async () => {
 	const { octokit, calls } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: true },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: true }, octokit);
 
 	const result = await client.create({
 		name: 'bug',
@@ -270,10 +239,7 @@ Deno.test('create - returns null in dry-run mode', async () => {
 
 Deno.test('create - passes correct params to API', async () => {
 	const { octokit, calls } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'my-org', repo: 'my-repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'my-org', repo: 'my-repo', dryRun: false }, octokit);
 
 	await client.create({
 		name: 'feature',
@@ -297,10 +263,7 @@ Deno.test('create - passes correct params to API', async () => {
 
 Deno.test('update - updates label without rename when new_name not provided', async () => {
 	const { octokit } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
 	const result = await client.update('old-name', {
 		name: 'new-name',
@@ -314,10 +277,7 @@ Deno.test('update - updates label without rename when new_name not provided', as
 
 Deno.test('update - renames label when new_name provided', async () => {
 	const { octokit, calls } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
 	const result = await client.update('old-name', {
 		name: 'old-name',
@@ -333,10 +293,7 @@ Deno.test('update - renames label when new_name provided', async () => {
 
 Deno.test('update - strips # from color', async () => {
 	const { octokit, calls } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
 	await client.update('test', {
 		name: 'test',
@@ -350,10 +307,7 @@ Deno.test('update - strips # from color', async () => {
 
 Deno.test('update - returns null in dry-run mode', async () => {
 	const { octokit, calls } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: true },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: true }, octokit);
 
 	const result = await client.update('bug', {
 		name: 'bug',
@@ -367,10 +321,7 @@ Deno.test('update - returns null in dry-run mode', async () => {
 
 Deno.test('update - skips API call for rename in dry-run mode', async () => {
 	const { octokit, calls } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: true },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: true }, octokit);
 
 	const result = await client.update('old', {
 		name: 'old',
@@ -388,10 +339,7 @@ Deno.test('update - skips API call for rename in dry-run mode', async () => {
 
 Deno.test('delete - deletes label', async () => {
 	const { octokit, calls } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'my-org', repo: 'my-repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'my-org', repo: 'my-repo', dryRun: false }, octokit);
 
 	await client.delete('old-label');
 
@@ -406,10 +354,7 @@ Deno.test('delete - deletes label', async () => {
 
 Deno.test('delete - does nothing in dry-run mode', async () => {
 	const { octokit, calls } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: true },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: true }, octokit);
 
 	await client.delete('old-label');
 
@@ -420,16 +365,9 @@ Deno.test('delete - throws on error', async () => {
 	const { octokit } = createMockOctokit({
 		errors: { deleteLabel: new Error('Delete failed') },
 	});
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
-	await assertRejects(
-		() => client.delete('bug'),
-		Error,
-		'Delete failed',
-	);
+	await assertRejects(() => client.delete('bug'), Error, 'Delete failed');
 });
 
 // =============================================================================
@@ -438,10 +376,7 @@ Deno.test('delete - throws on error', async () => {
 
 Deno.test('isNotFoundError - returns true for 404 status', () => {
 	const { octokit } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
 	const error = { status: 404, message: 'Not Found' };
 	assertEquals(client.testIsNotFoundError(error), true);
@@ -449,10 +384,7 @@ Deno.test('isNotFoundError - returns true for 404 status', () => {
 
 Deno.test('isNotFoundError - returns false for other status', () => {
 	const { octokit } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
 	assertEquals(client.testIsNotFoundError({ status: 500 }), false);
 	assertEquals(client.testIsNotFoundError({ status: 403 }), false);
@@ -461,10 +393,7 @@ Deno.test('isNotFoundError - returns false for other status', () => {
 
 Deno.test('isNotFoundError - returns false for non-object', () => {
 	const { octokit } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
 	assertEquals(client.testIsNotFoundError(null), false);
 	assertEquals(client.testIsNotFoundError(undefined), false);
@@ -474,10 +403,7 @@ Deno.test('isNotFoundError - returns false for non-object', () => {
 
 Deno.test('isNotFoundError - returns false for object without status', () => {
 	const { octokit } = createMockOctokit();
-	const client = new TestableBaseClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		octokit,
-	);
+	const client = new TestableBaseClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, octokit);
 
 	assertEquals(client.testIsNotFoundError({ message: 'error' }), false);
 	assertEquals(client.testIsNotFoundError({}), false);

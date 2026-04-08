@@ -35,15 +35,17 @@ type HexDigit =
 	| 'E'
 	| 'F';
 
-type HexChars<S extends string> = // deno-fmt-ignore
-	S extends `${infer A}${infer B}${infer C}${infer D}${infer E}${infer F}${infer Rest}`
-		? Rest extends '' ? [A, B, C, D, E, F] : never
-		: never;
+type HexChars<S extends string> = S extends `${infer A}${infer B}${infer C}${infer D}${infer E}${infer F}${infer Rest}`
+	? Rest extends '' ? [A, B, C, D, E, F]
+	: never
+	: never;
 
-type InvalidChar<T extends string[], I extends number = 0> = // deno-fmt-ignore
-	T extends [infer H extends string, ...infer R extends string[]]
-		? H extends HexDigit ? InvalidChar<R, [...[0], ...Array<I>]['length'] & number> : I
-		: -1;
+type InvalidChar<T extends string[], I extends number = 0> = T extends [
+	infer H extends string,
+	...infer R extends string[],
+] ? H extends HexDigit ? InvalidChar<R, [...[0], ...Array<I>]['length'] & number>
+	: I
+	: -1;
 
 /**
  * Validates a hex color string at compile time.
@@ -147,9 +149,7 @@ export const LabelColorUtils: ILabelColorUtils = {
 		const normalized = normalizeHexCandidate(value);
 
 		if (!HEX_COLOR_REGEX.test(normalized)) {
-			throw new Error(
-				`Invalid hex color "${value}". Expected 3 or 6 hex characters (with optional leading #)`,
-			);
+			throw new Error(`Invalid hex color "${value}". Expected 3 or 6 hex characters (with optional leading #)`);
 		}
 		return normalized.toLowerCase() as LabelColor;
 	},
@@ -172,7 +172,10 @@ export const LabelColorUtils: ILabelColorUtils = {
 		if (!color) return undefined;
 		const hex = color.replace(/^#/, '').toLowerCase();
 		if (hex.length === 3) {
-			return hex.split('').map((c) => c + c).join('');
+			return hex
+				.split('')
+				.map((c) => c + c)
+				.join('');
 		}
 		return hex;
 	},
@@ -193,9 +196,7 @@ export const LabelDescriptionUtils: ILabelDescriptionUtils = {
 	 */
 	parse(value: string): LabelDescription {
 		if (value.length > MAX_DESCRIPTION_LENGTH) {
-			throw new Error(
-				`Description exceeds ${MAX_DESCRIPTION_LENGTH} characters (got ${value.length})`,
-			);
+			throw new Error(`Description exceeds ${MAX_DESCRIPTION_LENGTH} characters (got ${value.length})`);
 		}
 		return value as LabelDescription;
 	},
@@ -304,9 +305,9 @@ export function label(name: string): LabelBuilder {
 		build(): Label {
 			return {
 				name: _name,
-				..._color && { color: _color },
-				..._description && { description: _description },
-				..._aliases && { aliases: _aliases },
+				...(_color && { color: _color }),
+				...(_description && { description: _description }),
+				...(_aliases && { aliases: _aliases }),
 			};
 		},
 	};

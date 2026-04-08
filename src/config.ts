@@ -53,9 +53,7 @@ export async function loadConfig(path?: string): Promise<LabelConfig> {
 
 	// Check for parse errors
 	if (doc.errors.length > 0) {
-		throw new Deno.errors.InvalidData(
-			`YAML parse error: ${doc.errors[0].message}`,
-		);
+		throw new Deno.errors.InvalidData(`YAML parse error: ${doc.errors[0].message}`);
 	}
 
 	// Validate with Zod (safeParse accepts unknown, no need to pre-cast toJS()'s `any`)
@@ -63,9 +61,7 @@ export async function loadConfig(path?: string): Promise<LabelConfig> {
 
 	if (!validation.success) {
 		const validationError = fromError(validation.error);
-		throw new Deno.errors.InvalidData(
-			`Invalid labels.yml schema:\n${validationError.toString()}`,
-		);
+		throw new Deno.errors.InvalidData(`Invalid labels.yml schema:\n${validationError.toString()}`);
 	}
 
 	// Build line number maps for annotations

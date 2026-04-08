@@ -107,10 +107,7 @@ export interface IGitHubClient {
 	 * @returns Updated label, or null if dry-run
 	 * @throws Error on API failure
 	 */
-	update(
-		currentName: string,
-		options: LabelOptions,
-	): Promise<GitHubLabel | null>;
+	update(currentName: string, options: LabelOptions): Promise<GitHubLabel | null>;
 }
 
 // ============================================================================

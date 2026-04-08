@@ -11,9 +11,7 @@ import { createTestEnv, MockGitHubClient, NullLogger } from '#src/testing/mod.ts
 import { assertEquals } from '@std/assert';
 
 /** Helper to create a LabelManager with mock client */
-function createTestManager(
-	client: MockGitHubClient,
-): LabelManager {
+function createTestManager(client: MockGitHubClient): LabelManager {
 	const env = createTestEnv({
 		owner: client.owner,
 		repo: client.repo,
@@ -94,9 +92,7 @@ Deno.test('syncLabels - updates label when description differs', async () => {
 	const manager = createTestManager(client);
 
 	const config: LabelConfig = {
-		labels: [
-			label('bug').color('d73a4a').description('New description').build(),
-		],
+		labels: [label('bug').color('d73a4a').description('New description').build()],
 	};
 
 	const result = await syncLabels(manager, config);
@@ -117,13 +113,7 @@ Deno.test('syncLabels - renames label via alias', async () => {
 	const manager = createTestManager(client);
 
 	const config: LabelConfig = {
-		labels: [
-			label('feature')
-				.color('a2eeef')
-				.description('Feature')
-				.aliases('enhancement')
-				.build(),
-		],
+		labels: [label('feature').color('a2eeef').description('Feature').aliases('enhancement').build()],
 	};
 
 	const result = await syncLabels(manager, config);
@@ -131,10 +121,7 @@ Deno.test('syncLabels - renames label via alias', async () => {
 	assertEquals(result.success, true);
 	assertEquals(result.summary.renamed, 1);
 	assertEquals(client.labels[0].name, 'feature');
-	assertEquals(
-		result.operations.find((o) => o.type === 'rename')?.from,
-		'enhancement',
-	);
+	assertEquals(result.operations.find((o) => o.type === 'rename')?.from, 'enhancement');
 });
 
 Deno.test('syncLabels - uses first matching alias', async () => {
@@ -143,13 +130,7 @@ Deno.test('syncLabels - uses first matching alias', async () => {
 	});
 	const manager = createTestManager(client);
 	const config: LabelConfig = {
-		labels: [
-			label('feature')
-				.color('a2eeef')
-				.description('Feature')
-				.aliases('alias1', 'alias2', 'alias3')
-				.build(),
-		],
+		labels: [label('feature').color('a2eeef').description('Feature').aliases('alias1', 'alias2', 'alias3').build()],
 	};
 
 	const result = await syncLabels(manager, config);
@@ -157,10 +138,7 @@ Deno.test('syncLabels - uses first matching alias', async () => {
 	assertEquals(result.success, true);
 	assertEquals(result.summary.renamed, 1);
 	// Should rename from alias2 (first one found in repo)
-	assertEquals(
-		result.operations.find((o) => o.type === 'rename')?.from,
-		'alias2',
-	);
+	assertEquals(result.operations.find((o) => o.type === 'rename')?.from, 'alias2');
 });
 
 Deno.test('syncLabels - rename with color and description change updates all in single operation', async () => {
@@ -169,13 +147,7 @@ Deno.test('syncLabels - rename with color and description change updates all in 
 	});
 	const manager = createTestManager(client);
 	const config: LabelConfig = {
-		labels: [
-			label('new-name')
-				.color('ff0000')
-				.description('New description')
-				.aliases('old-name')
-				.build(),
-		],
+		labels: [label('new-name').color('ff0000').description('New description').aliases('old-name').build()],
 	};
 
 	const result = await syncLabels(manager, config);
@@ -317,13 +289,7 @@ Deno.test('syncLabels - skips create after failed rename', async () => {
 	const manager = createTestManager(client);
 
 	const config: LabelConfig = {
-		labels: [
-			label('new-name')
-				.color('a2eeef')
-				.description('Feature')
-				.aliases('old-name')
-				.build(),
-		],
+		labels: [label('new-name').color('a2eeef').description('Feature').aliases('old-name').build()],
 	};
 
 	const result = await syncLabels(manager, config);
@@ -348,11 +314,13 @@ Deno.test('syncLabels - normalizes color with # prefix', async () => {
 	// Config has # prefix, repo doesn't - should still match after stripping #
 	// Use parsing helpers to convert string literals to branded types
 	const config: LabelConfig = {
-		labels: [{
-			name: LabelNameUtils.parse('bug'),
-			color: LabelColorUtils.parse('#d73a4a'),
-			description: LabelDescriptionUtils.parse('Bug'),
-		}],
+		labels: [
+			{
+				name: LabelNameUtils.parse('bug'),
+				color: LabelColorUtils.parse('#d73a4a'),
+				description: LabelDescriptionUtils.parse('Bug'),
+			},
+		],
 	};
 
 	const result = await syncLabels(manager, config);
@@ -386,11 +354,13 @@ Deno.test('syncLabels - expands 3-char hex', async () => {
 
 	// Use parsing helpers to convert 3-char hex to branded type (expands to 6-char)
 	const config: LabelConfig = {
-		labels: [{
-			name: LabelNameUtils.parse('bug'),
-			color: LabelColorUtils.parse('fab'),
-			description: LabelDescriptionUtils.parse('Bug'),
-		}],
+		labels: [
+			{
+				name: LabelNameUtils.parse('bug'),
+				color: LabelColorUtils.parse('fab'),
+				description: LabelDescriptionUtils.parse('Bug'),
+			},
+		],
 	};
 
 	const result = await syncLabels(manager, config);
@@ -457,10 +427,7 @@ Deno.test('syncLabels - v2: ignore patterns protect labels from deletion', async
 	assertEquals(result.success, true);
 	assertEquals(result.summary.deleted, 1); // Only "bug" deleted
 	assertEquals(client.labels.length, 2);
-	assertEquals(client.labels.map((l) => l.name).sort(), [
-		'dependabot',
-		'dependabot-preview',
-	]);
+	assertEquals(client.labels.map((l) => l.name).sort(), ['dependabot', 'dependabot-preview']);
 });
 
 Deno.test('syncLabels - v2: ignore patterns are case-insensitive', async () => {
@@ -481,27 +448,16 @@ Deno.test('syncLabels - v2: ignore patterns are case-insensitive', async () => {
 
 	assertEquals(result.success, true);
 	assertEquals(result.summary.deleted, 1); // Only "bug" should be deleted
-	assertEquals(client.labels.map((l) => l.name).sort(), [
-		'DEPENDABOT-preview',
-		'Dependabot',
-	]);
+	assertEquals(client.labels.map((l) => l.name).sort(), ['DEPENDABOT-preview', 'Dependabot']);
 });
 Deno.test('syncLabels - v2: aliases are protected during sync', async () => {
 	// Aliases should NOT be deleted before rename occurs
 	const client = new MockGitHubClient({
-		labels: [
-			{ name: 'enhancement', color: 'a2eeef', description: 'Enhancement' },
-		],
+		labels: [{ name: 'enhancement', color: 'a2eeef', description: 'Enhancement' }],
 	});
 	const manager = createTestManager(client);
 	const config: LabelConfig = {
-		labels: [
-			label('feature')
-				.color('a2eeef')
-				.description('New feature')
-				.aliases('enhancement')
-				.build(),
-		],
+		labels: [label('feature').color('a2eeef').description('New feature').aliases('enhancement').build()],
 	};
 
 	const result = await syncLabels(manager, config);

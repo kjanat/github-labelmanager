@@ -34,15 +34,15 @@ github-labelmanager owner/repo
 ### ESM
 
 ```javascript
-import { LabelManager, loadConfig, syncLabels } from '@kjanat/github-labelmanager';
+import { LabelManager, loadConfig, syncLabels } from "@kjanat/github-labelmanager";
 
-const config = await loadConfig('.github/labels.yml');
+const config = await loadConfig(".github/labels.yml");
 
 const manager = new LabelManager({
-	token: process.env.GITHUB_TOKEN,
-	owner: 'owner',
-	repo: 'repo',
-	dryRun: false,
+  token: process.env.GITHUB_TOKEN,
+  owner: "owner",
+  repo: "repo",
+  dryRun: false,
 });
 
 const result = await syncLabels(manager, config);
@@ -53,24 +53,20 @@ console.log(result.summary);
 ### CommonJS
 
 ```javascript
-const {
-	LabelManager,
-	loadConfig,
-	syncLabels,
-} = require('@kjanat/github-labelmanager');
+const { LabelManager, loadConfig, syncLabels } = require("@kjanat/github-labelmanager");
 
 async function main() {
-	const config = await loadConfig('.github/labels.yml');
+  const config = await loadConfig(".github/labels.yml");
 
-	const manager = new LabelManager({
-		token: process.env.GITHUB_TOKEN,
-		owner: 'owner',
-		repo: 'repo',
-		dryRun: false,
-	});
+  const manager = new LabelManager({
+    token: process.env.GITHUB_TOKEN,
+    owner: "owner",
+    repo: "repo",
+    dryRun: false,
+  });
 
-	const result = await syncLabels(manager, config);
-	console.log(result.summary);
+  const result = await syncLabels(manager, config);
+  console.log(result.summary);
 }
 
 main();
@@ -92,23 +88,27 @@ High-level API for managing GitHub labels.
 
 ```javascript
 const manager = new LabelManager({
-	token: 'ghp_xxx',
-	owner: 'owner',
-	repo: 'repo',
-	dryRun: false,
+  token: "ghp_xxx",
+  owner: "owner",
+  repo: "repo",
+  dryRun: false,
 });
 
 // List all labels
 const labels = await manager.listLabels();
 
 // Create a label
-await manager.createLabel({ name: 'bug', color: 'd73a4a', description: 'Bug' });
+await manager.createLabel({
+  name: "bug",
+  color: "d73a4a",
+  description: "Bug",
+});
 
 // Update a label
-await manager.updateLabel('bug', { color: 'ff0000' });
+await manager.updateLabel("bug", { color: "ff0000" });
 
 // Delete a label
-await manager.deleteLabel('obsolete');
+await manager.deleteLabel("obsolete");
 ```
 
 ## Configuration File

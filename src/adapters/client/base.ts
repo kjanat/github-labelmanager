@@ -77,14 +77,9 @@ export abstract class BaseGitHubClient implements IGitHubClient {
 		return this.mapLabelResponse(data);
 	}
 
-	async update(
-		currentName: string,
-		options: LabelOptions,
-	): Promise<GitHubLabel | null> {
+	async update(currentName: string, options: LabelOptions): Promise<GitHubLabel | null> {
 		if (this.isDryRun) {
-			const action = options.new_name
-				? `rename to ${options.new_name}`
-				: 'update';
+			const action = options.new_name ? `rename to ${options.new_name}` : 'update';
 			this.logger.info(`[dry-run] Would ${action} label: ${currentName}`);
 			return null;
 		}
@@ -118,12 +113,7 @@ export abstract class BaseGitHubClient implements IGitHubClient {
 	 * Check if error is a 404 Not Found
 	 */
 	protected isNotFoundError(err: unknown): boolean {
-		return (
-			err !== null
-			&& typeof err === 'object'
-			&& 'status' in err
-			&& err.status === 404
-		);
+		return err !== null && typeof err === 'object' && 'status' in err && err.status === 404;
 	}
 
 	/**

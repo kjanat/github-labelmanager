@@ -25,11 +25,7 @@ Deno.test('LabelColorUtils.parse - expands 3-char hex and lowercases', () => {
 });
 
 Deno.test('LabelColorUtils.parse - throws on invalid hex', () => {
-	assertThrows(
-		() => LabelColorUtils.parse('gggggg'),
-		Error,
-		'Invalid hex color',
-	);
+	assertThrows(() => LabelColorUtils.parse('gggggg'), Error, 'Invalid hex color');
 });
 
 Deno.test('LabelColorUtils.is - true for valid, false for invalid', () => {
@@ -43,11 +39,7 @@ Deno.test('LabelColorUtils.normalize - handles undefined and 3-char', () => {
 });
 
 Deno.test('LabelDescriptionUtils.parse - throws when over 100 chars', () => {
-	assertThrows(
-		() => LabelDescriptionUtils.parse('a'.repeat(101)),
-		Error,
-		'exceeds 100',
-	);
+	assertThrows(() => LabelDescriptionUtils.parse('a'.repeat(101)), Error, 'exceeds 100');
 });
 
 Deno.test('LabelDescriptionUtils.is - true when within limit', () => {

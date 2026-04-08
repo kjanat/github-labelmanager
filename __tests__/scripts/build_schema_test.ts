@@ -15,10 +15,7 @@ function resolveRoot(schema: Record<string, unknown>): Record<string, unknown> {
 	if (schema.$ref) {
 		const ref = schema.$ref as string;
 		const refName = ref.split('/').pop() as string;
-		const defs = (schema.definitions || schema.$defs) as Record<
-			string,
-			unknown
-		>;
+		const defs = (schema.definitions || schema.$defs) as Record<string, unknown>;
 		return defs[refName] as Record<string, unknown>;
 	}
 	return schema;
@@ -36,11 +33,8 @@ Deno.test('schema - uses draft 07', async () => {
 	assertEquals(schema.$schema, 'http://json-schema.org/draft-07/schema#');
 });
 
-function getLabelDefinition(
-	schema: Record<string, unknown>,
-): Record<string, unknown> {
-	const labels = (schema.properties as Record<string, unknown>)
-		.labels as Record<string, unknown>;
+function getLabelDefinition(schema: Record<string, unknown>): Record<string, unknown> {
+	const labels = (schema.properties as Record<string, unknown>).labels as Record<string, unknown>;
 	const items = labels.items as Record<string, unknown>;
 
 	if (items.$ref && typeof items.$ref === 'string') {
@@ -122,11 +116,7 @@ Deno.test('schema - committed schema matches generated schema', async () => {
 	const committedJson = JSON.stringify(committed, null, 2);
 	const generatedJson = JSON.stringify(generated, null, 2);
 
-	assertEquals(
-		committedJson,
-		generatedJson,
-		'Committed schema is out of sync with types. Run: deno task schema',
-	);
+	assertEquals(committedJson, generatedJson, 'Committed schema is out of sync with types. Run: deno task schema');
 });
 
 // --- Schema content tests ---
@@ -136,23 +126,14 @@ Deno.test('schema - has descriptions from metadata', async () => {
 	const schema = resolveRoot(root);
 
 	// Root description
-	assertStringIncludes(
-		root.description as string,
-		'github-labelmanager',
-	);
+	assertStringIncludes(root.description as string, 'github-labelmanager');
 
 	// LabelDefinition description
 	const labelDef = getLabelDefinition(schema);
-	assertStringIncludes(
-		labelDef.description as string,
-		'GitHub issue label',
-	);
+	assertStringIncludes(labelDef.description as string, 'GitHub issue label');
 
 	// Field descriptions (name and color share LabelName/HexColor metadata)
-	const defs = (root.$defs || root.definitions) as Record<
-		string,
-		Record<string, unknown>
-	>;
+	const defs = (root.$defs || root.definitions) as Record<string, Record<string, unknown>>;
 	const props = labelDef.properties as Record<string, Record<string, unknown>>;
 
 	// name -> ref to LabelName (__schema0)

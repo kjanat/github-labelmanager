@@ -38,53 +38,39 @@ export class OctokitClient extends BaseGitHubClient {
 	constructor(config: GitHubClientConfig, logger: ILogger, octokit?: Octokit) {
 		super(config, logger);
 
-		this.octokit = octokit ?? new Octokit({
-			auth: config.token,
-			throttle: {
-				onRateLimit: (
-					retryAfter: number,
-					options: ThrottleOptions,
-					_octokit: Octokit,
-				) => {
-					this.logger.warn(
-						`Rate limit hit for ${options.method} ${options.url}`,
-					);
-					// Retry once after hitting rate limit
-					if (options.request.retryCount === 0) {
-						this.logger.info(`Retrying after ${retryAfter} seconds...`);
-						return true;
-					}
-					return false;
+		this.octokit = octokit
+			?? new Octokit({
+				auth: config.token,
+				throttle: {
+					onRateLimit: (retryAfter: number, options: ThrottleOptions, _octokit: Octokit) => {
+						this.logger.warn(`Rate limit hit for ${options.method} ${options.url}`);
+						// Retry once after hitting rate limit
+						if (options.request.retryCount === 0) {
+							this.logger.info(`Retrying after ${retryAfter} seconds...`);
+							return true;
+						}
+						return false;
+					},
+					onSecondaryRateLimit: (retryAfter: number, options: ThrottleOptions, _octokit: Octokit) => {
+						this.logger.warn(`Secondary rate limit hit for ${options.method} ${options.url}`);
+						// Retry once on secondary rate limits
+						if (options.request.retryCount === 0) {
+							this.logger.info(`Retrying after ${retryAfter} seconds...`);
+							return true;
+						}
+						return false;
+					},
 				},
-				onSecondaryRateLimit: (
-					retryAfter: number,
-					options: ThrottleOptions,
-					_octokit: Octokit,
-				) => {
-					this.logger.warn(
-						`Secondary rate limit hit for ${options.method} ${options.url}`,
-					);
-					// Retry once on secondary rate limits
-					if (options.request.retryCount === 0) {
-						this.logger.info(`Retrying after ${retryAfter} seconds...`);
-						return true;
-					}
-					return false;
-				},
-			},
-		});
+			});
 	}
 
 	async list(): Promise<GitHubLabel[]> {
 		try {
-			const labels = await this.octokit.paginate(
-				'GET /repos/{owner}/{repo}/labels',
-				{
-					owner: this.owner,
-					repo: this.repo,
-					per_page: 100,
-				},
-			);
+			const labels = await this.octokit.paginate('GET /repos/{owner}/{repo}/labels', {
+				owner: this.owner,
+				repo: this.repo,
+				per_page: 100,
+			});
 
 			return labels.map((l: GitHubLabelSchema) => this.mapLabelResponse(l));
 		} catch (error) {
@@ -103,9 +89,7 @@ export class OctokitClient extends BaseGitHubClient {
 			}
 			// Wrap non-Octokit errors with context
 			const message = error instanceof Error ? error.message : String(error);
-			throw new Error(
-				`Failed to list labels for ${this.owner}/${this.repo}: ${message}`,
-			);
+			throw new Error(`Failed to list labels for ${this.owner}/${this.repo}: ${message}`);
 		}
 	}
 }

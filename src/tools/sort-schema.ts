@@ -30,13 +30,7 @@ const SPINNER_ON_STDIN = false;
 // ============================================================================
 
 /** JSON value types */
-export type JsonValue =
-	| string
-	| number
-	| boolean
-	| null
-	| JsonObject
-	| JsonValue[];
+export type JsonValue = string | number | boolean | null | JsonObject | JsonValue[];
 
 /** JSON object with string keys */
 export interface JsonObject {
@@ -54,60 +48,60 @@ export interface JsonObject {
  */
 const SCHEMA_KEY_PRIORITY = {
 	// Metadata (top priority)
-	'$schema': 0,
-	'$id': 1,
-	'$ref': 2,
-	'$defs': 3,
-	'definitions': 4, // legacy
+	$schema: 0,
+	$id: 1,
+	$ref: 2,
+	$defs: 3,
+	definitions: 4, // legacy
 
-	'title': 5,
-	'description': 6,
+	title: 5,
+	description: 6,
 
 	// Structural keywords
-	'type': 10,
-	'properties': 11,
-	'patternProperties': 12,
-	'required': 13,
-	'additionalProperties': 14,
-	'unevaluatedProperties': 15,
+	type: 10,
+	properties: 11,
+	patternProperties: 12,
+	required: 13,
+	additionalProperties: 14,
+	unevaluatedProperties: 15,
 
 	// Array-specific
-	'items': 20,
-	'additionalItems': 21,
-	'minItems': 22,
-	'maxItems': 23,
-	'uniqueItems': 24,
+	items: 20,
+	additionalItems: 21,
+	minItems: 22,
+	maxItems: 23,
+	uniqueItems: 24,
 
 	// Validation constraints
-	'enum': 30,
-	'const': 31,
-	'pattern': 32,
-	'minLength': 33,
-	'maxLength': 34,
-	'minimum': 35,
-	'maximum': 36,
-	'exclusiveMinimum': 37,
-	'exclusiveMaximum': 38,
-	'multipleOf': 39,
+	enum: 30,
+	const: 31,
+	pattern: 32,
+	minLength: 33,
+	maxLength: 34,
+	minimum: 35,
+	maximum: 36,
+	exclusiveMinimum: 37,
+	exclusiveMaximum: 38,
+	multipleOf: 39,
 
 	// Logical operators
-	'allOf': 50,
-	'anyOf': 51,
-	'oneOf': 52,
-	'not': 53,
-	'if': 54,
+	allOf: 50,
+	anyOf: 51,
+	oneOf: 52,
+	not: 53,
+	if: 54,
 	// biome-ignore lint/suspicious/noThenProperty: not that kind of then
-	'then': 55,
-	'else': 56,
+	then: 55,
+	else: 56,
 
 	// Annotations (lower priority)
-	'examples': 60,
-	'default': 61,
-	'deprecated': 62,
-	'readOnly': 63,
-	'writeOnly': 64,
-	'contentMediaType': 65,
-	'contentEncoding': 66,
+	examples: 60,
+	default: 61,
+	deprecated: 62,
+	readOnly: 63,
+	writeOnly: 64,
+	contentMediaType: 65,
+	contentEncoding: 66,
 } as const;
 
 const schemaPriority: Readonly<Record<string, number>> = SCHEMA_KEY_PRIORITY;
@@ -261,9 +255,7 @@ async function main(): Promise<number> {
 				return true;
 			}
 			if (arg.startsWith('-')) {
-				console.error(
-					`${red('Error:')} Unknown option: ${arg}. See --help for usage.`,
-				);
+				console.error(`${red('Error:')} Unknown option: ${arg}. See --help for usage.`);
 				throw new Error(`Unknown option: ${arg}`);
 			}
 			return true;
@@ -286,9 +278,7 @@ async function main(): Promise<number> {
 
 	// Validate mutual exclusion
 	if (args['in-place'] && args.output) {
-		console.error(
-			`${red('Error:')} --in-place and --output are mutually exclusive`,
-		);
+		console.error(`${red('Error:')} --in-place and --output are mutually exclusive`);
 		throw new Error('--in-place and --output are mutually exclusive');
 	}
 
@@ -345,9 +335,7 @@ async function main(): Promise<number> {
 // Only run CLI when executed directly
 if (import.meta.main) {
 	const code = await main().catch((error) => {
-		console.error(
-			`${red('Error:')} ${error instanceof Error ? error.message : error}`,
-		);
+		console.error(`${red('Error:')} ${error instanceof Error ? error.message : error}`);
 		return 1;
 	});
 

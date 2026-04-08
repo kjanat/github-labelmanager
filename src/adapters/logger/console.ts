@@ -74,43 +74,31 @@ export class ConsoleLogger implements ILogger {
 	debug(message: string): void {
 		// Only show debug in verbose mode (check DEBUG env)
 		if (Deno.env.get('DEBUG')) {
-			console.debug(
-				`${this.indent}${colorize(COLORS.gray, '[debug]')} ${message}`,
-			);
+			console.debug(`${this.indent}${colorize(COLORS.gray, '[debug]')} ${message}`);
 		}
 	}
 
 	info(message: string): void {
-		console.info(
-			`${this.indent}${colorize(COLORS.cyan, '[info]')} ${message}`,
-		);
+		console.info(`${this.indent}${colorize(COLORS.cyan, '[info]')} ${message}`);
 	}
 
 	warn(message: string, properties?: AnnotationProperties): void {
 		const annotation = formatAnnotation(properties);
-		console.warn(
-			`${this.indent}${colorize(COLORS.yellow, '[warn]')} ${message}${annotation}`,
-		);
+		console.warn(`${this.indent}${colorize(COLORS.yellow, '[warn]')} ${message}${annotation}`);
 	}
 
 	error(message: string, properties?: AnnotationProperties): void {
 		const annotation = formatAnnotation(properties);
-		console.error(
-			`${this.indent}${colorize(COLORS.red, '[error]')} ${message}${annotation}`,
-		);
+		console.error(`${this.indent}${colorize(COLORS.red, '[error]')} ${message}${annotation}`);
 	}
 
 	notice(message: string, properties?: AnnotationProperties): void {
 		const annotation = formatAnnotation(properties);
-		console.info(
-			`${this.indent}${colorize(COLORS.blue, '[notice]')} ${message}${annotation}`,
-		);
+		console.info(`${this.indent}${colorize(COLORS.blue, '[notice]')} ${message}${annotation}`);
 	}
 
 	startGroup(name: string): void {
-		console.info(
-			`${this.indent}${colorize(COLORS.bold, '>')} ${name}`,
-		);
+		console.info(`${this.indent}${colorize(COLORS.bold, '>')} ${name}`);
 		this.groupDepth++;
 	}
 
@@ -136,15 +124,11 @@ export class ConsoleLogger implements ILogger {
 	}
 
 	success(message: string): void {
-		console.log(
-			`${this.indent}${colorize(COLORS.green, '[+]')} ${message}`,
-		);
+		console.log(`${this.indent}${colorize(COLORS.green, '[+]')} ${message}`);
 	}
 
 	skip(message: string): void {
-		console.log(
-			`${this.indent}${colorize(COLORS.gray, '[-]')} ${message}`,
-		);
+		console.log(`${this.indent}${colorize(COLORS.gray, '[-]')} ${message}`);
 	}
 
 	writeSummary(_result: SyncResult): Promise<void> {

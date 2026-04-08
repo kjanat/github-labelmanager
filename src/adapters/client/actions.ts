@@ -35,14 +35,11 @@ export class ActionsGitHubClient extends BaseGitHubClient {
 
 	async list(): Promise<GitHubLabel[]> {
 		try {
-			const labels = await this.octokit.paginate(
-				this.octokit.rest.issues.listLabelsForRepo,
-				{
-					owner: this.owner,
-					repo: this.repo,
-					per_page: 100,
-				},
-			);
+			const labels = await this.octokit.paginate(this.octokit.rest.issues.listLabelsForRepo, {
+				owner: this.owner,
+				repo: this.repo,
+				per_page: 100,
+			});
 
 			return labels.map((l: GitHubLabelSchema) => this.mapLabelResponse(l));
 		} catch (error) {
@@ -61,9 +58,7 @@ export class ActionsGitHubClient extends BaseGitHubClient {
 			}
 			// Wrap non-Octokit errors with context
 			const message = error instanceof Error ? error.message : String(error);
-			throw new Error(
-				`Failed to list labels for ${this.owner}/${this.repo}: ${message}`,
-			);
+			throw new Error(`Failed to list labels for ${this.owner}/${this.repo}: ${message}`);
 		}
 	}
 }

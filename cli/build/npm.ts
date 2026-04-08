@@ -39,9 +39,7 @@ if (versionArg) {
 	console.info(`Version passed as argument:\t${versionArg}`);
 
 	if (versionPkg !== versionArg) {
-		throw new Error(
-			`Version mismatch.\n\tjson:\t${versionPkg}\n\targ:\t${versionArg}`,
-		);
+		throw new Error(`Version mismatch.\n\tjson:\t${versionPkg}\n\targ:\t${versionArg}`);
 	}
 
 	console.info(`Version match:\t\t\t${versionPkg} == ${versionArg}`);
@@ -55,17 +53,11 @@ const patchedPkg: DenoJson = structuredClone(pkg);
 const { imports } = patchedPkg;
 if (imports) {
 	if (imports.yaml?.startsWith('jsr:@eemeli/yaml')) {
-		imports.yaml = imports.yaml.replace(
-			/^jsr:@eemeli\/yaml/,
-			'npm:yaml',
-		);
+		imports.yaml = imports.yaml.replace(/^jsr:@eemeli\/yaml/, 'npm:yaml');
 	}
 
 	if (imports['@kjanat/dreamcli']?.startsWith('jsr:')) {
-		imports['@kjanat/dreamcli'] = imports['@kjanat/dreamcli'].replace(
-			/^jsr:/,
-			'npm:',
-		);
+		imports['@kjanat/dreamcli'] = imports['@kjanat/dreamcli'].replace(/^jsr:/, 'npm:');
 	}
 }
 
@@ -84,10 +76,7 @@ try {
 		await Deno.writeTextFile(mainPath, stripped);
 	}
 
-	await Deno.writeTextFile(
-		denoJsonPath,
-		`${JSON.stringify(patchedPkg, null, 2)}\n`,
-	);
+	await Deno.writeTextFile(denoJsonPath, `${JSON.stringify(patchedPkg, null, 2)}\n`);
 
 	await build({
 		entryPoints: [mainPath],
@@ -112,9 +101,7 @@ try {
 			repository: pkg.repository,
 			license: pkg.license,
 			author: pkg.author,
-			bin: typeof pkg.bin === 'string' || pkg.bin
-				? pkg.bin
-				: { [name]: './esm/cli/main.js' },
+			bin: typeof pkg.bin === 'string' || pkg.bin ? pkg.bin : { [name]: './esm/cli/main.js' },
 			type: 'module',
 		},
 		postBuild() {
@@ -125,10 +112,7 @@ try {
 			const binContent = Deno.readTextFileSync(binPath);
 
 			if (!binContent.startsWith('#!/usr/bin/env node\n')) {
-				Deno.writeTextFileSync(
-					binPath,
-					`#!/usr/bin/env node\n${binContent}`,
-				);
+				Deno.writeTextFileSync(binPath, `#!/usr/bin/env node\n${binContent}`);
 			}
 		},
 		filterDiagnostic(diagnostic) {

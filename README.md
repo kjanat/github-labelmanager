@@ -146,15 +146,15 @@ github-labelmanager owner/repo --config ./labels.yml
 
 ## Library Usage
 
-```typescript
+```ts
 import { LabelManager, loadConfig, syncLabels } from '@kjanat/github-labelmanager';
 
 const config = await loadConfig('.github/labels.yml');
 const manager = new LabelManager({
-	token: Deno.env.get('GITHUB_TOKEN')!,
-	owner: 'owner',
-	repo: 'repo',
-	dryRun: false,
+  token: Deno.env.get('GITHUB_TOKEN')!,
+  owner: 'owner',
+  repo: 'repo',
+  dryRun: false,
 });
 
 const result = await syncLabels(manager, config);
@@ -165,7 +165,7 @@ See [JSR docs][jsr:@kjanat/github-labelmanager] for full API reference.
 
 ## Architecture
 
-```
+```text
 cli/                    # CLI entry point and build scripts
 src/
   domain/               # Pure business logic (labels, types)

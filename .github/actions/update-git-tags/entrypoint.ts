@@ -90,9 +90,7 @@ function output(name: string, value: string): void {
 }
 
 // === Git Helpers ===
-function git(
-	...args: string[]
-): { stdout: string; stderr: string; success: boolean } {
+function git(...args: string[]): { stdout: string; stderr: string; success: boolean } {
 	const result = spawnSync('git', args, { encoding: 'utf-8' });
 	return {
 		stdout: result.stdout?.trim() ?? '',
@@ -120,15 +118,7 @@ function getInput(name: string, defaultValue: string = ''): string {
 function findVersionFile(specified: string): string | null {
 	if (specified === 'auto' || specified === '') {
 		// Priority: package.json > deno.json > deno.jsonc > jsr.json > jsr.jsonc
-		for (
-			const file of [
-				'package.json',
-				'deno.json',
-				'deno.jsonc',
-				'jsr.json',
-				'jsr.jsonc',
-			]
-		) {
+		for (const file of ['package.json', 'deno.json', 'deno.jsonc', 'jsr.json', 'jsr.jsonc']) {
 			if (existsSync(file)) return file;
 		}
 		return null;
@@ -167,9 +157,7 @@ function validateVersionFile(tag: string, file: string): void {
 		error(`Version mismatch: tag=${tagVersion}, ${file}=${fileVersion}`);
 	}
 
-	log(
-		`Version validated: ${colors.green}${tagVersion}${colors.off} matches ${file}`,
-	);
+	log(`Version validated: ${colors.green}${tagVersion}${colors.off} matches ${file}`);
 }
 
 // === Prerelease Detection ===
@@ -298,15 +286,9 @@ async function main(): Promise<void> {
 		}
 
 		// Get latest tag for reference
-		const latestResult = git(
-			'describe',
-			'--abbrev=0',
-			`--match=${semverTagGlob}`,
-		);
+		const latestResult = git('describe', '--abbrev=0', `--match=${semverTagGlob}`);
 		if (latestResult.success) {
-			log(
-				`Latest release tag: ${colors.blue}${latestResult.stdout}${colors.off}`,
-			);
+			log(`Latest release tag: ${colors.blue}${latestResult.stdout}${colors.off}`);
 		} else {
 			log('No existing release tags found');
 		}
@@ -338,9 +320,7 @@ async function main(): Promise<void> {
 
 	// Interactive confirmation (CLI mode only)
 	if (!CI_MODE) {
-		const confirm = await prompt(
-			`Continue with tag ${colors.blue}${tag}${colors.off}? [Y/n] `,
-		);
+		const confirm = await prompt(`Continue with tag ${colors.blue}${tag}${colors.off}? [Y/n] `);
 		if (confirm.toLowerCase() === 'n') {
 			log('Aborted');
 			process.exit(0);
@@ -358,11 +338,7 @@ async function main(): Promise<void> {
 	let firstRelease = false;
 	let latestMajor = '';
 
-	const latestResult = git(
-		'describe',
-		'--abbrev=0',
-		`--match=${semverTagGlob}`,
-	);
+	const latestResult = git('describe', '--abbrev=0', `--match=${semverTagGlob}`);
 	if (latestResult.success) {
 		latestMajor = latestResult.stdout.split('.')[0];
 		isMajorRelease = majorTag !== latestMajor;
@@ -393,28 +369,14 @@ async function main(): Promise<void> {
 
 	// Update major tag (e.g., v1)
 	if (major) {
-		gitOrFail(
-			'tag',
-			majorTag,
-			'--force',
-			'--annotate',
-			'--message',
-			`Sync ${majorTag} with ${tag}`,
-		);
+		gitOrFail('tag', majorTag, '--force', '--annotate', '--message', `Sync ${majorTag} with ${tag}`);
 		log(`Updated major tag: ${colors.green}${majorTag}${colors.off} -> ${tag}`);
 		output('major-tag', majorTag);
 	}
 
 	// Update minor tag (e.g., v1.2)
 	if (minor) {
-		gitOrFail(
-			'tag',
-			minorTag,
-			'--force',
-			'--annotate',
-			'--message',
-			`Sync ${minorTag} with ${tag}`,
-		);
+		gitOrFail('tag', minorTag, '--force', '--annotate', '--message', `Sync ${minorTag} with ${tag}`);
 		log(`Updated minor tag: ${colors.green}${minorTag}${colors.off} -> ${tag}`);
 		output('minor-tag', minorTag);
 	}
@@ -441,8 +403,7 @@ async function main(): Promise<void> {
 	// Create release branch for major releases (optional)
 	if (createBranch && isMajorRelease) {
 		const branchName = `releases/${majorTag}`;
-		const branchExists = git('show-ref', '--verify', '--quiet', `refs/heads/${branchName}`)
-			.success;
+		const branchExists = git('show-ref', '--verify', '--quiet', `refs/heads/${branchName}`).success;
 
 		if (branchExists) {
 			warn(`Branch ${branchName} already exists`);

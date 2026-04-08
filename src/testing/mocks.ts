@@ -85,10 +85,7 @@ export class MockGitHubClient implements IGitHubClient {
 		return Promise.resolve(label);
 	}
 
-	update(
-		currentName: string,
-		options: LabelOptions,
-	): Promise<GitHubLabel | null> {
+	update(currentName: string, options: LabelOptions): Promise<GitHubLabel | null> {
 		this.record('update', currentName, options);
 		this.maybeThrow('update');
 		if (this.isDryRun) return Promise.resolve(null);

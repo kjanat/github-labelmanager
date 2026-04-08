@@ -66,11 +66,9 @@ Deno.test('sync command - fails when repository has empty owner', async () => {
 // =============================================================================
 
 Deno.test('sync command - fails when config file not found', async () => {
-	const result = await runCommand(
-		syncCommand,
-		['owner/repo', '--config', 'nonexistent.yml'],
-		{ env: { GITHUB_TOKEN: 'token' } },
-	);
+	const result = await runCommand(syncCommand, ['owner/repo', '--config', 'nonexistent.yml'], {
+		env: { GITHUB_TOKEN: 'token' },
+	});
 
 	assertEquals(result.exitCode !== 0, true);
 	const stderr = result.stderr.join('\n');
@@ -86,11 +84,9 @@ Deno.test('sync command - fails when config has invalid YAML', async () => {
 	await Deno.writeTextFile(tempFile, 'invalid: yaml: content: [');
 
 	try {
-		const result = await runCommand(
-			syncCommand,
-			['owner/repo', '--config', tempFile],
-			{ env: { GITHUB_TOKEN: 'token' } },
-		);
+		const result = await runCommand(syncCommand, ['owner/repo', '--config', tempFile], {
+			env: { GITHUB_TOKEN: 'token' },
+		});
 
 		assertEquals(result.exitCode !== 0, true);
 		const stderr = result.stderr.join('\n');
@@ -109,11 +105,9 @@ Deno.test('sync command - fails when config has invalid schema', async () => {
 	await Deno.writeTextFile(tempFile, 'wrong: schema\nno_labels: true');
 
 	try {
-		const result = await runCommand(
-			syncCommand,
-			['owner/repo', '--config', tempFile],
-			{ env: { GITHUB_TOKEN: 'token' } },
-		);
+		const result = await runCommand(syncCommand, ['owner/repo', '--config', tempFile], {
+			env: { GITHUB_TOKEN: 'token' },
+		});
 
 		assertEquals(result.exitCode !== 0, true);
 		const stderr = result.stderr.join('\n');

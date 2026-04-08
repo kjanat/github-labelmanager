@@ -23,9 +23,7 @@ export function generateSchema(): Record<string, unknown> {
 		target: 'draft-7',
 		override: (ctx) => {
 			// Remove _meta from output (runtime-only)
-			const props = ctx.jsonSchema.properties as
-				| Record<string, unknown>
-				| undefined;
+			const props = ctx.jsonSchema.properties as Record<string, unknown> | undefined;
 			if (props?._meta) {
 				delete props._meta;
 			}

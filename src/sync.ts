@@ -35,18 +35,11 @@ function matchesIgnorePattern(name: string, patterns: string[]): boolean {
  * @param title - Annotation title
  * @param isDelete - Whether this is a delete operation
  */
-function getAnnotation(
-	config: LabelConfig,
-	labelName: string,
-	title: string,
-	isDelete = false,
-): AnnotationProperties {
+function getAnnotation(config: LabelConfig, labelName: string, title: string, isDelete = false): AnnotationProperties {
 	const meta = config._meta;
 	if (!meta) return { title };
 
-	const line = isDelete
-		? meta.deleteLines[labelName]
-		: meta.labelLines[labelName];
+	const line = isDelete ? meta.deleteLines[labelName] : meta.labelLines[labelName];
 
 	return {
 		title,
@@ -58,10 +51,7 @@ function getAnnotation(
 /**
  * Synchronize labels from config to GitHub repository
  */
-export async function syncLabels(
-	manager: LabelManager,
-	config: LabelConfig,
-): Promise<SyncResult> {
+export async function syncLabels(manager: LabelManager, config: LabelConfig): Promise<SyncResult> {
 	const logger = manager.getLogger();
 	const operations: SyncOperation[] = [];
 	const summary = {
@@ -115,15 +105,10 @@ export async function syncLabels(
 					// Rename the label
 					const msg = `Renaming: "${alias}" -> "${desired.name}"`;
 					if (manager.isDryRun) {
-						logger.info(
-							`[dry-run] Would rename: "${alias}" -> "${desired.name}"`,
-						);
+						logger.info(`[dry-run] Would rename: "${alias}" -> "${desired.name}"`);
 						logger.debug(msg);
 					} else {
-						logger.notice(
-							`"${alias}" -> "${desired.name}"`,
-							getAnnotation(config, desired.name, 'Label Renamed'),
-						);
+						logger.notice(`"${alias}" -> "${desired.name}"`, getAnnotation(config, desired.name, 'Label Renamed'));
 					}
 					try {
 						await manager.update(alias, {
@@ -186,9 +171,7 @@ export async function syncLabels(
 			const colorDisplay = cleanColor ? `#${cleanColor}` : 'default';
 			const msg = `Creating: "${desired.name}" (${colorDisplay})`;
 			if (manager.isDryRun) {
-				logger.info(
-					`[dry-run] Would create: "${desired.name}" (${colorDisplay})`,
-				);
+				logger.info(`[dry-run] Would create: "${desired.name}" (${colorDisplay})`);
 				logger.debug(msg);
 			} else {
 				logger.success(msg);
@@ -222,8 +205,7 @@ export async function syncLabels(
 			}
 		} else {
 			// Check if update needed (undefined cleanColor means no color change requested)
-			const isColorDiff = cleanColor !== undefined
-				&& existing.color.toLowerCase() !== cleanColor;
+			const isColorDiff = cleanColor !== undefined && existing.color.toLowerCase() !== cleanColor;
 			const isDescDiff = (existing.description || '') !== desired.description;
 
 			if (isColorDiff || isDescDiff) {
@@ -239,9 +221,7 @@ export async function syncLabels(
 				const msg = `Updating: "${desired.name}" (${changeStr})`;
 
 				if (manager.isDryRun) {
-					logger.info(
-						`[dry-run] Would update: "${desired.name}" (${changeStr})`,
-					);
+					logger.info(`[dry-run] Would update: "${desired.name}" (${changeStr})`);
 					logger.debug(msg);
 				} else {
 					logger.info(msg);
@@ -288,9 +268,7 @@ export async function syncLabels(
 
 	// Deprecation warning for old delete array
 	if (config.delete && config.delete.length > 0) {
-		logger.warn(
-			"'delete:' is deprecated in v2 and ignored. Labels not in config are deleted automatically.",
-		);
+		logger.warn("'delete:' is deprecated in v2 and ignored. Labels not in config are deleted automatically.");
 	}
 
 	// Build set of protected names (labels that should NOT be deleted)
@@ -311,18 +289,14 @@ export async function syncLabels(
 	// Declarative deletion: remove labels not in config and not matching ignore patterns
 	const labelsToDelete: string[] = [];
 	for (const [name] of existingMap) {
-		if (
-			!protectedNames.has(name) && !matchesIgnorePattern(name, ignorePatterns)
-		) {
+		if (!protectedNames.has(name) && !matchesIgnorePattern(name, ignorePatterns)) {
 			labelsToDelete.push(name);
 		}
 	}
 
 	// Show summary for dry-run
 	if (manager.isDryRun && labelsToDelete.length > 0) {
-		logger.info(
-			`[dry-run] Would delete ${labelsToDelete.length} unlisted label(s): ${labelsToDelete.join(', ')}`,
-		);
+		logger.info(`[dry-run] Would delete ${labelsToDelete.length} unlisted label(s): ${labelsToDelete.join(', ')}`);
 	}
 
 	// Process deletions
@@ -348,10 +322,7 @@ export async function syncLabels(
 			summary.deleted++;
 			existingMap.delete(name);
 		} catch (err) {
-			logger.error(
-				`Delete failed: ${LabelManager.formatError(err)}`,
-				{ title: 'Delete Failed' },
-			);
+			logger.error(`Delete failed: ${LabelManager.formatError(err)}`, { title: 'Delete Failed' });
 			operations.push({
 				type: 'delete',
 				label: name,

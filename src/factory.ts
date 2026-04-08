@@ -21,9 +21,7 @@ export function isGitHubActions(): boolean {
  * - GitHub Actions: Uses @actions/core for native annotations and groups
  * - Local CLI: Uses colored console output
  */
-export function createLogger(
-	options?: { exitFn?: (code?: number) => void },
-): ILogger {
+export function createLogger(options?: { exitFn?: (code?: number) => void }): ILogger {
 	if (isGitHubActions()) {
 		return new ActionsLogger();
 	}
@@ -36,10 +34,7 @@ export function createLogger(
  * - GitHub Actions: Uses @actions/github with proxy support
  * - Local CLI: Uses octokit with throttling and retry
  */
-export function createGitHubClient(
-	config: GitHubClientConfig,
-	logger: ILogger,
-): IGitHubClient {
+export function createGitHubClient(config: GitHubClientConfig, logger: ILogger): IGitHubClient {
 	if (isGitHubActions()) {
 		return new ActionsGitHubClient(config, logger);
 	}

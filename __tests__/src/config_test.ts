@@ -95,9 +95,7 @@ Deno.test('isLabelConfig - rejects label with non-string name', () => {
 
 Deno.test('isLabelConfig - rejects aliases with non-string items', () => {
 	const invalid = {
-		labels: [
-			{ name: 'bug', color: 'ff0000', description: 'Bug', aliases: [123] },
-		],
+		labels: [{ name: 'bug', color: 'ff0000', description: 'Bug', aliases: [123] }],
 	};
 	assertEquals(isLabelConfig(invalid), false);
 });
@@ -200,9 +198,7 @@ Deno.test('schema - rejects invalid color format', async () => {
 	const validate = await createSchemaValidator();
 
 	const invalidConfig = {
-		labels: [
-			{ name: 'bug', color: 'invalid', description: 'Bug report' },
-		],
+		labels: [{ name: 'bug', color: 'invalid', description: 'Bug report' }],
 	};
 
 	assertEquals(validate(invalidConfig), false);
@@ -224,10 +220,7 @@ Deno.test('schema - rejects missing required fields', async () => {
 	const validate = await createSchemaValidator();
 
 	// Missing name
-	assertEquals(
-		validate({ labels: [{ color: 'ff0000', description: 'Bug' }] }),
-		false,
-	);
+	assertEquals(validate({ labels: [{ color: 'ff0000', description: 'Bug' }] }), false);
 
 	// Missing labels array entirely
 	assertEquals(validate({ delete: ['foo'] }), false);
@@ -237,22 +230,13 @@ Deno.test('schema - accepts optional fields (color, description)', async () => {
 	const validate = await createSchemaValidator();
 
 	// Missing color
-	assertEquals(
-		validate({ labels: [{ name: 'bug', description: 'Bug' }] }),
-		true,
-	);
+	assertEquals(validate({ labels: [{ name: 'bug', description: 'Bug' }] }), true);
 
 	// Missing description
-	assertEquals(
-		validate({ labels: [{ name: 'bug', color: 'ff0000' }] }),
-		true,
-	);
+	assertEquals(validate({ labels: [{ name: 'bug', color: 'ff0000' }] }), true);
 
 	// Missing both
-	assertEquals(
-		validate({ labels: [{ name: 'bug' }] }),
-		true,
-	);
+	assertEquals(validate({ labels: [{ name: 'bug' }] }), true);
 });
 
 Deno.test('schema - rejects additional properties', async () => {
@@ -329,11 +313,7 @@ Deno.test('consistency - isLabelConfig and schema agree on valid configs', async
 	for (const config of validConfigs) {
 		const schemaResult = validate(config);
 		const typeGuardResult = isLabelConfig(config);
-		assertEquals(
-			schemaResult,
-			typeGuardResult,
-			`Mismatch for config: ${JSON.stringify(config)}`,
-		);
+		assertEquals(schemaResult, typeGuardResult, `Mismatch for config: ${JSON.stringify(config)}`);
 	}
 });
 
@@ -350,11 +330,7 @@ Deno.test('consistency - isLabelConfig and schema agree on invalid structure', a
 	for (const config of invalidConfigs) {
 		const schemaResult = validate(config);
 		const typeGuardResult = isLabelConfig(config);
-		assertEquals(
-			schemaResult,
-			typeGuardResult,
-			`Mismatch for invalid config: ${JSON.stringify(config)}`,
-		);
+		assertEquals(schemaResult, typeGuardResult, `Mismatch for invalid config: ${JSON.stringify(config)}`);
 	}
 });
 
@@ -439,20 +415,14 @@ Deno.test('loadConfig - handles config without delete section', async () => {
 // =============================================================================
 
 Deno.test('loadConfig - throws on file not found', async () => {
-	await assertRejects(
-		() => loadConfig('nonexistent/path.yml'),
-		Deno.errors.NotFound,
-	);
+	await assertRejects(() => loadConfig('nonexistent/path.yml'), Deno.errors.NotFound);
 });
 
 Deno.test('loadConfig - throws on invalid YAML', async () => {
 	const tempFile = await Deno.makeTempFile({ suffix: '.yml' });
 	await Deno.writeTextFile(tempFile, 'invalid: yaml: content: [');
 	try {
-		await assertRejects(
-			() => loadConfig(tempFile),
-			Deno.errors.InvalidData,
-		);
+		await assertRejects(() => loadConfig(tempFile), Deno.errors.InvalidData);
 	} finally {
 		await Deno.remove(tempFile);
 	}
@@ -462,11 +432,7 @@ Deno.test('loadConfig - throws on invalid schema', async () => {
 	const tempFile = await Deno.makeTempFile({ suffix: '.yml' });
 	await Deno.writeTextFile(tempFile, 'wrong: schema');
 	try {
-		await assertRejects(
-			() => loadConfig(tempFile),
-			Deno.errors.InvalidData,
-			'Invalid labels.yml schema',
-		);
+		await assertRejects(() => loadConfig(tempFile), Deno.errors.InvalidData, 'Invalid labels.yml schema');
 	} finally {
 		await Deno.remove(tempFile);
 	}

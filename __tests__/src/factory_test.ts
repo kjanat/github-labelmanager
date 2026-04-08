@@ -59,10 +59,7 @@ Deno.test('createLogger - returns ActionsLogger when in GitHub Actions', () => {
 Deno.test('createGitHubClient - returns ActionsGitHubClient when in GitHub Actions', () => {
 	Deno.env.set('GITHUB_ACTIONS', 'true');
 	const logger = new ActionsLogger();
-	const client = createGitHubClient(
-		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
-		logger,
-	);
+	const client = createGitHubClient({ token: 'test', owner: 'owner', repo: 'repo', dryRun: false }, logger);
 	assertInstanceOf(client, ActionsGitHubClient);
 });
 

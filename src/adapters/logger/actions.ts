@@ -17,16 +17,10 @@ const COLLAPSE_THRESHOLD = 5;
 export interface ActionsCore {
 	debug(message: string): void;
 	endGroup(): void;
-	error(
-		message: string | Error,
-		properties?: ActionsAnnotationProperties,
-	): void;
+	error(message: string | Error, properties?: ActionsAnnotationProperties): void;
 	group<T>(name: string, fn: () => Promise<T>): Promise<T>;
 	info(message: string): void;
-	notice(
-		message: string | Error,
-		properties?: ActionsAnnotationProperties,
-	): void;
+	notice(message: string | Error, properties?: ActionsAnnotationProperties): void;
 	setFailed(message: string | Error): void;
 	startGroup(name: string): void;
 	summary: {
@@ -37,18 +31,13 @@ export interface ActionsCore {
 		addList(items: string[]): unknown;
 		write(): Promise<unknown>;
 	};
-	warning(
-		message: string | Error,
-		properties?: ActionsAnnotationProperties,
-	): void;
+	warning(message: string | Error, properties?: ActionsAnnotationProperties): void;
 }
 
 /**
  * Convert our annotation properties to @actions/core format
  */
-export function toActionsAnnotation(
-	properties?: AnnotationProperties,
-): ActionsAnnotationProperties | undefined {
+export function toActionsAnnotation(properties?: AnnotationProperties): ActionsAnnotationProperties | undefined {
 	if (!properties) return undefined;
 	return {
 		title: properties.title,
@@ -124,18 +113,12 @@ export class ActionsLogger implements ILogger {
 
 	async writeSummary(result: SyncResult): Promise<void> {
 		const { summary, operations } = result;
-		const total = summary.created
-			+ summary.updated
-			+ summary.renamed
-			+ summary.deleted
-			+ summary.failed;
+		const total = summary.created + summary.updated + summary.renamed + summary.deleted + summary.failed;
 
 		// Early exit: all labels already in sync
 		if (total === 0 && summary.skipped > 0) {
 			this.core.summary.addHeading('Label Sync :white_check_mark:', 2);
-			this.core.summary.addRaw(
-				`All ${summary.skipped} label(s) already in sync. No changes needed.`,
-			);
+			this.core.summary.addRaw(`All ${summary.skipped} label(s) already in sync. No changes needed.`);
 			await this.core.summary.write();
 			return;
 		}
@@ -173,18 +156,14 @@ export class ActionsLogger implements ILogger {
 		this.core.summary.addRaw('\n');
 
 		// Add operation details if any changes were made
-		const changedOps = operations.filter(
-			(op) => op.type !== 'skip' && op.success,
-		);
+		const changedOps = operations.filter((op) => op.type !== 'skip' && op.success);
 
 		if (changedOps.length > 0) {
 			const rows = this.buildOperationsTableRows(changedOps);
 
 			// Collapse if many items, inline otherwise
 			if (changedOps.length >= COLLAPSE_THRESHOLD) {
-				this.core.summary.addRaw(
-					'<details><summary>Operation Details</summary>\n\n',
-				);
+				this.core.summary.addRaw('<details><summary>Operation Details</summary>\n\n');
 				this.core.summary.addTable(rows);
 				this.core.summary.addRaw('\n</details>');
 			} else {
@@ -196,9 +175,7 @@ export class ActionsLogger implements ILogger {
 		const failedOps = operations.filter((op) => !op.success);
 		if (failedOps.length > 0) {
 			this.core.summary.addHeading('Failed Operations', 3);
-			this.core.summary.addList(
-				failedOps.map((op) => `${op.label} (${op.type}): ${op.error || 'Unknown error'}`),
-			);
+			this.core.summary.addList(failedOps.map((op) => `${op.label} (${op.type}): ${op.error || 'Unknown error'}`));
 		}
 
 		await this.core.summary.write();

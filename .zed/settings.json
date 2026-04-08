@@ -1,12 +1,11 @@
 {
-	"formatter": [
-		{
-			"external": {
-				"command": "dprint",
-				"arguments": ["fmt", "--stdin", "{buffer_path}"]
-			}
+	"wrap_guides": [120],
+	"formatter": [{
+		"external": {
+			"command": "dprint",
+			"arguments": ["fmt", "--stdin", "{buffer_path}"]
 		}
-	],
+	}],
 	"languages": {
 		"JavaScript": { "language_servers": ["deno"] },
 		"TypeScript": { "language_servers": ["deno"] },

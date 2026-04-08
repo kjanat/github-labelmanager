@@ -138,24 +138,13 @@ export interface FetchCall {
  * ```
  */
 export function mockFetch(
-	handler: (
-		url: string,
-		method: string,
-		body?: unknown,
-	) => MockFetchResponse | Promise<MockFetchResponse>,
+	handler: (url: string, method: string, body?: unknown) => MockFetchResponse | Promise<MockFetchResponse>,
 ): { calls: FetchCall[]; restore: () => void } {
 	const calls: FetchCall[] = [];
 	const originalFetch = globalThis.fetch;
 
-	globalThis.fetch = async (
-		input: string | URL | Request,
-		init?: RequestInit,
-	): Promise<Response> => {
-		const url = typeof input === 'string'
-			? input
-			: input instanceof URL
-			? input.toString()
-			: input.url;
+	globalThis.fetch = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
+		const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
 		const method = init?.method ?? 'GET';
 		const headers: Record<string, string> = {};
 
@@ -190,14 +179,11 @@ export function mockFetch(
 			responseHeaders.set('content-type', 'application/json');
 		}
 
-		return new Response(
-			response.body !== undefined ? JSON.stringify(response.body) : null,
-			{
-				status: response.status ?? 200,
-				statusText: response.statusText ?? 'OK',
-				headers: responseHeaders,
-			},
-		);
+		return new Response(response.body !== undefined ? JSON.stringify(response.body) : null, {
+			status: response.status ?? 200,
+			statusText: response.statusText ?? 'OK',
+			headers: responseHeaders,
+		});
 	};
 
 	return {
@@ -310,9 +296,7 @@ export function createMockActionsCore(): {
  * @param overrides - Optional values to override defaults
  * @returns EnvConfig with test defaults
  */
-export function createTestEnv(
-	overrides: Partial<EnvConfig> = {},
-): EnvConfig {
+export function createTestEnv(overrides: Partial<EnvConfig> = {}): EnvConfig {
 	return {
 		token: overrides.token ?? 'test-token',
 		owner: overrides.owner ?? 'test-owner',
@@ -338,9 +322,7 @@ export function createTestEnv(
  * assertEquals(envGet("DEBUG"), undefined);
  * ```
  */
-export function createEnvGet(
-	env: Record<string, string | undefined>,
-): (key: string) => string | undefined {
+export function createEnvGet(env: Record<string, string | undefined>): (key: string) => string | undefined {
 	return (key: string) => env[key];
 }
 
@@ -393,10 +375,7 @@ export function createMockOctokit(options: MockOctokitOptions = {}): {
 	// WARNING: Only supports route-string overload: paginate("GET /repos/...", params)
 	// Does NOT support function overload: paginate(octokit.rest.issues.listLabelsForRepo, params)
 	// If production switches to function overload, update this mock or tests will silently diverge.
-	const paginate = (
-		route: string,
-		params?: Record<string, unknown>,
-	): Promise<unknown[]> => {
+	const paginate = (route: string, params?: Record<string, unknown>): Promise<unknown[]> => {
 		requests.push({ route, params });
 
 		if (errors[route]) {

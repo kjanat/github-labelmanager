@@ -37,20 +37,18 @@ export class LabelManager {
 	 * @param env - Environment configuration
 	 * @param options - Optional client and logger for testing/DI
 	 */
-	constructor(
-		env: EnvConfig,
-		options: LabelManagerOptions = {},
-	) {
+	constructor(env: EnvConfig, options: LabelManagerOptions = {}) {
 		this.logger = options.logger ?? createLogger();
-		this.client = options.client ?? createGitHubClient(
-			{
-				token: env.token,
-				owner: env.owner,
-				repo: env.repo,
-				dryRun: env.dryRun,
-			},
-			this.logger,
-		);
+		this.client = options.client
+			?? createGitHubClient(
+				{
+					token: env.token,
+					owner: env.owner,
+					repo: env.repo,
+					dryRun: env.dryRun,
+				},
+				this.logger,
+			);
 	}
 
 	/** Get repository info */
@@ -93,10 +91,7 @@ export class LabelManager {
 	/**
 	 * Update an existing label
 	 */
-	update(
-		currentName: string,
-		options: LabelOptions,
-	): Promise<GitHubLabel | null> {
+	update(currentName: string, options: LabelOptions): Promise<GitHubLabel | null> {
 		return this.client.update(currentName, options);
 	}
 
@@ -113,9 +108,7 @@ export class LabelManager {
 	static formatError(error: unknown): string {
 		if (error && typeof error === 'object') {
 			const status = 'status' in error ? error.status : 'unknown';
-			const message = 'message' in error
-				? error.message
-				: JSON.stringify(error);
+			const message = 'message' in error ? error.message : JSON.stringify(error);
 			return `${status} - ${message}`;
 		}
 		return String(error);

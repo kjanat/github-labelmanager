@@ -214,9 +214,7 @@ Deno.test('ActionsLogger - skip uses core.debug', () => {
 // writeSummary tests
 // =============================================================================
 
-function createSyncResult(
-	overrides: Partial<SyncResult> = {},
-): SyncResult {
+function createSyncResult(overrides: Partial<SyncResult> = {}): SyncResult {
 	return {
 		success: true,
 		summary: {
@@ -306,13 +304,7 @@ Deno.test('writeSummary - adds counts table', async () => {
 	});
 
 	// Verify all expected headers exist
-	const expectedHeaders = [
-		'Created',
-		'Updated',
-		'Renamed',
-		'Deleted',
-		'Failed',
-	];
+	const expectedHeaders = ['Created', 'Updated', 'Renamed', 'Deleted', 'Failed'];
 	for (const h of expectedHeaders) {
 		assertEquals(headerIndex[h] !== undefined, true, `Missing header: ${h}`);
 	}
@@ -394,10 +386,7 @@ Deno.test('writeSummary - adds collapsed table for >= 5 operations', async () =>
 	const detailsEnd = rawCalls.find((c) => (c.args[0] as string).includes('</details>'));
 
 	assertExists(detailsStart, 'should start details with header');
-	assertStringIncludes(
-		detailsStart.args[0] as string,
-		'<details><summary>Operation Details</summary>\n\n',
-	);
+	assertStringIncludes(detailsStart.args[0] as string, '<details><summary>Operation Details</summary>\n\n');
 
 	assertExists(detailsEnd, 'should end details');
 	assertStringIncludes(detailsEnd.args[0] as string, '\n</details>');
@@ -455,27 +444,17 @@ Deno.test("writeSummary - writes 'all in sync' message when only skips", async (
 				skipped: 5,
 				failed: 0,
 			},
-			operations: [
-				{ type: 'skip', label: 'bug', success: true },
-			],
+			operations: [{ type: 'skip', label: 'bug', success: true }],
 		}),
 	);
 
 	const writeCall = calls.find((c) => c.method === 'summary.write');
-	assertEquals(
-		writeCall !== undefined,
-		true,
-		'should call write for skip-only',
-	);
+	assertEquals(writeCall !== undefined, true, 'should call write for skip-only');
 
-	const rawCall = calls.find((c) =>
-		c.method === 'summary.addRaw'
-		&& (c.args[0] as string).includes('5 label(s) already in sync')
+	const rawCall = calls.find(
+		(c) => c.method === 'summary.addRaw' && (c.args[0] as string).includes('5 label(s) already in sync'),
 	);
-	assertStringIncludes(
-		rawCall?.args[0] as string,
-		'5 label(s) already in sync',
-	);
+	assertStringIncludes(rawCall?.args[0] as string, '5 label(s) already in sync');
 });
 
 Deno.test('writeSummary - does not write if empty config (no labels)', async () => {
@@ -514,9 +493,7 @@ Deno.test('writeSummary - writes when there are changes', async () => {
 				skipped: 0,
 				failed: 0,
 			},
-			operations: [
-				{ type: 'create', label: 'bug', success: true },
-			],
+			operations: [{ type: 'create', label: 'bug', success: true }],
 		}),
 	);
 
@@ -577,9 +554,7 @@ Deno.test('writeSummary - formats update operation', async () => {
 				skipped: 0,
 				failed: 0,
 			},
-			operations: [
-				{ type: 'update', label: 'feature', success: true },
-			],
+			operations: [{ type: 'update', label: 'feature', success: true }],
 		}),
 	);
 
@@ -619,10 +594,7 @@ Deno.test('writeSummary - formats rename operation with from', async () => {
 	const opsTable = tableCalls[1].args[0] as unknown[][];
 	const row = opsTable[1] as string[];
 
-	assertStringIncludes(
-		row[1],
-		'🔄 Renamed from "feature"',
-	);
+	assertStringIncludes(row[1], '🔄 Renamed from "feature"');
 });
 
 Deno.test('writeSummary - formats delete operation', async () => {
@@ -639,9 +611,7 @@ Deno.test('writeSummary - formats delete operation', async () => {
 				skipped: 0,
 				failed: 0,
 			},
-			operations: [
-				{ type: 'delete', label: 'old-label', success: true },
-			],
+			operations: [{ type: 'delete', label: 'old-label', success: true }],
 		}),
 	);
 
@@ -704,9 +674,7 @@ Deno.test('writeSummary - handles missing color in operation', async () => {
 				skipped: 0,
 				failed: 0,
 			},
-			operations: [
-				{ type: 'create', label: 'test', success: true },
-			],
+			operations: [{ type: 'create', label: 'test', success: true }],
 		}),
 	);
 

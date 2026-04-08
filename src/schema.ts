@@ -21,8 +21,10 @@ export type LabelDefinition = ModelLabel;
 
 // === Primitives with constraints (Base schemas for JSON generation) ===
 
-export const labelNameBase: z.ZodString = z.string()
-	.min(1).max(50)
+export const labelNameBase: z.ZodString = z
+	.string()
+	.min(1)
+	.max(50)
 	.regex(/^(?!\s).*(?<!\s)$/)
 	.meta({
 		title: 'Label Name',
@@ -32,16 +34,11 @@ GitHub label name. Maximum 50 characters.
 May contain letters, numbers, spaces, hyphens, underscores,
 colons, and other printable characters.
 Cannot be empty or consist only of whitespace.`,
-		examples: [
-			'P0: critical',
-			'area: ui',
-			'bug',
-			'feature',
-			'good first issue',
-		],
+		examples: ['P0: critical', 'area: ui', 'bug', 'feature', 'good first issue'],
 	});
 
-export const hexColorBase: z.ZodString = z.string()
+export const hexColorBase: z.ZodString = z
+	.string()
 	.regex(/^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/)
 	.meta({
 		title: 'Hex Color Code',
@@ -50,38 +47,26 @@ Valid CSS hex color code for the label.
 
 Supports 3-character (<code>#RGB</code>) or 6-character (<code>#RRGGBB</code>) format.
 The leading <code>#</code> is optional. Case-insensitive.`,
-		examples: [
-			'#FFF',
-			'#a2eeef',
-			'#d73a4a',
-			'#ffffff',
-			'0075ca',
-			'ABC123',
-		],
+		examples: ['#FFF', '#a2eeef', '#d73a4a', '#ffffff', '0075ca', 'ABC123'],
 	});
 
-export const labelDescriptionBase: z.ZodString = z.string()
-	.min(0).max(100)
+export const labelDescriptionBase: z.ZodString = z
+	.string()
+	.min(0)
+	.max(100)
 	.meta({
 		title: 'Label Description',
 		description: `\
 GitHub label description. Maximum 100 characters.
 Should be concise and explain the label's purpose.`,
-		examples: [
-			"Something isn't working",
-			'New feature or meaningful behavior change',
-		],
+		examples: ["Something isn't working", 'New feature or meaningful behavior change'],
 	});
 
 // === Transformed schemas (for runtime validation) ===
 
-export const labelName: z.ZodType<LabelName, string> = labelNameBase.transform((
-	val,
-) => LabelNameUtils.parse(val));
+export const labelName: z.ZodType<LabelName, string> = labelNameBase.transform((val) => LabelNameUtils.parse(val));
 
-export const hexColor: z.ZodType<LabelColor, string> = hexColorBase.transform((
-	val,
-) => LabelColorUtils.parse(val));
+export const hexColor: z.ZodType<LabelColor, string> = hexColorBase.transform((val) => LabelColorUtils.parse(val));
 
 export const labelDescription: z.ZodType<LabelDescription, string> = labelDescriptionBase.transform((val) =>
 	LabelDescriptionUtils.parse(val)
@@ -104,76 +89,70 @@ export interface LabelConfig extends ModelLabelConfig {
 
 // === Label Definition (Schema for Generation) ===
 
-export const labelDefinitionSchema: z.ZodTypeAny = z.strictObject({
-	name: labelNameBase.meta({
-		title: 'Label Name',
-		description: `\
+export const labelDefinitionSchema: z.ZodTypeAny = z
+	.strictObject({
+		name: labelNameBase.meta({
+			title: 'Label Name',
+			description: `\
 The display name of the label. Must be unique within the repository. Supports spaces and special characters.
 
 Common patterns include:
 - type labels (<code>"bug"</code>, <code>"feature"</code>),
 - priority labels (<code>"P0: critical"</code>), and
 - area labels (<code>"area: ui"</code>).`,
-		examples: [
-			'P0: critical',
-			'area: ui',
-			'bug',
-			'feature',
-			'good first issue',
-		],
-	}),
-	color: hexColorBase.optional().meta({
-		title: 'Label Color',
-		description: `\
+			examples: ['P0: critical', 'area: ui', 'bug', 'feature', 'good first issue'],
+		}),
+		color: hexColorBase.optional().meta({
+			title: 'Label Color',
+			description: `\
 Hex color code for the label background.
 
 Can be 3 or 6 characters, with or without leading <code>#</code>.
 GitHub will normalize to 6-char format without the <code>#</code>.`,
-		examples: ['#d73a4a', '#a2eeef', '0075ca', '#FFF', 'abc'],
-	}),
-	description: labelDescriptionBase.optional().meta({
-		title: 'Label Description',
-		description: `\
+			examples: ['#d73a4a', '#a2eeef', '0075ca', '#FFF', 'abc'],
+		}),
+		description: labelDescriptionBase.optional().meta({
+			title: 'Label Description',
+			description: `\
 Short description explaining when to use this label.
 
 Displayed in GitHub's label picker and helps contributors understand label purpose.`,
-		examples: [
-			'Something isnt working',
-			'Good for newcomers',
-			'New feature or meaningful behavior change',
-		],
-	}),
-	aliases: z.array(labelNameBase).min(1).optional().meta({
-		title: 'Label Aliases (for Renaming)',
-		description: `\
+			examples: ['Something isnt working', 'Good for newcomers', 'New feature or meaningful behavior change'],
+		}),
+		aliases: z
+			.array(labelNameBase)
+			.min(1)
+			.optional()
+			.meta({
+				title: 'Label Aliases (for Renaming)',
+				description: `\
 Array of old label names that should be renamed to this label's name.
 
 When syncing, any existing label matching an alias will be renamed,
 preserving all issue associations.
 
 Useful for standardizing label names across repositories.`,
-		examples: [['enhancement'], ['documentation', 'docs-update'], [
-			'P1',
-			'priority-high',
-			'urgent',
-		]],
-		uniqueItems: true,
-	}),
-}).meta({
-	title: 'Label Definition',
-	description: `\
+				examples: [['enhancement'], ['documentation', 'docs-update'], ['P1', 'priority-high', 'urgent']],
+				uniqueItems: true,
+			}),
+	})
+	.meta({
+		title: 'Label Definition',
+		description: `\
 A GitHub issue label with name, color, description,
 and optional aliases for renaming.`,
-});
+	});
 
 // === Label Definition (Runtime) ===
 
-export const labelDefinition: z.ZodTypeAny = z.strictObject({
-	name: labelName,
-	color: hexColor.optional(),
-	description: labelDescription.optional(),
-	aliases: z.array(labelName).min(1).describe('aliases').optional(),
-}).describe('labelDefinition');
+export const labelDefinition: z.ZodTypeAny = z
+	.strictObject({
+		name: labelName,
+		color: hexColor.optional(),
+		description: labelDescription.optional(),
+		aliases: z.array(labelName).min(1).describe('aliases').optional(),
+	})
+	.describe('labelDefinition');
 
 // === Config Metadata (runtime only, excluded from schema output) ===
 
@@ -186,11 +165,12 @@ export const labelConfigMeta: z.ZodTypeAny = z.object({
 
 // === Root Config (Schema for Generation) ===
 
-export const labelConfigSchema: z.ZodTypeAny = z.strictObject({
-	$schema: z.string().optional(),
-	labels: z.array(labelDefinitionSchema).meta({
-		title: 'Labels to Create or Update',
-		description: `\
+export const labelConfigSchema: z.ZodTypeAny = z
+	.strictObject({
+		$schema: z.string().optional(),
+		labels: z.array(labelDefinitionSchema).meta({
+			title: 'Labels to Create or Update',
+			description: `\
 Array of label definitions.
 
 Each label will be created if it doesn't exist, or updated if it does.
@@ -198,20 +178,25 @@ Use <code>"aliases"</code> to rename existing labels while preserving issue asso
 
 Labels in the repository that are NOT defined here
 will be DELETED (unless matched by <code>"ignore"</code> patterns).`,
-		examples: [[
-			{ name: 'bug', color: '#d73a4a', description: "Something isn't working" },
-			{
-				name: 'feature',
-				color: '#a2eeef',
-				description: 'New feature or request',
-				aliases: ['enhancement'],
-			},
-		]],
-		uniqueItems: true,
-	}),
-	ignore: z.array(labelNameBase).optional().meta({
-		title: 'Labels to Ignore',
-		description: `\
+			examples: [
+				[
+					{ name: 'bug', color: '#d73a4a', description: "Something isn't working" },
+					{
+						name: 'feature',
+						color: '#a2eeef',
+						description: 'New feature or request',
+						aliases: ['enhancement'],
+					},
+				],
+			],
+			uniqueItems: true,
+		}),
+		ignore: z
+			.array(labelNameBase)
+			.optional()
+			.meta({
+				title: 'Labels to Ignore',
+				description: `\
 Array of label name patterns to ignore during sync.
 
 Supports glob patterns (e.g., 'dependabot*', 'github-*').
@@ -220,60 +205,68 @@ even if not defined in 'labels'.
 
 Useful for preserving labels managed by external tools
 like Dependabot or GitHub Apps.`,
-		examples: [['dependabot*', 'github-actions', 'stale']],
-		uniqueItems: true,
-	}),
-	delete: z.array(labelNameBase).optional().meta({
-		title: 'Labels to Delete (DEPRECATED)',
-		description: `\
+				examples: [['dependabot*', 'github-actions', 'stale']],
+				uniqueItems: true,
+			}),
+		delete: z
+			.array(labelNameBase)
+			.optional()
+			.meta({
+				title: 'Labels to Delete (DEPRECATED)',
+				description: `\
 DEPRECATED in v2: This field is ignored.
 
 Labels are now deleted automatically if not defined
 in 'labels' array and not matched by 'ignore' patterns.
 This is declarative sync — your config file is the source of truth.`,
-		examples: [['obsolete-label', 'deprecated', 'wontfix']],
-		uniqueItems: true,
-		deprecated: true,
-	}),
-}).meta({
-	title: 'GitHub Label Manager Configuration (v2)',
-	description: `\
+				examples: [['obsolete-label', 'deprecated', 'wontfix']],
+				uniqueItems: true,
+				deprecated: true,
+			}),
+	})
+	.meta({
+		title: 'GitHub Label Manager Configuration (v2)',
+		description: `\
 Schema for declaratively managing GitHub issue labels
 via kjanat/github-labelmanager.
 
 Your config file is the source of truth — labels not defined here
 will be DELETED (unless matched by 'ignore' patterns).`,
-	examples: [{
-		labels: [
-			{ name: 'bug', color: '#d73a4a', description: "Something isn't working" },
+		examples: [
 			{
-				name: 'feature',
-				color: '#a2eeef',
-				description: 'New feature or meaningful behavior change',
-				aliases: ['enhancement'],
-			},
-			{
-				name: 'docs',
-				color: '#0075ca',
-				description: 'Improvements or additions to documentation',
-				aliases: ['documentation'],
-			},
-			{
-				name: 'P0: critical',
-				color: '#b60205',
-				description: 'Broken core flows, must fix ASAP',
+				labels: [
+					{ name: 'bug', color: '#d73a4a', description: "Something isn't working" },
+					{
+						name: 'feature',
+						color: '#a2eeef',
+						description: 'New feature or meaningful behavior change',
+						aliases: ['enhancement'],
+					},
+					{
+						name: 'docs',
+						color: '#0075ca',
+						description: 'Improvements or additions to documentation',
+						aliases: ['documentation'],
+					},
+					{
+						name: 'P0: critical',
+						color: '#b60205',
+						description: 'Broken core flows, must fix ASAP',
+					},
+				],
+				ignore: ['dependabot*', 'github-actions'],
 			},
 		],
-		ignore: ['dependabot*', 'github-actions'],
-	}],
-});
+	});
 
 // === Root Config (Runtime) ===
 
-export const labelConfig: z.ZodType<LabelConfig> = z.strictObject({
-	$schema: z.string().optional(),
-	labels: z.array(labelDefinition).describe('labels'),
-	ignore: z.array(labelName).describe('ignore').optional(),
-	delete: z.array(labelName).describe('delete').optional(),
-	_meta: labelConfigMeta.optional(),
-}).describe('labelConfig') as z.ZodType<LabelConfig>;
+export const labelConfig: z.ZodType<LabelConfig> = z
+	.strictObject({
+		$schema: z.string().optional(),
+		labels: z.array(labelDefinition).describe('labels'),
+		ignore: z.array(labelName).describe('ignore').optional(),
+		delete: z.array(labelName).describe('delete').optional(),
+		_meta: labelConfigMeta.optional(),
+	})
+	.describe('labelConfig') as z.ZodType<LabelConfig>;

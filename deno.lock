@@ -30,6 +30,7 @@
     "npm:ajv@8": "8.18.0",
     "npm:lefthook@2": "2.1.5",
     "npm:octokit@5": "5.0.5",
+    "npm:prettier@*": "3.8.1",
     "npm:zod-validation-error@5": "5.0.0_zod@4.3.6",
     "npm:zod@4": "4.3.6"
   },
@@ -894,6 +895,10 @@
     },
     "picocolors@1.1.1": {
       "integrity": "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA=="
+    },
+    "prettier@3.8.1": {
+      "integrity": "sha512-UOnG6LftzbdaHZcKoPFtOcCKztrQ57WkHDeRD9t/PTQtmT0NHSeWWepj6pS0z/N7+08BHFDQVUrfmfMRcZwbMg==",
+      "bin": true
     },
     "require-directory@2.1.1": {
       "integrity": "sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q=="

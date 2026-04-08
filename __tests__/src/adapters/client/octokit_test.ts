@@ -76,20 +76,13 @@ Deno.test('OctokitClient.list - returns empty array when no labels', async () =>
 Deno.test('OctokitClient.list - wraps octokit error with status', async () => {
 	const { octokit } = createMockOctokit({
 		errors: {
-			'GET /repos/{owner}/{repo}/labels': Object.assign(
-				new Error('Forbidden'),
-				{ status: 403 },
-			),
+			'GET /repos/{owner}/{repo}/labels': Object.assign(new Error('Forbidden'), { status: 403 }),
 		},
 	});
 	const logger = new NullLogger();
 	const client = new OctokitClient(testConfig, logger, octokit);
 
-	await assertRejects(
-		() => client.list(),
-		Error,
-		'HTTP 403',
-	);
+	await assertRejects(() => client.list(), Error, 'HTTP 403');
 });
 
 Deno.test('OctokitClient.list - wraps generic error without status', async () => {
@@ -101,11 +94,7 @@ Deno.test('OctokitClient.list - wraps generic error without status', async () =>
 	const logger = new NullLogger();
 	const client = new OctokitClient(testConfig, logger, octokit);
 
-	await assertRejects(
-		() => client.list(),
-		Error,
-		'boom',
-	);
+	await assertRejects(() => client.list(), Error, 'boom');
 });
 
 // =============================================================================
@@ -158,11 +147,7 @@ Deno.test('OctokitClient.create - creates label', async () => {
 Deno.test('OctokitClient.create - dry run returns null', async () => {
 	const { octokit, requests } = createMockOctokit();
 	const logger = new NullLogger();
-	const client = new OctokitClient(
-		{ ...testConfig, dryRun: true },
-		logger,
-		octokit,
-	);
+	const client = new OctokitClient({ ...testConfig, dryRun: true }, logger, octokit);
 
 	const label = await client.create({
 		name: 'new-label',
@@ -194,11 +179,7 @@ Deno.test('OctokitClient.update - updates label', async () => {
 Deno.test('OctokitClient.update - dry run returns null', async () => {
 	const { octokit, requests } = createMockOctokit();
 	const logger = new NullLogger();
-	const client = new OctokitClient(
-		{ ...testConfig, dryRun: true },
-		logger,
-		octokit,
-	);
+	const client = new OctokitClient({ ...testConfig, dryRun: true }, logger, octokit);
 
 	const label = await client.update('old-name', {
 		name: 'old-name',
@@ -225,11 +206,7 @@ Deno.test('OctokitClient.delete - deletes label', async () => {
 Deno.test('OctokitClient.delete - dry run skips API call', async () => {
 	const { octokit, requests } = createMockOctokit();
 	const logger = new NullLogger();
-	const client = new OctokitClient(
-		{ ...testConfig, dryRun: true },
-		logger,
-		octokit,
-	);
+	const client = new OctokitClient({ ...testConfig, dryRun: true }, logger, octokit);
 
 	await client.delete('some-label');
 

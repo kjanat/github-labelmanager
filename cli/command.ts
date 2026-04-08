@@ -31,41 +31,12 @@ export const syncCommand: CommandBuilder = command('sync')
 	.description('Sync GitHub repository labels from YAML config')
 	.alias('s')
 	.example('github-labelmanager kjanat/my-repo', 'Sync labels for a repository')
-	.example(
-		'github-labelmanager kjanat/my-repo --dry-run',
-		'Preview changes without applying',
-	)
-	.example(
-		'github-labelmanager kjanat/my-repo --config custom.yml',
-		'Use a custom config file',
-	)
-	.arg(
-		'repository',
-		arg.custom(parseRepository)
-			.env('REPO')
-			.required()
-			.describe('Repository in owner/repo format'),
-	)
-	.flag(
-		'token',
-		flag.string()
-			.env('GITHUB_TOKEN')
-			.required()
-			.describe('GitHub Personal Access Token'),
-	)
-	.flag(
-		'config',
-		flag.string()
-			.env('CONFIG_PATH')
-			.default('.github/labels.yml')
-			.describe('Path to labels config file'),
-	)
-	.flag(
-		'dry-run',
-		flag.boolean()
-			.env('DRY_RUN')
-			.describe('Run without making changes'),
-	)
+	.example('github-labelmanager kjanat/my-repo --dry-run', 'Preview changes without applying')
+	.example('github-labelmanager kjanat/my-repo --config custom.yml', 'Use a custom config file')
+	.arg('repository', arg.custom(parseRepository).env('REPO').required().describe('Repository in owner/repo format'))
+	.flag('token', flag.string().env('GITHUB_TOKEN').required().describe('GitHub Personal Access Token'))
+	.flag('config', flag.string().env('CONFIG_PATH').default('.github/labels.yml').describe('Path to labels config file'))
+	.flag('dry-run', flag.boolean().env('DRY_RUN').describe('Run without making changes'))
 	.action(async ({ args, flags, out }) => {
 		const env: EnvConfig = {
 			token: flags.token,
@@ -94,9 +65,7 @@ export const syncCommand: CommandBuilder = command('sync')
 		const log = createLogger();
 		const manager = new LabelManager(env, { logger: log });
 
-		const spinner = out.spinner(
-			`Syncing labels for ${env.owner}/${env.repo}...`,
-		);
+		const spinner = out.spinner(`Syncing labels for ${env.owner}/${env.repo}...`);
 		const result = await syncLabels(manager, config);
 
 		const { summary } = result;
