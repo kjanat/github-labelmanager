@@ -30,25 +30,25 @@
  */
 
 // Domain
-export * from "./domain/mod.ts";
+export * from './domain/mod.ts';
 
 // Ports (interfaces)
-export * from "./ports/mod.ts";
+export * from './ports/mod.ts';
 
 // Infrastructure (adapters)
-export * from "./adapters/client/mod.ts";
-export * from "./adapters/logger/mod.ts";
+export * from './adapters/client/mod.ts';
+export * from './adapters/logger/mod.ts';
 
 // Application
-export * from "./client.ts";
-export * from "./sync.ts";
-export * from "./config.ts";
-export * from "./factory.ts";
-export * from "./schema.ts";
+export * from './client.ts';
+export * from './config.ts';
+export * from './factory.ts';
+export * from './schema.ts';
+export * from './sync.ts';
 
 // Testing (separate export in deno.json, but also available here)
-export * from "./testing/mod.ts";
+export * from './testing/mod.ts';
 
 // CLI entry point
-export { main } from "$/cli/main.ts";
-export type { MainOptions } from "$/cli/main.ts";
+export { main } from '$/cli/main.ts';
+export type { MainOptions } from '$/cli/main.ts';

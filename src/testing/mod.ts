@@ -17,35 +17,24 @@
  */
 
 // Mocks
-export {
-  type ApiCall,
-  MockGitHubClient,
-  type MockGitHubClientOptions,
-  MockLogger,
-} from "./mocks.ts";
+export { type ApiCall, MockGitHubClient, type MockGitHubClientOptions, MockLogger } from './mocks.ts';
 
 // Stubs
-export {
-  ExitStubError,
-  NullLogger,
-  stubArgs,
-  stubEnv,
-  stubExit,
-} from "./stubs.ts";
+export { NullLogger } from './stubs.ts';
 
 // Fixtures
 export {
-  captureConsole,
-  type CapturedConsole,
-  type CoreCall,
-  createEnvGet,
-  createMockActionsCore,
-  createMockOctokit,
-  createTestEnv,
-  type FetchCall,
-  mockFetch,
-  type MockFetchResponse,
-  type MockOctokitOptions,
-  type MockSummary,
-  type OctokitRequest,
-} from "./fixtures.ts";
+	captureConsole,
+	type CapturedConsole,
+	type CoreCall,
+	createEnvGet,
+	createMockActionsCore,
+	createMockOctokit,
+	createTestEnv,
+	type FetchCall,
+	mockFetch,
+	type MockFetchResponse,
+	type MockOctokitOptions,
+	type MockSummary,
+	type OctokitRequest,
+} from './fixtures.ts';

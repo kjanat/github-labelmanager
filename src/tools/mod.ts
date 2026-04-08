@@ -3,4 +3,4 @@
  * @module
  */
 
-export * from "./sort-schema.ts";
+export * from './sort-schema.ts';

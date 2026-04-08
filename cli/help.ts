@@ -7,7 +7,7 @@
  * Print help message
  */
 export function printHelp(): void {
-  console.log(`
+	console.log(`
 Usage: github-labelmanager [OWNER/REPO] [OPTIONS]
 
 Options:

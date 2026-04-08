@@ -3,5 +3,5 @@
  * @module
  */
 
-export * from "./github.ts";
-export * from "./logger.ts";
+export * from './github.ts';
+export * from './logger.ts';

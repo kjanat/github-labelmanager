@@ -49,24 +49,24 @@ export type FencePadding = boolean | number;
  * ```
  */
 export function codeFence(
-  lang: string | undefined,
-  code: string,
-  pad: FencePadding = false,
+	lang: string | undefined,
+	code: string,
+	pad: FencePadding = false,
 ): string {
-  // Find longest backtick sequence in code, use at least 3
-  const matches = code.match(/`+/g);
-  const maxBackticks = matches ? Math.max(...matches.map((m) => m.length)) : 0;
-  const fenceLen = Math.max(3, maxBackticks + 1);
-  const fence = "`".repeat(fenceLen);
+	// Find longest backtick sequence in code, use at least 3
+	const matches = code.match(/`+/g);
+	const maxBackticks = matches ? Math.max(...matches.map((m) => m.length)) : 0;
+	const fenceLen = Math.max(3, maxBackticks + 1);
+	const fence = '`'.repeat(fenceLen);
 
-  // Calculate padding
-  let amount = 0;
-  if (typeof pad === "boolean") {
-    amount = pad ? 2 : 0;
-  } else {
-    amount = Math.max(0, pad | 0);
-  }
+	// Calculate padding
+	let amount = 0;
+	if (typeof pad === 'boolean') {
+		amount = pad ? 2 : 0;
+	} else {
+		amount = Math.max(0, pad | 0);
+	}
 
-  const padStr = "\n".repeat(amount);
-  return `${padStr}${fence}${lang ?? ""}\n${code.trim()}\n${fence}${padStr}`;
+	const padStr = '\n'.repeat(amount);
+	return `${padStr}${fence}${lang ?? ''}\n${code.trim()}\n${fence}${padStr}`;
 }

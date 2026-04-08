@@ -3,16 +3,16 @@
  * @module
  */
 
-import type { Octokit } from "octokit";
-import type { getOctokit } from "@actions/github";
-import type { components } from "@octokit/openapi-types";
+import type { getOctokit } from '@actions/github';
+import type { components } from '@octokit/openapi-types';
+import type { Octokit } from 'octokit';
 
 // ============================================================================
 // API Schema Types (from @octokit/openapi-types - auto-updated with GitHub API)
 // ============================================================================
 
 /** GitHub label schema from API response */
-export type GitHubLabelSchema = components["schemas"]["label"];
+export type GitHubLabelSchema = components['schemas']['label'];
 
 // ============================================================================
 // Domain Types
@@ -20,21 +20,21 @@ export type GitHubLabelSchema = components["schemas"]["label"];
 
 /** Label as returned by GitHub API (simplified) */
 export interface GitHubLabel {
-  name: string;
-  color: string;
-  description: string | null;
+	name: string;
+	color: string;
+	description: string | null;
 }
 
 /** Options for GitHub label API operations */
 export interface LabelOptions {
-  /** The name of the label */
-  name: string;
-  /** The color of the label as 6 character hex code, without '#' */
-  color?: string;
-  /** The description of the label */
-  description?: string;
-  /** The new name of the label (for renames) */
-  new_name?: string;
+	/** The name of the label */
+	name: string;
+	/** The color of the label as 6 character hex code, without '#' */
+	color?: string;
+	/** The description of the label */
+	description?: string;
+	/** The new name of the label (for renames) */
+	new_name?: string;
 }
 
 // ============================================================================
@@ -43,14 +43,14 @@ export interface LabelOptions {
 
 /** Configuration for creating a GitHub client */
 export interface GitHubClientConfig {
-  /** GitHub API token */
-  token: string;
-  /** Repository owner */
-  owner: string;
-  /** Repository name */
-  repo: string;
-  /** Whether to skip write operations */
-  dryRun: boolean;
+	/** GitHub API token */
+	token: string;
+	/** Repository owner */
+	owner: string;
+	/** Repository name */
+	repo: string;
+	/** Whether to skip write operations */
+	dryRun: boolean;
 }
 
 // ============================================================================
@@ -65,53 +65,53 @@ export interface GitHubClientConfig {
  * - ActionsGitHubClient: @actions/github for GitHub Actions context
  */
 export interface IGitHubClient {
-  /** Repository owner */
-  readonly owner: string;
+	/** Repository owner */
+	readonly owner: string;
 
-  /** Repository name */
-  readonly repo: string;
+	/** Repository name */
+	readonly repo: string;
 
-  /** Whether running in dry-run mode */
-  readonly isDryRun: boolean;
+	/** Whether running in dry-run mode */
+	readonly isDryRun: boolean;
 
-  /**
-   * List all labels in the repository
-   * Uses pagination to fetch all labels
-   * @throws Error on API failure
-   */
-  list(): Promise<GitHubLabel[]>;
+	/**
+	 * List all labels in the repository
+	 * Uses pagination to fetch all labels
+	 * @throws Error on API failure
+	 */
+	list(): Promise<GitHubLabel[]>;
 
-  /**
-   * Get a single label by name
-   * @returns Label if found, null if not found
-   * @throws Error on API failure (except 404)
-   */
-  get(name: string): Promise<GitHubLabel | null>;
+	/**
+	 * Get a single label by name
+	 * @returns Label if found, null if not found
+	 * @throws Error on API failure (except 404)
+	 */
+	get(name: string): Promise<GitHubLabel | null>;
 
-  /**
-   * Create a new label
-   * @returns Created label, or null if dry-run
-   * @throws Error on API failure
-   */
-  create(options: LabelOptions): Promise<GitHubLabel | null>;
+	/**
+	 * Create a new label
+	 * @returns Created label, or null if dry-run
+	 * @throws Error on API failure
+	 */
+	create(options: LabelOptions): Promise<GitHubLabel | null>;
 
-  /**
-   * Update an existing label
-   * @param currentName Current name of the label
-   * @param options New label properties
-   * @returns Updated label, or null if dry-run
-   * @throws Error on API failure
-   */
-  update(
-    currentName: string,
-    options: LabelOptions,
-  ): Promise<GitHubLabel | null>;
+	/**
+	 * Update an existing label
+	 * @param currentName Current name of the label
+	 * @param options New label properties
+	 * @returns Updated label, or null if dry-run
+	 * @throws Error on API failure
+	 */
+	update(
+		currentName: string,
+		options: LabelOptions,
+	): Promise<GitHubLabel | null>;
 
-  /**
-   * Delete a label
-   * @throws Error on API failure
-   */
-  delete(name: string): Promise<void>;
+	/**
+	 * Delete a label
+	 * @throws Error on API failure
+	 */
+	delete(name: string): Promise<void>;
 }
 
 // ============================================================================

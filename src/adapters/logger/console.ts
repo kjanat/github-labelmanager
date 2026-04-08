@@ -3,51 +3,51 @@
  * @module
  */
 
-import type { AnnotationProperties, ILogger } from "~/ports/logger.ts";
-import type { SyncResult } from "~/domain/types.ts";
+import type { SyncResult } from '~/domain/types.ts';
+import type { AnnotationProperties, ILogger } from '~/ports/logger.ts';
 
 /** ANSI color codes */
 const COLORS = {
-  reset: "\x1b[0m",
-  red: "\x1b[31m",
-  green: "\x1b[32m",
-  yellow: "\x1b[33m",
-  blue: "\x1b[34m",
-  cyan: "\x1b[36m",
-  gray: "\x1b[90m",
-  bold: "\x1b[1m",
+	reset: '\x1b[0m',
+	red: '\x1b[31m',
+	green: '\x1b[32m',
+	yellow: '\x1b[33m',
+	blue: '\x1b[34m',
+	cyan: '\x1b[36m',
+	gray: '\x1b[90m',
+	bold: '\x1b[1m',
 } as const;
 
 /** Check if color output is disabled */
-const isNoColor = typeof Deno !== "undefined" ? Deno.noColor : false;
+const isNoColor = typeof Deno !== 'undefined' ? Deno.noColor : false;
 
 /**
  * Apply color to text if colors are enabled
  */
 function colorize(color: string, text: string): string {
-  return isNoColor ? text : `${color}${text}${COLORS.reset}`;
+	return isNoColor ? text : `${color}${text}${COLORS.reset}`;
 }
 
 /**
  * Format annotation properties for display
  */
 function formatAnnotation(properties?: AnnotationProperties): string {
-  if (!properties) return "";
-  const parts: string[] = [];
-  if (properties.file) {
-    let loc = properties.file;
-    if (properties.startLine) {
-      loc += `:${properties.startLine}`;
-      if (properties.startColumn) {
-        loc += `:${properties.startColumn}`;
-      }
-    }
-    parts.push(loc);
-  }
-  if (properties.title) {
-    parts.push(properties.title);
-  }
-  return parts.length > 0 ? ` (${parts.join(" - ")})` : "";
+	if (!properties) return '';
+	const parts: string[] = [];
+	if (properties.file) {
+		let loc = properties.file;
+		if (properties.startLine) {
+			loc += `:${properties.startLine}`;
+			if (properties.startColumn) {
+				loc += `:${properties.startColumn}`;
+			}
+		}
+		parts.push(loc);
+	}
+	if (properties.title) {
+		parts.push(properties.title);
+	}
+	return parts.length > 0 ? ` (${parts.join(' - ')})` : '';
 }
 
 /**
@@ -57,99 +57,98 @@ function formatAnnotation(properties?: AnnotationProperties): string {
  * - Colored output with symbols
  * - Respects NO_COLOR / Deno.noColor
  * - Collapsible groups (visual only in terminal)
- * - Exit handling via Deno.exit
+ * - Exit handling via injectable exit function
  */
 export class ConsoleLogger implements ILogger {
-  private groupDepth = 0;
+	private readonly exitFn: (code?: number) => void;
+	private groupDepth = 0;
 
-  private get indent(): string {
-    return "  ".repeat(this.groupDepth);
-  }
+	constructor(options?: { exitFn?: (code?: number) => void }) {
+		this.exitFn = options?.exitFn ?? Deno.exit;
+	}
 
-  debug(message: string): void {
-    // Only show debug in verbose mode (check DEBUG env)
-    if (Deno.env.get("DEBUG")) {
-      console.debug(
-        `${this.indent}${colorize(COLORS.gray, "[debug]")} ${message}`,
-      );
-    }
-  }
+	private get indent(): string {
+		return '  '.repeat(this.groupDepth);
+	}
 
-  info(message: string): void {
-    console.info(
-      `${this.indent}${colorize(COLORS.cyan, "[info]")} ${message}`,
-    );
-  }
+	debug(message: string): void {
+		// Only show debug in verbose mode (check DEBUG env)
+		if (Deno.env.get('DEBUG')) {
+			console.debug(
+				`${this.indent}${colorize(COLORS.gray, '[debug]')} ${message}`,
+			);
+		}
+	}
 
-  warn(message: string, properties?: AnnotationProperties): void {
-    const annotation = formatAnnotation(properties);
-    console.warn(
-      `${this.indent}${
-        colorize(COLORS.yellow, "[warn]")
-      } ${message}${annotation}`,
-    );
-  }
+	info(message: string): void {
+		console.info(
+			`${this.indent}${colorize(COLORS.cyan, '[info]')} ${message}`,
+		);
+	}
 
-  error(message: string, properties?: AnnotationProperties): void {
-    const annotation = formatAnnotation(properties);
-    console.error(
-      `${this.indent}${
-        colorize(COLORS.red, "[error]")
-      } ${message}${annotation}`,
-    );
-  }
+	warn(message: string, properties?: AnnotationProperties): void {
+		const annotation = formatAnnotation(properties);
+		console.warn(
+			`${this.indent}${colorize(COLORS.yellow, '[warn]')} ${message}${annotation}`,
+		);
+	}
 
-  notice(message: string, properties?: AnnotationProperties): void {
-    const annotation = formatAnnotation(properties);
-    console.info(
-      `${this.indent}${
-        colorize(COLORS.blue, "[notice]")
-      } ${message}${annotation}`,
-    );
-  }
+	error(message: string, properties?: AnnotationProperties): void {
+		const annotation = formatAnnotation(properties);
+		console.error(
+			`${this.indent}${colorize(COLORS.red, '[error]')} ${message}${annotation}`,
+		);
+	}
 
-  startGroup(name: string): void {
-    console.info(
-      `${this.indent}${colorize(COLORS.bold, ">")} ${name}`,
-    );
-    this.groupDepth++;
-  }
+	notice(message: string, properties?: AnnotationProperties): void {
+		const annotation = formatAnnotation(properties);
+		console.info(
+			`${this.indent}${colorize(COLORS.blue, '[notice]')} ${message}${annotation}`,
+		);
+	}
 
-  endGroup(): void {
-    if (this.groupDepth > 0) {
-      this.groupDepth--;
-    }
-  }
+	startGroup(name: string): void {
+		console.info(
+			`${this.indent}${colorize(COLORS.bold, '>')} ${name}`,
+		);
+		this.groupDepth++;
+	}
 
-  async group<T>(name: string, fn: () => Promise<T>): Promise<T> {
-    this.startGroup(name);
-    try {
-      return await fn();
-    } finally {
-      this.endGroup();
-    }
-  }
+	endGroup(): void {
+		if (this.groupDepth > 0) {
+			this.groupDepth--;
+		}
+	}
 
-  setFailed(message: string | Error): void {
-    const msg = message instanceof Error ? message.message : message;
-    this.error(msg);
-    Deno.exit(1);
-  }
+	async group<T>(name: string, fn: () => Promise<T>): Promise<T> {
+		this.startGroup(name);
+		try {
+			return await fn();
+		} finally {
+			this.endGroup();
+		}
+	}
 
-  success(message: string): void {
-    console.log(
-      `${this.indent}${colorize(COLORS.green, "[+]")} ${message}`,
-    );
-  }
+	setFailed(message: string | Error): void {
+		const msg = message instanceof Error ? message.message : message;
+		this.error(msg);
+		this.exitFn(1);
+	}
 
-  skip(message: string): void {
-    console.log(
-      `${this.indent}${colorize(COLORS.gray, "[-]")} ${message}`,
-    );
-  }
+	success(message: string): void {
+		console.log(
+			`${this.indent}${colorize(COLORS.green, '[+]')} ${message}`,
+		);
+	}
 
-  writeSummary(_result: SyncResult): Promise<void> {
-    // No-op for CLI - results already printed inline during sync
-    return Promise.resolve();
-  }
+	skip(message: string): void {
+		console.log(
+			`${this.indent}${colorize(COLORS.gray, '[-]')} ${message}`,
+		);
+	}
+
+	writeSummary(_result: SyncResult): Promise<void> {
+		// No-op for CLI - results already printed inline during sync
+		return Promise.resolve();
+	}
 }

@@ -4,7 +4,7 @@
 ### Deno ###
 /.idea/
 
-/node_modules
+node_modules
 
 .env
 *.orig
@@ -234,3 +234,5 @@ Temporary Items
 /cov/
 /cov.lcov
 /coverage_profile/
+repolist.json
+dist

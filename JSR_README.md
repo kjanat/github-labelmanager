@@ -24,21 +24,17 @@ deno run -A jsr:@kjanat/github-labelmanager/cli owner/repo --dry-run
 ## Library Usage
 
 ```typescript
-import {
-  LabelManager,
-  loadConfig,
-  syncLabels,
-} from "@kjanat/github-labelmanager";
+import { LabelManager, loadConfig, syncLabels } from '@kjanat/github-labelmanager';
 
 // Load configuration
-const config = await loadConfig(".github/labels.yml");
+const config = await loadConfig('.github/labels.yml');
 
 // Create manager
 const manager = new LabelManager({
-  token: Deno.env.get("GITHUB_TOKEN")!,
-  owner: "owner",
-  repo: "repo",
-  dryRun: false,
+	token: Deno.env.get('GITHUB_TOKEN')!,
+	owner: 'owner',
+	repo: 'repo',
+	dryRun: false,
 });
 
 // Sync labels
@@ -56,7 +52,7 @@ console.log(result.summary);
 Load and validate a YAML configuration file.
 
 ```typescript
-const config = await loadConfig(".github/labels.yml");
+const config = await loadConfig('.github/labels.yml');
 ```
 
 #### `syncLabels(client: IGitHubClient, config: LabelConfig): Promise<SyncResult>`
@@ -75,48 +71,48 @@ High-level API for managing GitHub labels with dependency injection.
 
 ```typescript
 const manager = new LabelManager({
-  token: "ghp_xxx",
-  owner: "owner",
-  repo: "repo",
-  dryRun: false,
+	token: 'ghp_xxx',
+	owner: 'owner',
+	repo: 'repo',
+	dryRun: false,
 });
 
 // List all labels
 const labels = await manager.listLabels();
 
 // Create a label
-await manager.createLabel({ name: "bug", color: "d73a4a", description: "Bug" });
+await manager.createLabel({ name: 'bug', color: 'd73a4a', description: 'Bug' });
 
 // Update a label
-await manager.updateLabel("bug", { color: "ff0000" });
+await manager.updateLabel('bug', { color: 'ff0000' });
 
 // Delete a label
-await manager.deleteLabel("obsolete");
+await manager.deleteLabel('obsolete');
 ```
 
 ### Types
 
 ```typescript
 interface LabelConfig {
-  labels: LabelDefinition[];
-  delete?: string[];
+	labels: LabelDefinition[];
+	delete?: string[];
 }
 
 interface LabelDefinition {
-  name: string;
-  color: string;
-  description: string;
-  aliases?: string[];
+	name: string;
+	color: string;
+	description: string;
+	aliases?: string[];
 }
 
 interface SyncResult {
-  created: string[];
-  updated: string[];
-  renamed: Array<{ from: string; to: string }>;
-  deleted: string[];
-  unchanged: string[];
-  errors: Array<{ label: string; error: string }>;
-  summary: string;
+	created: string[];
+	updated: string[];
+	renamed: Array<{ from: string; to: string }>;
+	deleted: string[];
+	unchanged: string[];
+	errors: Array<{ label: string; error: string }>;
+	summary: string;
 }
 ```
 
@@ -125,23 +121,19 @@ interface SyncResult {
 The package exports testing utilities:
 
 ```typescript
-import {
-  createTestEnv,
-  MockGitHubClient,
-  NullLogger,
-} from "@kjanat/github-labelmanager";
+import { createTestEnv, MockGitHubClient, NullLogger } from '@kjanat/github-labelmanager';
 
 // Mock client for testing
 const mockClient = new MockGitHubClient();
-mockClient.labels = [{ name: "bug", color: "d73a4a", description: "Bug" }];
+mockClient.labels = [{ name: 'bug', color: 'd73a4a', description: 'Bug' }];
 
 // Silent logger
 const logger = new NullLogger();
 
 // Test environment setup
 const cleanup = createTestEnv({
-  GITHUB_TOKEN: "test-token",
-  REPO: "owner/repo",
+	GITHUB_TOKEN: 'test-token',
+	REPO: 'owner/repo',
 });
 // ... run tests ...
 cleanup();

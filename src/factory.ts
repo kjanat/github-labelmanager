@@ -3,19 +3,16 @@
  * @module
  */
 
-import type { ILogger } from "./adapters/logger/mod.ts";
-import type {
-  GitHubClientConfig,
-  IGitHubClient,
-} from "./adapters/client/mod.ts";
-import { ActionsLogger, ConsoleLogger } from "./adapters/logger/mod.ts";
-import { ActionsGitHubClient, OctokitClient } from "./adapters/client/mod.ts";
+import type { GitHubClientConfig, IGitHubClient } from './adapters/client/mod.ts';
+import { ActionsGitHubClient, OctokitClient } from './adapters/client/mod.ts';
+import type { ILogger } from './adapters/logger/mod.ts';
+import { ActionsLogger, ConsoleLogger } from './adapters/logger/mod.ts';
 
 /**
  * Check if running in GitHub Actions environment
  */
 export function isGitHubActions(): boolean {
-  return Deno.env.get("GITHUB_ACTIONS") === "true";
+	return Deno.env.get('GITHUB_ACTIONS') === 'true';
 }
 
 /**
@@ -24,11 +21,13 @@ export function isGitHubActions(): boolean {
  * - GitHub Actions: Uses @actions/core for native annotations and groups
  * - Local CLI: Uses colored console output
  */
-export function createLogger(): ILogger {
-  if (isGitHubActions()) {
-    return new ActionsLogger();
-  }
-  return new ConsoleLogger();
+export function createLogger(
+	options?: { exitFn?: (code?: number) => void },
+): ILogger {
+	if (isGitHubActions()) {
+		return new ActionsLogger();
+	}
+	return new ConsoleLogger({ exitFn: options?.exitFn });
 }
 
 /**
@@ -38,30 +37,27 @@ export function createLogger(): ILogger {
  * - Local CLI: Uses octokit with throttling and retry
  */
 export function createGitHubClient(
-  config: GitHubClientConfig,
-  logger: ILogger,
+	config: GitHubClientConfig,
+	logger: ILogger,
 ): IGitHubClient {
-  if (isGitHubActions()) {
-    return new ActionsGitHubClient(config, logger);
-  }
-  return new OctokitClient(config, logger);
+	if (isGitHubActions()) {
+		return new ActionsGitHubClient(config, logger);
+	}
+	return new OctokitClient(config, logger);
 }
 
 /**
  * Create both logger and client for current environment
  */
 export function createServices(config: GitHubClientConfig): {
-  logger: ILogger;
-  client: IGitHubClient;
+	logger: ILogger;
+	client: IGitHubClient;
 } {
-  const logger = createLogger();
-  const client = createGitHubClient(config, logger);
-  return { logger, client };
+	const logger = createLogger();
+	const client = createGitHubClient(config, logger);
+	return { logger, client };
 }
 
 // Re-export types
-export type { ILogger } from "./adapters/logger/mod.ts";
-export type {
-  GitHubClientConfig,
-  IGitHubClient,
-} from "./adapters/client/mod.ts";
+export type { GitHubClientConfig, IGitHubClient } from './adapters/client/mod.ts';
+export type { ILogger } from './adapters/logger/mod.ts';

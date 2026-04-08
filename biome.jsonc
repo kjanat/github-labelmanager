@@ -1,43 +1,43 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.8/schema.json",
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true,
-    "defaultBranch": "master"
-  },
-  "files": {
-    "includes": ["**", "!!**/dist", "!!npm", "!!.github"]
-  },
-  "formatter": {
-    "enabled": false,
-    "indentStyle": "space"
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "correctness": {
-        // no package.json, a deno thing
-        "noUndeclaredDependencies": "off"
-      }
-    },
-    "domains": {
-      "project": "all",
-      "test": "all"
-    }
-  },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "double"
-    }
-  },
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
-    }
-  }
+	"$schema": "https://biomejs.dev/schemas/latest/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true,
+		"defaultBranch": "master",
+	},
+	"files": {
+		"includes": ["**", "!!**/dist", "!!npm", "!!.github"],
+	},
+	"formatter": {
+		"enabled": false,
+		"indentStyle": "space",
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"correctness": {
+				// no package.json, a deno thing
+				"noUndeclaredDependencies": "off",
+			},
+		},
+		"domains": {
+			"project": "all",
+			"test": "all",
+		},
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+		},
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on",
+			},
+		},
+	},
 }

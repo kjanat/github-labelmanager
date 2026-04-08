@@ -2,79 +2,49 @@
  * Tests for factory functions
  */
 
-import { assertEquals, assertInstanceOf } from "@std/assert";
-import {
-  createGitHubClient,
-  createLogger,
-  createServices,
-  isGitHubActions,
-} from "~/factory.ts";
-import { ActionsLogger, ConsoleLogger } from "~/adapters/logger/mod.ts";
-import { ActionsGitHubClient } from "~/adapters/client/mod.ts";
-import { stubEnv } from "~/testing/mod.ts";
+import { assertEquals, assertInstanceOf } from '@std/assert';
+import { ActionsGitHubClient } from '~/adapters/client/mod.ts';
+import { ActionsLogger, ConsoleLogger } from '~/adapters/logger/mod.ts';
+import { createGitHubClient, createLogger, createServices, isGitHubActions } from '~/factory.ts';
 
 // =============================================================================
 // isGitHubActions tests
 // =============================================================================
 
-Deno.test("isGitHubActions - returns true when GITHUB_ACTIONS=true", () => {
-  const restore = stubEnv({ GITHUB_ACTIONS: "true" });
-  try {
-    assertEquals(isGitHubActions(), true);
-  } finally {
-    restore();
-  }
+Deno.test('isGitHubActions - returns true when GITHUB_ACTIONS=true', () => {
+	Deno.env.set('GITHUB_ACTIONS', 'true');
+	assertEquals(isGitHubActions(), true);
 });
 
-Deno.test("isGitHubActions - returns false when GITHUB_ACTIONS not set", () => {
-  const restore = stubEnv({ GITHUB_ACTIONS: undefined });
-  try {
-    assertEquals(isGitHubActions(), false);
-  } finally {
-    restore();
-  }
+Deno.test('isGitHubActions - returns false when GITHUB_ACTIONS not set', () => {
+	Deno.env.delete('GITHUB_ACTIONS');
+	assertEquals(isGitHubActions(), false);
 });
 
-Deno.test("isGitHubActions - returns false when GITHUB_ACTIONS=false", () => {
-  const restore = stubEnv({ GITHUB_ACTIONS: "false" });
-  try {
-    assertEquals(isGitHubActions(), false);
-  } finally {
-    restore();
-  }
+Deno.test('isGitHubActions - returns false when GITHUB_ACTIONS=false', () => {
+	Deno.env.set('GITHUB_ACTIONS', 'false');
+	assertEquals(isGitHubActions(), false);
 });
 
-Deno.test("isGitHubActions - returns false when GITHUB_ACTIONS is other value", () => {
-  const restore = stubEnv({ GITHUB_ACTIONS: "1" });
-  try {
-    assertEquals(isGitHubActions(), false);
-  } finally {
-    restore();
-  }
+Deno.test('isGitHubActions - returns false when GITHUB_ACTIONS is other value', () => {
+	Deno.env.set('GITHUB_ACTIONS', '1');
+	assertEquals(isGitHubActions(), false);
 });
 
 // =============================================================================
 // createLogger tests
 // =============================================================================
 
-Deno.test("createLogger - returns ConsoleLogger when not in GitHub Actions", () => {
-  const restore = stubEnv({ GITHUB_ACTIONS: undefined });
-  try {
-    const logger = createLogger();
-    assertInstanceOf(logger, ConsoleLogger);
-  } finally {
-    restore();
-  }
+Deno.test('createLogger - returns ConsoleLogger when not in GitHub Actions', () => {
+	Deno.env.delete('GITHUB_ACTIONS');
+	const logger = createLogger();
+	assertInstanceOf(logger, ConsoleLogger);
 });
 
-Deno.test("createLogger - returns ActionsLogger when in GitHub Actions", () => {
-  const restore = stubEnv({ GITHUB_ACTIONS: "true" });
-  try {
-    const logger = createLogger();
-    assertInstanceOf(logger, ActionsLogger);
-  } finally {
-    restore();
-  }
+Deno.test('createLogger - returns ActionsLogger when in GitHub Actions', () => {
+	Deno.env.set('GITHUB_ACTIONS', 'true');
+	const logger = createLogger();
+	assertInstanceOf(logger, ActionsLogger);
 });
 
 // =============================================================================
@@ -86,36 +56,28 @@ Deno.test("createLogger - returns ActionsLogger when in GitHub Actions", () => {
 // directly in octokit_test.ts with mock Octokit injection.
 // This test just verifies the factory returns the correct type in Actions env.
 
-Deno.test("createGitHubClient - returns ActionsGitHubClient when in GitHub Actions", () => {
-  const restore = stubEnv({ GITHUB_ACTIONS: "true" });
-  try {
-    const logger = new ActionsLogger();
-    const client = createGitHubClient(
-      { token: "test", owner: "owner", repo: "repo", dryRun: false },
-      logger,
-    );
-    assertInstanceOf(client, ActionsGitHubClient);
-  } finally {
-    restore();
-  }
+Deno.test('createGitHubClient - returns ActionsGitHubClient when in GitHub Actions', () => {
+	Deno.env.set('GITHUB_ACTIONS', 'true');
+	const logger = new ActionsLogger();
+	const client = createGitHubClient(
+		{ token: 'test', owner: 'owner', repo: 'repo', dryRun: false },
+		logger,
+	);
+	assertInstanceOf(client, ActionsGitHubClient);
 });
 
 // =============================================================================
 // createServices tests
 // =============================================================================
 
-Deno.test("createServices - returns ActionsLogger and ActionsGitHubClient when in Actions", () => {
-  const restore = stubEnv({ GITHUB_ACTIONS: "true" });
-  try {
-    const { logger, client } = createServices({
-      token: "test",
-      owner: "owner",
-      repo: "repo",
-      dryRun: false,
-    });
-    assertInstanceOf(logger, ActionsLogger);
-    assertInstanceOf(client, ActionsGitHubClient);
-  } finally {
-    restore();
-  }
+Deno.test('createServices - returns ActionsLogger and ActionsGitHubClient when in Actions', () => {
+	Deno.env.set('GITHUB_ACTIONS', 'true');
+	const { logger, client } = createServices({
+		token: 'test',
+		owner: 'owner',
+		repo: 'repo',
+		dryRun: false,
+	});
+	assertInstanceOf(logger, ActionsLogger);
+	assertInstanceOf(client, ActionsGitHubClient);
 });

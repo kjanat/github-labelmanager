@@ -147,18 +147,14 @@ github-labelmanager owner/repo --config ./labels.yml
 ## Library Usage
 
 ```typescript
-import {
-  LabelManager,
-  loadConfig,
-  syncLabels,
-} from "@kjanat/github-labelmanager";
+import { LabelManager, loadConfig, syncLabels } from '@kjanat/github-labelmanager';
 
-const config = await loadConfig(".github/labels.yml");
+const config = await loadConfig('.github/labels.yml');
 const manager = new LabelManager({
-  token: Deno.env.get("GITHUB_TOKEN")!,
-  owner: "owner",
-  repo: "repo",
-  dryRun: false,
+	token: Deno.env.get('GITHUB_TOKEN')!,
+	owner: 'owner',
+	repo: 'repo',
+	dryRun: false,
 });
 
 const result = await syncLabels(manager, config);

@@ -3,25 +3,28 @@
 set -euo pipefail
 
 # Validate package.json exists
-[[ -f package.json ]] || { echo "::error::No package.json found"; exit 1; }
+[[ -f package.json ]] || {
+	echo "::error::No package.json found"
+	exit 1
+}
 
 # Extract and validate package metadata
 PKG_NAME="$(jq -r '.name // empty' package.json)" || {
-  echo "::error::Failed to parse package.json with jq"
-  exit 1
+	echo "::error::Failed to parse package.json with jq"
+	exit 1
 }
 PKG_VERSION="$(jq -r '.version // empty' package.json)" || {
-  echo "::error::Failed to parse package.json with jq"
-  exit 1
+	echo "::error::Failed to parse package.json with jq"
+	exit 1
 }
 
 if [[ -z "${PKG_NAME}" ]]; then
-  echo "::error::Package name is empty or missing in package.json"
-  exit 1
+	echo "::error::Package name is empty or missing in package.json"
+	exit 1
 fi
 if [[ -z "${PKG_VERSION}" ]]; then
-  echo "::error::Package version is empty or missing in package.json"
-  exit 1
+	echo "::error::Package version is empty or missing in package.json"
+	exit 1
 fi
 
 # Default TAG to "latest" if unset
@@ -30,8 +33,8 @@ TAG="${TAG:-latest}"
 # Validate DRY_RUN is boolean
 DRY_RUN="${DRY_RUN:-false}"
 if [[ "${DRY_RUN}" != "true" && "${DRY_RUN}" != "false" ]]; then
-  echo "::error::DRY_RUN must be 'true' or 'false', got: ${DRY_RUN}"
-  exit 1
+	echo "::error::DRY_RUN must be 'true' or 'false', got: ${DRY_RUN}"
+	exit 1
 fi
 
 # Output package info
@@ -40,9 +43,9 @@ echo "package-version=${PKG_VERSION}" | tee -a "${GITHUB_OUTPUT}"
 
 # Check if version already published (skip on re-run)
 if [[ "${DRY_RUN}" != "true" ]] && npm view "${PKG_NAME}@${PKG_VERSION}" version &>/dev/null; then
-  echo "::notice::${PKG_NAME}@${PKG_VERSION} already published, skipping"
-  echo "Skipped: ${PKG_NAME}@${PKG_VERSION} already published" >> "${GITHUB_STEP_SUMMARY}"
-  exit 0
+	echo "::notice::${PKG_NAME}@${PKG_VERSION} already published, skipping"
+	echo "Skipped: ${PKG_NAME}@${PKG_VERSION} already published" >>"${GITHUB_STEP_SUMMARY}"
+	exit 0
 fi
 
 echo "Publishing ${PKG_NAME}@${PKG_VERSION} with tag '${TAG}'" | tee -a "${GITHUB_STEP_SUMMARY}"
@@ -51,20 +54,20 @@ echo "Publishing ${PKG_NAME}@${PKG_VERSION} with tag '${TAG}'" | tee -a "${GITHU
 FLAGS=(--access public --tag "${TAG}")
 
 if [[ "${DRY_RUN}" == "true" ]]; then
-  echo "Dry-run mode enabled"
-  npm publish "${FLAGS[@]}" --dry-run
+	echo "Dry-run mode enabled"
+	npm publish "${FLAGS[@]}" --dry-run
 else
-  # Check npm version for --provenance support (requires >= 9.5.0)
-  NPM_VERSION="$(npm --version)"
-  NPM_VERSION="${NPM_VERSION#v}"  # Remove leading 'v' if present
-  NPM_MAJOR="${NPM_VERSION%%.*}"
-  NPM_REST="${NPM_VERSION#*.}"
-  NPM_MINOR="${NPM_REST%%.*}"
+	# Check npm version for --provenance support (requires >= 9.5.0)
+	NPM_VERSION="$(npm --version)"
+	NPM_VERSION="${NPM_VERSION#v}" # Remove leading 'v' if present
+	NPM_MAJOR="${NPM_VERSION%%.*}"
+	NPM_REST="${NPM_VERSION#*.}"
+	NPM_MINOR="${NPM_REST%%.*}"
 
-  if [[ "${NPM_MAJOR}" -gt 9 ]] || { [[ "${NPM_MAJOR}" -eq 9 ]] && [[ "${NPM_MINOR}" -ge 5 ]]; }; then
-    npm publish "${FLAGS[@]}" --provenance
-  else
-    echo "::warning::npm ${NPM_VERSION} does not support --provenance (requires >= 9.5.0), publishing without it"
-    npm publish "${FLAGS[@]}"
-  fi
+	if [[ "${NPM_MAJOR}" -gt 9 ]] || { [[ "${NPM_MAJOR}" -eq 9 ]] && [[ "${NPM_MINOR}" -ge 5 ]]; }; then
+		npm publish "${FLAGS[@]}" --provenance
+	else
+		echo "::warning::npm ${NPM_VERSION} does not support --provenance (requires >= 9.5.0), publishing without it"
+		npm publish "${FLAGS[@]}"
+	fi
 fi
