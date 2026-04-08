@@ -29,6 +29,16 @@ export function parseRepository(raw: unknown): RepoArg {
 /** The sync command — default command for the CLI */
 export const syncCommand: CommandBuilder = command('sync')
 	.description('Sync GitHub repository labels from YAML config')
+	.alias('s')
+	.example('github-labelmanager kjanat/my-repo', 'Sync labels for a repository')
+	.example(
+		'github-labelmanager kjanat/my-repo --dry-run',
+		'Preview changes without applying',
+	)
+	.example(
+		'github-labelmanager kjanat/my-repo --config custom.yml',
+		'Use a custom config file',
+	)
 	.arg(
 		'repository',
 		arg.custom(parseRepository)
@@ -56,7 +66,7 @@ export const syncCommand: CommandBuilder = command('sync')
 			.env('DRY_RUN')
 			.describe('Run without making changes'),
 	)
-	.action(async ({ args, flags }) => {
+	.action(async ({ args, flags, out }) => {
 		const env: EnvConfig = {
 			token: flags.token,
 			owner: args.repository.owner,
@@ -86,15 +96,24 @@ export const syncCommand: CommandBuilder = command('sync')
 
 		const log = createLogger();
 		const manager = new LabelManager(env, { logger: log });
+
+		const spinner = out.spinner(
+			`Syncing labels for ${env.owner}/${env.repo}...`,
+		);
 		const result = await syncLabels(manager, config);
 
 		const { summary } = result;
-		log.info(
-			`Summary: ${summary.created} created, ${summary.updated} updated, `
-				+ `${summary.renamed} renamed, ${summary.deleted} deleted, `
-				+ `${summary.skipped} skipped, ${summary.failed} failed`,
-		);
+		const summaryText = `${summary.created} created, ${summary.updated} updated, `
+			+ `${summary.renamed} renamed, ${summary.deleted} deleted, `
+			+ `${summary.skipped} skipped, ${summary.failed} failed`;
 
+		if (result.success) {
+			spinner.succeed(summaryText);
+		} else {
+			spinner.fail(summaryText);
+		}
+
+		log.info(`Summary: ${summaryText}`);
 		await log.writeSummary(result);
 
 		if (!result.success) {

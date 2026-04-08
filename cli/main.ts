@@ -11,7 +11,8 @@ import { syncCommand } from './command.ts';
 const app = cli('github-labelmanager')
 	.version('2.0.0-alpha')
 	.description('Sync GitHub repository labels from YAML configuration')
-	.default(syncCommand);
+	.default(syncCommand)
+	.completions();
 
 export type { RepoArg } from './command.ts';
 export { parseRepository, syncCommand } from './command.ts';
