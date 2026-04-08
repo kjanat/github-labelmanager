@@ -1,185 +1,186 @@
 {
-	"$schema": "https://raw.githubusercontent.com/denoland/deno/refs/heads/main/cli/schemas/config-file.v1.json",
-	"name": "@kjanat/github-labelmanager",
-	"version": "2.0.0-alpha",
-	"description": "Easily manage GitHub labels",
-	"keywords": [
-		"github-labelmanager",
-		"github",
-		"issues",
-		"labelmanager",
-		"labels"
-	],
-	"bugs": "https://github.com/kjanat/github-labelmanager/issues",
-	"repository": "https://github.com/kjanat/github-labelmanager",
-	"license": "MIT",
-	"author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
-	"imports": {
-		"@biomejs/biome": "npm:@biomejs/biome@^2.3.8",
-		"@octokit/webhooks-types": "npm:@octokit/webhooks-types@^7.6.1",
-		"~/": "./src/",
-		"$/": "./",
-		"github-labelmanager": "./cli/main.ts",
-		"@actions/core": "npm:@actions/core@^2.0.0",
-		"@actions/github": "npm:@actions/github@^6.0.1",
-		"@commitlint/cli": "npm:@commitlint/cli@^20.2.0",
-		"@commitlint/config-conventional": "npm:@commitlint/config-conventional@^20.2.0",
-		"@commitlint/types": "npm:@commitlint/types@^20.2.0",
-		"@deno/dnt": "jsr:@deno/dnt@^0.42.3",
-		"@octokit/openapi-types": "npm:@octokit/openapi-types@^27.0.0",
-		"@std/assert": "jsr:@std/assert@^1.0.16",
-		"@std/cli": "jsr:@std/cli@^1.0.24",
-		"@std/fmt": "jsr:@std/fmt@^1.0.8",
-		"@std/json": "jsr:@std/json@^1.0.2",
-		"ajv": "npm:ajv@^8.17.1",
-		"lefthook": "npm:lefthook@^2.0.9",
-		"octokit": "npm:octokit@^5.0.5",
-		"yaml": "jsr:@eemeli/yaml@^2.8.2",
-		"zod-validation-error": "npm:zod-validation-error@^5.0.0",
-		"zod": "npm:zod@^4.1.13"
-	},
-	"exports": {
-		".": "./src/mod.ts",
-		"./cli": "./cli/main.ts"
-	},
-	"exclude": ["npm", ".github/actions", "dist", "node_modules"],
-	"fmt": {
-		"exclude": ["npm", ".github/actions"]
-	},
-	"lint": {
-		"include": ["cli", "src", "__tests__"],
-		"exclude": ["npm"],
-		"rules": { "exclude": ["no-import-prefix"] }
-	},
-	"test": {
-		"include": ["__tests__"],
-		"exclude": ["npm", ".github"],
-		"permissions": {
-			"read": [
-				"./.github",
-				"./src",
-				"./cli",
-				"./__tests__",
-				"/tmp",
-				"./nonexistent.yml",
-				"./nonexistent"
-			],
-			"write": ["/tmp"],
-			"env": [
-				"CONFIG_PATH",
-				"DEBUG",
-				"DRY_RUN",
-				"GITHUB_ACTION",
-				"GITHUB_ACTIONS",
-				"GITHUB_ACTOR",
-				"GITHUB_API_URL",
-				"GITHUB_EVENT_NAME",
-				"GITHUB_EVENT_PATH",
-				"GITHUB_GRAPHQL_URL",
-				"GITHUB_JOB",
-				"GITHUB_REF",
-				"GITHUB_RUN_ATTEMPT",
-				"GITHUB_RUN_ID",
-				"GITHUB_RUN_NUMBER",
-				"GITHUB_SERVER_URL",
-				"GITHUB_SHA",
-				"GITHUB_TOKEN",
-				"GITHUB_WORKFLOW",
-				"HTTPS_PROXY",
-				"JEST_WORKER_ID",
-				"LOG_STREAM",
-				"LOG_TOKENS",
-				"NO_COLOR",
-				"NO_PROXY",
-				"NO_SPINNER_DELAY",
-				"NODE_V8_COVERAGE",
-				"REPO",
-				"https_proxy",
-				"no_proxy"
-			],
-			"net": ["api.github.com:443"],
-			"run": true,
-			"ffi": true
-		}
-	},
-	"bin": {
-		"github-labelmanager": "./esm/cli/main.js"
-	},
-	"nodeModulesDir": "auto",
-	"publish": {
-		"include": [
-			".github/labels.schema.json",
-			"cli",
-			"deno.json",
-			"deno.lock",
-			"JSR_README.md",
-			"LICENSE",
-			"src"
-		]
-	},
-	"readme": "JSR_README.md",
-	"tasks": {
-		"biome:check": {
-			"description": "Run Biome check with auto-fix",
-			"command": "deno run -A npm:@biomejs/biome check --write"
-		},
-		"biome:lint": {
-			"description": "Run Biome linter with auto-fix",
-			"command": "deno run -A npm:@biomejs/biome lint --write"
-		},
-		"build": {
-			"description": "Build NPM package",
-			"command": "deno run -A cli/build/npm.ts"
-		},
-		"compile": {
-			"description": "Compile to standalone executable",
-			"command": "deno compile --allow-net=api.github.com -RE -o github-labelmanager cli/main.ts"
-		},
-		"dev": {
-			"description": "Run CLI in watch mode",
-			"command": "deno run --watch cli/main.ts"
-		},
-		"fmt": {
-			"description": "Format source files",
-			"command": "deno fmt"
-		},
-		"hooks": {
-			"description": "Install git hooks via lefthook",
-			"command": "lefthook install"
-		},
-		"labels": {
-			"description": "Sync labels for a repository",
-			"command": "deno run --allow-net=api.github.com -RE cli/main.ts"
-		},
-		"labels:dry-run": {
-			"description": "Preview label sync without making changes",
-			"command": "deno run --allow-net=api.github.com -RE cli/main.ts --dry-run kjanat/github-labelmanager"
-		},
-		"lint": {
-			"description": "Run linter",
-			"command": "deno lint"
-		},
-		"schema": {
-			"description": "Generate JSON schema for labels config",
-			"command": "deno run -A cli/build/schema.ts"
-		},
-		"test": {
-			"description": "Run tests",
-			"command": "deno test -RWE __tests__"
-		},
-		"test:coverage": {
-			"description": "Run tests with coverage",
-			"command": "deno test -RWE __tests__ --coverage"
-		}
-	},
+  "$schema": "https://raw.githubusercontent.com/denoland/deno/refs/heads/main/cli/schemas/config-file.v1.json",
+  "name": "@kjanat/github-labelmanager",
+  "version": "2.0.0-alpha",
+  "description": "Easily manage GitHub labels",
+  "keywords": [
+    "github-labelmanager",
+    "github",
+    "issues",
+    "labelmanager",
+    "labels"
+  ],
+  "bugs": "https://github.com/kjanat/github-labelmanager/issues",
+  "repository": "https://github.com/kjanat/github-labelmanager",
+  "license": "MIT",
+  "author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
+  "imports": {
+    "@biomejs/biome": "npm:@biomejs/biome@^2.3.8",
+    "@octokit/webhooks-types": "npm:@octokit/webhooks-types@^7.6.1",
+    "~/": "./src/",
+    "$/": "./",
+    "github-labelmanager": "./cli/main.ts",
+    "@actions/core": "npm:@actions/core@^2",
+    "@actions/github": "npm:@actions/github@^6",
+    "@commitlint/cli": "npm:@commitlint/cli@^20",
+    "@commitlint/config-conventional": "npm:@commitlint/config-conventional@^20",
+    "@commitlint/types": "npm:@commitlint/types@^20",
+    "@deno/dnt": "jsr:@deno/dnt@^0.42",
+    "@octokit/openapi-types": "npm:@octokit/openapi-types@^27",
+    "@std/assert": "jsr:@std/assert@^1",
+    "@std/cli": "jsr:@std/cli@^1",
+    "@std/fmt": "jsr:@std/fmt@^1",
+    "@std/path": "jsr:@std/path@^1",
+    "@std/json": "jsr:@std/json@^1",
+    "ajv": "npm:ajv@^8",
+    "lefthook": "npm:lefthook@^2",
+    "octokit": "npm:octokit@^5",
+    "yaml": "jsr:@eemeli/yaml@^2",
+    "zod-validation-error": "npm:zod-validation-error@^5",
+    "zod": "npm:zod@^4"
+  },
+  "exports": {
+    ".": "./src/mod.ts",
+    "./cli": "./cli/main.ts"
+  },
+  "exclude": ["npm", ".github/actions", "dist", "node_modules"],
+  "fmt": {
+    "exclude": ["npm", ".github/actions"]
+  },
+  "lint": {
+    "include": ["cli", "src", "__tests__"],
+    "exclude": ["npm"],
+    "rules": { "exclude": ["no-import-prefix"] }
+  },
+  "test": {
+    "include": ["__tests__"],
+    "exclude": ["npm", ".github"],
+    "permissions": {
+      "read": [
+        "./.github",
+        "./src",
+        "./cli",
+        "./__tests__",
+        "/tmp",
+        "./nonexistent.yml",
+        "./nonexistent"
+      ],
+      "write": ["/tmp"],
+      "env": [
+        "CONFIG_PATH",
+        "DEBUG",
+        "DRY_RUN",
+        "GITHUB_ACTION",
+        "GITHUB_ACTIONS",
+        "GITHUB_ACTOR",
+        "GITHUB_API_URL",
+        "GITHUB_EVENT_NAME",
+        "GITHUB_EVENT_PATH",
+        "GITHUB_GRAPHQL_URL",
+        "GITHUB_JOB",
+        "GITHUB_REF",
+        "GITHUB_RUN_ATTEMPT",
+        "GITHUB_RUN_ID",
+        "GITHUB_RUN_NUMBER",
+        "GITHUB_SERVER_URL",
+        "GITHUB_SHA",
+        "GITHUB_TOKEN",
+        "GITHUB_WORKFLOW",
+        "HTTPS_PROXY",
+        "JEST_WORKER_ID",
+        "LOG_STREAM",
+        "LOG_TOKENS",
+        "NO_COLOR",
+        "NO_PROXY",
+        "NO_SPINNER_DELAY",
+        "NODE_V8_COVERAGE",
+        "REPO",
+        "https_proxy",
+        "no_proxy"
+      ],
+      "net": ["api.github.com:443"],
+      "run": true,
+      "ffi": true
+    }
+  },
+  "bin": {
+    "github-labelmanager": "./esm/cli/main.js"
+  },
+  "nodeModulesDir": "auto",
+  "publish": {
+    "include": [
+      ".github/labels.schema.json",
+      "cli",
+      "deno.json",
+      "deno.lock",
+      "JSR_README.md",
+      "LICENSE",
+      "src"
+    ]
+  },
+  "readme": "JSR_README.md",
+  "tasks": {
+    "biome:check": {
+      "description": "Run Biome check with auto-fix",
+      "command": "deno run -A npm:@biomejs/biome check --write"
+    },
+    "biome:lint": {
+      "description": "Run Biome linter with auto-fix",
+      "command": "deno run -A npm:@biomejs/biome lint --write"
+    },
+    "build": {
+      "description": "Build NPM package",
+      "command": "deno run -A cli/build/npm.ts"
+    },
+    "compile": {
+      "description": "Compile to standalone executable",
+      "command": "deno compile --allow-net=api.github.com -RE -o github-labelmanager cli/main.ts"
+    },
+    "dev": {
+      "description": "Run CLI in watch mode",
+      "command": "deno run --watch cli/main.ts"
+    },
+    "fmt": {
+      "description": "Format source files",
+      "command": "deno fmt"
+    },
+    "hooks": {
+      "description": "Install git hooks via lefthook",
+      "command": "lefthook install"
+    },
+    "labels": {
+      "description": "Sync labels for a repository",
+      "command": "deno run --allow-net=api.github.com -RE cli/main.ts"
+    },
+    "labels:dry-run": {
+      "description": "Preview label sync without making changes",
+      "command": "deno run --allow-net=api.github.com -RE cli/main.ts --dry-run kjanat/github-labelmanager"
+    },
+    "lint": {
+      "description": "Run linter",
+      "command": "deno lint"
+    },
+    "schema": {
+      "description": "Generate JSON schema for labels config",
+      "command": "deno run -A cli/build/schema.ts"
+    },
+    "test": {
+      "description": "Run tests",
+      "command": "deno test -RWE __tests__"
+    },
+    "test:coverage": {
+      "description": "Run tests with coverage",
+      "command": "deno test -RWE __tests__ --coverage"
+    }
+  },
 
-	"compilerOptions": {
-		"strict": true,
-		"skipLibCheck": true,
-		"paths": {
-			"~/*": ["./src/*"],
-			"$/*": ["./*"],
-			"github-labelmanager": ["./cli/main.ts"]
-		}
-	}
+  "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": true,
+    "paths": {
+      "~/*": ["./src/*"],
+      "$/*": ["./*"],
+      "github-labelmanager": ["./cli/main.ts"]
+    }
+  }
 }
