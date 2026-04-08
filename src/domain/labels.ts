@@ -88,10 +88,10 @@ const MAX_DESCRIPTION_LENGTH = 100;
 
 /** Interface for LabelName validation utilities */
 interface ILabelNameUtils {
-	/** Parses a string into a LabelName */
-	parse(value: string): LabelName;
 	/** Returns true if the value is a valid label name */
 	is(value: string): value is LabelName;
+	/** Parses a string into a LabelName */
+	parse(value: string): LabelName;
 }
 
 export const LabelNameUtils: ILabelNameUtils = {
@@ -130,12 +130,12 @@ function normalizeHexCandidate(value: string): string {
 
 /** Interface for LabelColor validation utilities */
 interface ILabelColorUtils {
-	/** Parses a string into a LabelColor */
-	parse(value: string): LabelColor;
 	/** Returns true if the value can be parsed as a valid hex color */
 	is(value: string): boolean;
 	/** Normalizes a color to lowercase hex without `#` */
 	normalize(color: string | undefined): string | undefined;
+	/** Parses a string into a LabelColor */
+	parse(value: string): LabelColor;
 }
 
 export const LabelColorUtils: ILabelColorUtils = {
@@ -180,10 +180,10 @@ export const LabelColorUtils: ILabelColorUtils = {
 
 /** Interface for LabelDescription validation utilities */
 interface ILabelDescriptionUtils {
-	/** Parses a string into a LabelDescription */
-	parse(value: string): LabelDescription;
 	/** Returns true if the value is a valid description */
 	is(value: string): value is LabelDescription;
+	/** Parses a string into a LabelDescription */
+	parse(value: string): LabelDescription;
 }
 
 export const LabelDescriptionUtils: ILabelDescriptionUtils = {
@@ -215,34 +215,36 @@ export const LabelDescriptionUtils: ILabelDescriptionUtils = {
  */
 export interface Label {
 	/**
-	 * The name of the label.
-	 *
-	 * Emoji can be added using either native emoji or colon-style markup.
-	 * For example, typing `:strawberry:` will render the emoji.
-	 */
-	name: LabelName;
-
-	/** Hexadecimal color code without the leading `#`. */
-	color?: LabelColor;
-
-	/** A short description of the label (max 100 characters). */
-	description?: LabelDescription;
-
-	/**
 	 * Old label names that should be renamed to this label.
 	 *
 	 * When syncing, any existing label matching an alias will be renamed,
 	 * preserving all issue associations.
 	 */
 	aliases?: LabelName[];
+
+	/** Hexadecimal color code without the leading `#`. */
+	color?: LabelColor;
+
+	/** A short description of the label (max 100 characters). */
+	description?: LabelDescription;
+	/**
+	 * The name of the label.
+	 *
+	 * Emoji can be added using either native emoji or colon-style markup.
+	 * For example, typing `:strawberry:` will render the emoji.
+	 */
+	name: LabelName;
 }
 
 /**
  * Label configuration file contents.
  */
 export interface LabelConfig {
-	/** Labels to create or update */
-	labels: Label[];
+	/**
+	 * @deprecated v2 uses declarative sync - labels not in config are deleted automatically.
+	 * This field is ignored but kept for schema compatibility.
+	 */
+	delete?: LabelName[];
 
 	/**
 	 * Label name patterns to ignore during sync.
@@ -250,26 +252,22 @@ export interface LabelConfig {
 	 * Labels matching these patterns will not be deleted.
 	 */
 	ignore?: LabelName[];
-
-	/**
-	 * @deprecated v2 uses declarative sync - labels not in config are deleted automatically.
-	 * This field is ignored but kept for schema compatibility.
-	 */
-	delete?: LabelName[];
+	/** Labels to create or update */
+	labels: Label[];
 }
 
 // Builder Pattern (for ergonomic construction)
 
 /** Fluent builder interface for creating type-safe labels */
 export interface LabelBuilder {
-	/** Set the label color (hex format) */
-	color(value: string): LabelBuilder;
-	/** Set the label description (max 100 chars) */
-	description(value: string): LabelBuilder;
 	/** Set alias names for label renaming */
 	aliases(...values: string[]): LabelBuilder;
 	/** Build the final Label object */
 	build(): Label;
+	/** Set the label color (hex format) */
+	color(value: string): LabelBuilder;
+	/** Set the label description (max 100 chars) */
+	description(value: string): LabelBuilder;
 }
 
 /**

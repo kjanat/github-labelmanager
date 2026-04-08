@@ -1,4 +1,5 @@
 #!/usr/bin/env -S deno run -A
+
 /**
  * Generate JSON Schema from TypeScript types
  * @module

@@ -20,19 +20,19 @@ export type GitHubLabelSchema = components['schemas']['label'];
 
 /** Label as returned by GitHub API (simplified) */
 export interface GitHubLabel {
-	name: string;
 	color: string;
 	description: string | null;
+	name: string;
 }
 
 /** Options for GitHub label API operations */
 export interface LabelOptions {
-	/** The name of the label */
-	name: string;
 	/** The color of the label as 6 character hex code, without '#' */
 	color?: string;
 	/** The description of the label */
 	description?: string;
+	/** The name of the label */
+	name: string;
 	/** The new name of the label (for renames) */
 	new_name?: string;
 }
@@ -43,14 +43,14 @@ export interface LabelOptions {
 
 /** Configuration for creating a GitHub client */
 export interface GitHubClientConfig {
-	/** GitHub API token */
-	token: string;
+	/** Whether to skip write operations */
+	dryRun: boolean;
 	/** Repository owner */
 	owner: string;
 	/** Repository name */
 	repo: string;
-	/** Whether to skip write operations */
-	dryRun: boolean;
+	/** GitHub API token */
+	token: string;
 }
 
 // ============================================================================
@@ -65,11 +65,25 @@ export interface GitHubClientConfig {
  * - ActionsGitHubClient: @actions/github for GitHub Actions context
  */
 export interface IGitHubClient {
-	/** Repository owner */
-	readonly owner: string;
+	/**
+	 * Create a new label
+	 * @returns Created label, or null if dry-run
+	 * @throws Error on API failure
+	 */
+	create(options: LabelOptions): Promise<GitHubLabel | null>;
 
-	/** Repository name */
-	readonly repo: string;
+	/**
+	 * Delete a label
+	 * @throws Error on API failure
+	 */
+	delete(name: string): Promise<void>;
+
+	/**
+	 * Get a single label by name
+	 * @returns Label if found, null if not found
+	 * @throws Error on API failure (except 404)
+	 */
+	get(name: string): Promise<GitHubLabel | null>;
 
 	/** Whether running in dry-run mode */
 	readonly isDryRun: boolean;
@@ -80,20 +94,11 @@ export interface IGitHubClient {
 	 * @throws Error on API failure
 	 */
 	list(): Promise<GitHubLabel[]>;
+	/** Repository owner */
+	readonly owner: string;
 
-	/**
-	 * Get a single label by name
-	 * @returns Label if found, null if not found
-	 * @throws Error on API failure (except 404)
-	 */
-	get(name: string): Promise<GitHubLabel | null>;
-
-	/**
-	 * Create a new label
-	 * @returns Created label, or null if dry-run
-	 * @throws Error on API failure
-	 */
-	create(options: LabelOptions): Promise<GitHubLabel | null>;
+	/** Repository name */
+	readonly repo: string;
 
 	/**
 	 * Update an existing label
@@ -106,12 +111,6 @@ export interface IGitHubClient {
 		currentName: string,
 		options: LabelOptions,
 	): Promise<GitHubLabel | null>;
-
-	/**
-	 * Delete a label
-	 * @throws Error on API failure
-	 */
-	delete(name: string): Promise<void>;
 }
 
 // ============================================================================

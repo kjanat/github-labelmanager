@@ -16,23 +16,19 @@ const COLLAPSE_THRESHOLD = 5;
  */
 export interface ActionsCore {
 	debug(message: string): void;
-	info(message: string): void;
-	warning(
-		message: string | Error,
-		properties?: ActionsAnnotationProperties,
-	): void;
+	endGroup(): void;
 	error(
 		message: string | Error,
 		properties?: ActionsAnnotationProperties,
 	): void;
+	group<T>(name: string, fn: () => Promise<T>): Promise<T>;
+	info(message: string): void;
 	notice(
 		message: string | Error,
 		properties?: ActionsAnnotationProperties,
 	): void;
-	startGroup(name: string): void;
-	endGroup(): void;
-	group<T>(name: string, fn: () => Promise<T>): Promise<T>;
 	setFailed(message: string | Error): void;
+	startGroup(name: string): void;
 	summary: {
 		addHeading(text: string, level?: number): unknown;
 		addTable(rows: unknown[][]): unknown;
@@ -41,6 +37,10 @@ export interface ActionsCore {
 		addList(items: string[]): unknown;
 		write(): Promise<unknown>;
 	};
+	warning(
+		message: string | Error,
+		properties?: ActionsAnnotationProperties,
+	): void;
 }
 
 /**

@@ -9,18 +9,18 @@ import type { SyncResult } from '#src/domain/types.ts';
  * Annotation properties for marking specific file locations
  */
 export interface AnnotationProperties {
-	/** A title for the annotation */
-	title?: string;
-	/** The name of the file for which the annotation should be created */
-	file?: string;
-	/** The start line for the annotation */
-	startLine?: number;
-	/** The end line for the annotation */
-	endLine?: number;
-	/** The start column for the annotation */
-	startColumn?: number;
 	/** The end column for the annotation */
 	endColumn?: number;
+	/** The end line for the annotation */
+	endLine?: number;
+	/** The name of the file for which the annotation should be created */
+	file?: string;
+	/** The start column for the annotation */
+	startColumn?: number;
+	/** The start line for the annotation */
+	startLine?: number;
+	/** A title for the annotation */
+	title?: string;
 }
 
 /**
@@ -37,14 +37,9 @@ export interface ILogger {
 	debug(message: string): void;
 
 	/**
-	 * Log informational message
+	 * End the current collapsible group
 	 */
-	info(message: string): void;
-
-	/**
-	 * Log warning message (creates annotation in Actions)
-	 */
-	warn(message: string, properties?: AnnotationProperties): void;
+	endGroup(): void;
 
 	/**
 	 * Log error message (creates annotation in Actions)
@@ -52,30 +47,37 @@ export interface ILogger {
 	error(message: string, properties?: AnnotationProperties): void;
 
 	/**
-	 * Log notice message (creates annotation in Actions)
-	 */
-	notice(message: string, properties?: AnnotationProperties): void;
-
-	/**
-	 * Start a collapsible group in logs
-	 */
-	startGroup(name: string): void;
-
-	/**
-	 * End the current collapsible group
-	 */
-	endGroup(): void;
-
-	/**
 	 * Execute function within a collapsible group
 	 */
 	group<T>(name: string, fn: () => Promise<T>): Promise<T>;
+
+	/**
+	 * Log informational message
+	 */
+	info(message: string): void;
+
+	/**
+	 * Log notice message (creates annotation in Actions)
+	 */
+	notice(message: string, properties?: AnnotationProperties): void;
 
 	/**
 	 * Set the action as failed with message and exit code 1
 	 * In CLI mode, this logs error and sets exit code
 	 */
 	setFailed(message: string | Error): void;
+
+	/**
+	 * Log skip/no-op message
+	 * CLI: Gray colored output
+	 * Actions: Maps to core.debug() (hidden unless debug enabled)
+	 */
+	skip(message: string): void;
+
+	/**
+	 * Start a collapsible group in logs
+	 */
+	startGroup(name: string): void;
 
 	/**
 	 * Log success message
@@ -85,11 +87,9 @@ export interface ILogger {
 	success(message: string): void;
 
 	/**
-	 * Log skip/no-op message
-	 * CLI: Gray colored output
-	 * Actions: Maps to core.debug() (hidden unless debug enabled)
+	 * Log warning message (creates annotation in Actions)
 	 */
-	skip(message: string): void;
+	warn(message: string, properties?: AnnotationProperties): void;
 
 	/**
 	 * Write a summary of the sync operation

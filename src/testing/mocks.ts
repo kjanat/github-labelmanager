@@ -9,16 +9,16 @@ import type { AnnotationProperties, ILogger } from '#src/ports/logger.ts';
 
 /** Recorded API call for assertions */
 export interface ApiCall {
-	method: 'list' | 'get' | 'create' | 'update' | 'delete';
 	args: unknown[];
+	method: 'list' | 'get' | 'create' | 'update' | 'delete';
 }
 
 /** Options for creating a MockGitHubClient */
 export interface MockGitHubClientOptions {
-	owner?: string;
-	repo?: string;
 	dryRun?: boolean;
 	labels?: GitHubLabel[];
+	owner?: string;
+	repo?: string;
 }
 
 /**

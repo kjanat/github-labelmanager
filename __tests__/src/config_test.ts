@@ -384,8 +384,8 @@ Deno.test('loadConfig - extracts line numbers for labels', async () => {
 		// Line numbers are 1-based
 		// "bug" appears on line 2 (name: bug)
 		// "feature" appears on line 5 (name: feature)
-		assertEquals(config?._meta.labelLines['bug'], 2);
-		assertEquals(config?._meta.labelLines['feature'], 5);
+		assertEquals(config?._meta.labelLines.bug, 2);
+		assertEquals(config?._meta.labelLines.feature, 5);
 	} finally {
 		await Deno.remove(tempFile);
 	}
@@ -408,7 +408,7 @@ delete:
 
 		assertExists(config._meta);
 		assertEquals(config._meta.deleteLines['old-label'], 6);
-		assertEquals(config._meta.deleteLines['deprecated'], 7);
+		assertEquals(config._meta.deleteLines.deprecated, 7);
 	} finally {
 		await Deno.remove(tempFile);
 	}
@@ -427,7 +427,7 @@ Deno.test('loadConfig - handles config without delete section', async () => {
 		const config = await loadConfig(tempFile);
 
 		assertExists(config._meta);
-		assertEquals(config._meta.labelLines['test'], 2);
+		assertEquals(config._meta.labelLines.test, 2);
 		assertEquals(Object.keys(config._meta.deleteLines).length, 0);
 	} finally {
 		await Deno.remove(tempFile);

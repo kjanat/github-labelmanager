@@ -11,13 +11,13 @@ import type { EnvConfig } from '#src/domain/types.ts';
 
 /** Captured console output */
 export interface CapturedConsole {
-	logs: string[];
-	infos: string[];
-	warns: string[];
-	errors: string[];
-	debugs: string[];
 	all: Array<{ level: string; args: unknown[] }>;
+	debugs: string[];
+	errors: string[];
+	infos: string[];
+	logs: string[];
 	restore: () => void;
+	warns: string[];
 }
 
 /**
@@ -98,18 +98,18 @@ export function captureConsole(): CapturedConsole {
 
 /** Mock fetch response configuration */
 export interface MockFetchResponse {
-	status?: number;
-	statusText?: string;
 	body?: unknown;
 	headers?: Record<string, string>;
+	status?: number;
+	statusText?: string;
 }
 
 /** Recorded fetch call */
 export interface FetchCall {
-	url: string;
-	method: string;
-	headers: Record<string, string>;
 	body?: unknown;
+	headers: Record<string, string>;
+	method: string;
+	url: string;
 }
 
 /**
@@ -214,20 +214,20 @@ export function mockFetch(
 
 /** Recorded @actions/core call */
 export interface CoreCall {
-	method: string;
 	args: unknown[];
+	method: string;
 }
 
 /** Mock summary object */
 export interface MockSummary {
-	buffer: string[];
-	written: boolean;
-	addHeading: (text: string, level?: number) => MockSummary;
-	addTable: (rows: unknown[][]) => MockSummary;
 	addDetails: (label: string, content: string) => MockSummary;
-	addRaw: (text: string) => MockSummary;
+	addHeading: (text: string, level?: number) => MockSummary;
 	addList: (items: string[]) => MockSummary;
+	addRaw: (text: string) => MockSummary;
+	addTable: (rows: unknown[][]) => MockSummary;
+	buffer: string[];
 	write: () => Promise<MockSummary>;
+	written: boolean;
 }
 
 /**
@@ -350,16 +350,16 @@ export function createEnvGet(
 
 /** Recorded Octokit request */
 export interface OctokitRequest {
-	route: string;
 	params?: Record<string, unknown>;
+	route: string;
 }
 
 /** Options for createMockOctokit */
 export interface MockOctokitOptions {
-	/** Labels to return from list endpoint */
-	labels?: Array<{ name: string; color: string; description: string | null }>;
 	/** Errors to throw for specific routes */
 	errors?: Record<string, Error>;
+	/** Labels to return from list endpoint */
+	labels?: Array<{ name: string; color: string; description: string | null }>;
 }
 
 /**

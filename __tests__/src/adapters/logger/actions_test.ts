@@ -7,7 +7,7 @@
 import { type ActionsCore, ActionsLogger, toActionsAnnotation } from '#src/adapters/logger/actions.ts';
 import type { SyncOperation, SyncResult } from '#src/domain/types.ts';
 import { type CoreCall, createMockActionsCore } from '#src/testing/mod.ts';
-import { assertEquals, assertStringIncludes } from '@std/assert';
+import { assertEquals, assertExists, assertStringIncludes } from '@std/assert';
 
 /** Helper to create mock core with ActionsCore typing */
 function createMockCore(): { core: ActionsCore; calls: CoreCall[] } {
@@ -319,11 +319,11 @@ Deno.test('writeSummary - adds counts table', async () => {
 
 	// Assert counts by header name (order-independent)
 	const counts = rows[1];
-	assertEquals(counts[headerIndex['Created']], '2');
-	assertEquals(counts[headerIndex['Updated']], '1');
-	assertEquals(counts[headerIndex['Renamed']], '3');
-	assertEquals(counts[headerIndex['Deleted']], '0');
-	assertEquals(counts[headerIndex['Failed']], '0');
+	assertEquals(counts[headerIndex.Created], '2');
+	assertEquals(counts[headerIndex.Updated], '1');
+	assertEquals(counts[headerIndex.Renamed], '3');
+	assertEquals(counts[headerIndex.Deleted], '0');
+	assertEquals(counts[headerIndex.Failed], '0');
 });
 
 Deno.test('writeSummary - adds raw table for < 5 operations', async () => {
@@ -393,18 +393,14 @@ Deno.test('writeSummary - adds collapsed table for >= 5 operations', async () =>
 	const detailsStart = rawCalls.find((c) => (c.args[0] as string).includes('<details>'));
 	const detailsEnd = rawCalls.find((c) => (c.args[0] as string).includes('</details>'));
 
-	assertEquals(
-		detailsStart !== undefined,
-		true,
-		'should start details with header',
-	);
+	assertExists(detailsStart, 'should start details with header');
 	assertStringIncludes(
-		detailsStart!.args[0] as string,
+		detailsStart.args[0] as string,
 		'<details><summary>Operation Details</summary>\n\n',
 	);
 
-	assertEquals(detailsEnd !== undefined, true, 'should end details');
-	assertStringIncludes(detailsEnd!.args[0] as string, '\n</details>');
+	assertExists(detailsEnd, 'should end details');
+	assertStringIncludes(detailsEnd.args[0] as string, '\n</details>');
 
 	// Should have operation table
 	const tableCalls = calls.filter((c) => c.method === 'summary.addTable');

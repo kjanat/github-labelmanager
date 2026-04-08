@@ -14,8 +14,8 @@ import { BaseGitHubClient } from './base.ts';
  */
 interface ThrottleOptions {
 	method: string;
-	url: string;
 	request: { retryCount: number };
+	url: string;
 }
 
 /**

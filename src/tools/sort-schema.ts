@@ -238,7 +238,7 @@ function readInput(path: string): Promise<JsonValue> {
  * Write JSON to file with formatting
  */
 async function writeJsonFile(filePath: string, data: JsonValue): Promise<void> {
-	const json = JSON.stringify(data, null, 2) + '\n';
+	const json = `${JSON.stringify(data, null, 2)}\n`;
 	await Deno.writeTextFile(filePath, json);
 }
 
@@ -331,7 +331,7 @@ async function main(): Promise<number> {
 			await writeJsonFile(args.output, sorted);
 			console.error(`${green('Sorted:')} ${inputPath} -> ${args.output}`);
 		} else {
-			const output = JSON.stringify(sorted, null, 2) + '\n';
+			const output = `${JSON.stringify(sorted, null, 2)}\n`;
 			await Deno.stdout.write(new TextEncoder().encode(output));
 		}
 	} catch (error) {

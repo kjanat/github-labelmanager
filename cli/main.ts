@@ -1,4 +1,5 @@
 #!/usr/bin/env -S deno run --allow-net=api.github.com --allow-read --allow-env
+
 /**
  * CLI entrypoint for github-labelmanager
  * @module

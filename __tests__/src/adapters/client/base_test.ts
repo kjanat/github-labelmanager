@@ -13,19 +13,19 @@ import { assertEquals, assertRejects } from '@std/assert';
 
 /** Call record format used by tests */
 interface MockOctokitCall {
-	method: string;
 	args: unknown;
+	method: string;
 }
 
 /** Options using method-based error keys for convenience */
 interface MockOctokitOptions {
-	labels?: GitHubLabel[];
 	errors?: {
 		getLabel?: Error;
 		createLabel?: Error;
 		updateLabel?: Error;
 		deleteLabel?: Error;
 	};
+	labels?: GitHubLabel[];
 }
 
 type MockOctokit = ReturnType<typeof createSharedMockOctokit>['octokit'];

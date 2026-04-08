@@ -90,11 +90,11 @@ export const labelDescription: z.ZodType<LabelDescription, string> = labelDescri
 // === Interfaces ===
 
 export interface LabelConfigMeta {
-	filePath: string;
-	labelLines: Record<string, number>;
-	ignoreLines: Record<string, number>;
 	/** @deprecated v2 ignores delete array */
 	deleteLines: Record<string, number>;
+	filePath: string;
+	ignoreLines: Record<string, number>;
+	labelLines: Record<string, number>;
 }
 
 // Extend ModelLabelConfig to include _meta

@@ -142,7 +142,8 @@ export async function syncLabels(
 						summary.renamed++;
 
 						// Update local map - rename already updated color/description
-						const movedLabel = existingMap.get(alias)!;
+						const movedLabel = existingMap.get(alias);
+						if (!movedLabel) throw new Error(`Expected label "${alias}" in map after rename`);
 						existingMap.delete(alias);
 						existingMap.set(desired.name, {
 							...movedLabel,
@@ -326,7 +327,8 @@ export async function syncLabels(
 
 	// Process deletions
 	for (const name of labelsToDelete) {
-		const existing = existingMap.get(name)!;
+		const existing = existingMap.get(name);
+		if (!existing) continue;
 		if (manager.isDryRun) {
 			logger.debug(`[dry-run] Would delete: "${name}"`);
 		} else {

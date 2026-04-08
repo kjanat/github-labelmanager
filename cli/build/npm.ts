@@ -52,20 +52,21 @@ console.info(`Resolved version:\t\t${version}`);
 // Patch deno.json structurally, not with string replacement
 const patchedPkg: DenoJson = structuredClone(pkg);
 
-const yamlImport = patchedPkg.imports?.yaml;
-if (yamlImport?.startsWith('jsr:@eemeli/yaml')) {
-	patchedPkg.imports!.yaml = yamlImport.replace(
-		/^jsr:@eemeli\/yaml/,
-		'npm:yaml',
-	);
-}
+const { imports } = patchedPkg;
+if (imports) {
+	if (imports.yaml?.startsWith('jsr:@eemeli/yaml')) {
+		imports.yaml = imports.yaml.replace(
+			/^jsr:@eemeli\/yaml/,
+			'npm:yaml',
+		);
+	}
 
-const dreamcliImport = patchedPkg.imports?.['@kjanat/dreamcli'];
-if (dreamcliImport?.startsWith('jsr:')) {
-	patchedPkg.imports!['@kjanat/dreamcli'] = dreamcliImport.replace(
-		/^jsr:/,
-		'npm:',
-	);
+	if (imports['@kjanat/dreamcli']?.startsWith('jsr:')) {
+		imports['@kjanat/dreamcli'] = imports['@kjanat/dreamcli'].replace(
+			/^jsr:/,
+			'npm:',
+		);
+	}
 }
 
 let originalMain = '';
