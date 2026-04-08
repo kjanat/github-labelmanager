@@ -1,0 +1,17 @@
+# Progress Log
+
+PRD: world-class-label-sync-v2
+Started: 2026-04-08
+
+## Codebase Patterns
+
+- Architecture split: domain -> ports -> adapters -> factory.
+- Current sync orchestrator is monolithic; target split is planner/executor.
+- Existing strengths to preserve: branded types, dry-run behavior, Actions annotations.
+- Reliability baseline: strong unit tests, weaker e2e/runtime confidence.
+- Documentation drift is a trust risk; executable docs required.
+- v2 contract is hard-break: no shim period, explicit break matrix required in docs.
+- Core design types are anchored in specs/types.ts before implementation.
+
+---
+<!-- Task logs below - APPEND ONLY -->

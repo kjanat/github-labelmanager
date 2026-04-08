@@ -1,0 +1,150 @@
+{
+	"prdName": "world-class-label-sync-v2",
+	"spec": "specs/world-class-label-sync-master-plan.md",
+	"description": "Hard-break v2 refactor with explicit plan/apply contracts, quantified quality gates, and bounded org execution.",
+	"tasks": [
+		{
+			"id": "define-v2-invariants",
+			"phase": 1,
+			"title": "Define v2 invariants and ADR baseline",
+			"description": "Document non-negotiable sync invariants, architecture boundaries, and break policy from v1. Acceptance: invariants include determinism, idempotency, conflict-first behavior, and destructive-op visibility; ADRs include no-shim migration stance and break matrix.",
+			"depends": [],
+			"priority": "architecture",
+			"passes": false
+		},
+		{
+			"id": "model-op-algebra",
+			"phase": 1,
+			"title": "Model operation algebra and core data types",
+			"description": "Define planner and executor contracts in discriminated-union data types. Acceptance: specs/types.ts defines SyncPlan, PlanOp, Conflict, and ApplyResult plus tri-state description intent with no ambiguous null/undefined states.",
+			"depends": [
+				"define-v2-invariants"
+			],
+			"priority": "architecture",
+			"passes": false
+		},
+		{
+			"id": "build-deterministic-planner",
+			"phase": 2,
+			"title": "Build deterministic planner engine",
+			"description": "Implement buildPlan that computes immutable operation plans from config plus repository state. Acceptance: identical inputs produce byte-stable operation ordering and identical inputHash; planner performs zero direct mutations.",
+			"depends": [
+				"model-op-algebra"
+			],
+			"priority": "architecture",
+			"passes": false
+		},
+		{
+			"id": "add-preflight-conflicts",
+			"phase": 2,
+			"title": "Add preflight conflict detection",
+			"description": "Detect duplicate targets, case-collisions, alias cycles, and alias-target conflicts before execution. Acceptance: all conflict classes become typed Conflict variants and fail before any API call with actionable diagnostics.",
+			"depends": [
+				"build-deterministic-planner"
+			],
+			"priority": "integration",
+			"passes": false
+		},
+		{
+			"id": "build-idempotent-executor",
+			"phase": 3,
+			"title": "Build idempotent executor engine",
+			"description": "Implement applyPlan with bounded retries and per-operation outcomes. Acceptance: reapplying a successful plan yields zero net mutations on second run; executor only accepts preflight-clean plans.",
+			"depends": [
+				"build-deterministic-planner",
+				"add-preflight-conflicts"
+			],
+			"priority": "integration",
+			"passes": false
+		},
+		{
+			"id": "define-error-taxonomy",
+			"phase": 3,
+			"title": "Define typed error taxonomy",
+			"description": "Replace generic failures with typed, actionable errors across planner and executor. Acceptance: auth, permission, conflict, transport, and validation failures map to stable codes plus remediation hints.",
+			"depends": [
+				"build-deterministic-planner",
+				"build-idempotent-executor"
+			],
+			"priority": "architecture",
+			"passes": false
+		},
+		{
+			"id": "redesign-cli-plan-apply",
+			"phase": 4,
+			"title": "Redesign CLI around plan and apply",
+			"description": "Replace monolithic sync entrypoint with plan, apply, validate, and doctor commands. Acceptance: doctor MVP checks token scope, repo access, config validity, and preflight conflicts; destructive actions are visible before apply.",
+			"depends": [
+				"build-deterministic-planner",
+				"build-idempotent-executor",
+				"define-error-taxonomy"
+			],
+			"priority": "integration",
+			"passes": false
+		},
+		{
+			"id": "reset-library-api",
+			"phase": 4,
+			"title": "Reset library API to planner and executor",
+			"description": "Expose buildPlan and applyPlan as core public API and retire legacy sync-first exports. Acceptance: public contracts align with CLI plan/apply flow and preserve typed error/result surfaces.",
+			"depends": [
+				"build-deterministic-planner",
+				"build-idempotent-executor",
+				"define-error-taxonomy"
+			],
+			"priority": "integration",
+			"passes": false
+		},
+		{
+			"id": "add-structured-reports",
+			"phase": 4,
+			"title": "Add structured report outputs",
+			"description": "Provide machine-readable and human-readable run reports (json, markdown, annotations) from a shared result model. Acceptance: json and markdown outputs always have identical summary counts and operation totals.",
+			"depends": [
+				"build-idempotent-executor",
+				"define-error-taxonomy"
+			],
+			"priority": "standard",
+			"passes": false
+		},
+		{
+			"id": "expand-reliability-pipeline",
+			"phase": 5,
+			"title": "Expand reliability tests and CI gates",
+			"description": "Add integration, e2e, contract, and perf coverage and enforce quality gates in CI. Acceptance: line coverage >= 90%, branch coverage >= 80%, npm artifact smoke test, action smoke test, and plan/apply regression suites are blocking.",
+			"depends": [
+				"redesign-cli-plan-apply",
+				"reset-library-api",
+				"add-structured-reports"
+			],
+			"priority": "integration",
+			"passes": false
+		},
+		{
+			"id": "rewrite-executable-docs",
+			"phase": 5,
+			"title": "Rewrite docs from executable examples",
+			"description": "Rewrite README, JSR, and NPM docs to match v2 APIs and command behavior exactly, including a v1-to-v2 break matrix. Acceptance: every documented example compiles or runs in CI and no stale API names remain.",
+			"depends": [
+				"redesign-cli-plan-apply",
+				"reset-library-api"
+			],
+			"priority": "polish",
+			"passes": false
+		},
+		{
+			"id": "implement-org-runner",
+			"phase": 6,
+			"title": "Implement org-scale multi-repo runner",
+			"description": "Add repo fan-out execution with bounded concurrency, staged rollout controls, and per-repo isolation. Acceptance: MVP supports explicit repo list only, concurrency range 1..16 (default 4), and partial failures never abort unrelated repos.",
+			"depends": [
+				"build-deterministic-planner",
+				"build-idempotent-executor",
+				"define-error-taxonomy",
+				"add-structured-reports"
+			],
+			"priority": "integration",
+			"passes": false
+		}
+	]
+}
