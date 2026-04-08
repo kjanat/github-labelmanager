@@ -24,7 +24,7 @@ jobs:
         run: deno task schema
 
       - name: Commit schema updates
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore: regenerate labels schema"
           file_pattern: .github/labels.schema.json

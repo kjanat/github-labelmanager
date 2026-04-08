@@ -69,7 +69,7 @@ runs:
 
     - name: Cache Deno dependencies
       id: cache-deno
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.cache/deno
         key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock', '**/deno.json', '**/deno.jsonc') }}
