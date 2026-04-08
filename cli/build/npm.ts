@@ -5,18 +5,7 @@ import { build, emptyDir } from '@deno/dnt';
 // Package information from deno.json
 import pkg from '$/deno.json' with { type: 'json' };
 
-/** Typed structure for deno.json imports field */
-interface DenoImports {
-	[key: string]: string;
-}
-
-/** Minimal typed structure for deno.json */
-interface DenoConfig {
-	imports?: DenoImports;
-	[key: string]: unknown;
-}
-
-const mainPath: string = 'cli/main.ts';
+const mainPath = import.meta.resolve('github-labelmanager');
 
 await emptyDir('npm');
 
@@ -34,9 +23,12 @@ const versionPkg: string = pkg.version;
 const version: string = versionArg ?? versionPkg;
 const name: string = pkg.name;
 
-// Detect jsr:@eemeli/yaml to swap for npm:yaml during build
+// Detect JSR imports to swap for npm equivalents during build
 const originalYamlImport: string | undefined = pkg.imports?.yaml;
 const isJsrYaml = originalYamlImport?.startsWith('jsr:@eemeli/yaml');
+
+const originalDreamcliImport: string | undefined = pkg.imports?.['@kjanat/dreamcli'];
+const isJsrDreamcli = originalDreamcliImport?.startsWith('jsr:');
 
 console.info(`Package name:\t\t\t${name}`);
 console.info(`Package version from deno.json:\t${versionPkg}`);
@@ -55,19 +47,24 @@ if (versionArg) {
 	console.info(`Resolved version:\t\t${version}`);
 }
 
-// Swap jsr:@eemeli/yaml -> npm:yaml for npm build
+// Save original deno.json verbatim for restoration
+const originalDenoJson = await Deno.readTextFile('./deno.json');
+
+// Swap JSR imports -> npm equivalents for build
+let patchedDenoJson = originalDenoJson;
 if (isJsrYaml && originalYamlImport) {
-	const denoJsonContent = await Deno.readTextFile('./deno.json');
-	const denoConfig = JSON.parse(denoJsonContent) as DenoConfig;
-	if (!denoConfig.imports) {
-		throw new Error('Expected imports object in deno.json');
-	}
-	denoConfig.imports.yaml = `npm:yaml${originalYamlImport.replace(/^jsr:@eemeli\/yaml/, '')}`;
-	await Deno.writeTextFile(
-		'./deno.json',
-		`${JSON.stringify(denoConfig, null, 2)}\n`,
+	patchedDenoJson = patchedDenoJson.replace(
+		originalYamlImport,
+		`npm:yaml${originalYamlImport.replace(/^jsr:@eemeli\/yaml/, '')}`,
 	);
 }
+if (isJsrDreamcli && originalDreamcliImport) {
+	patchedDenoJson = patchedDenoJson.replace(
+		originalDreamcliImport,
+		originalDreamcliImport.replace(/^jsr:/, 'npm:'),
+	);
+}
+await Deno.writeTextFile('./deno.json', patchedDenoJson);
 
 try {
 	await build({
@@ -78,7 +75,7 @@ try {
 		typeCheck: 'both',
 		declaration: 'inline',
 		scriptModule: false, // default "cjs"
-		packageManager: 'bun',
+		packageManager: 'bun@1.3.11',
 		test: false,
 		rootTestDir: '__tests__',
 		shims: {
@@ -96,7 +93,9 @@ try {
 			author: pkg.author,
 			bin: pkg.bin,
 			type: 'module',
-			scripts: pkg.tasks,
+			scripts: Object.fromEntries(
+				Object.entries(pkg.tasks).map(([k, v]) => [k, typeof v === 'string' ? v : v.command]),
+			),
 		},
 		postBuild(): void {
 			// Copy readme/license
@@ -119,20 +118,9 @@ try {
 		},
 	});
 } finally {
-	// Always restore original main.ts with shebang
+	// Always restore original files verbatim
 	if (hasShebang) {
 		Deno.writeTextFileSync(mainPath, originalMain);
 	}
-	// Restore original yaml import
-	if (isJsrYaml && originalYamlImport) {
-		const denoJsonContent = Deno.readTextFileSync('./deno.json');
-		const denoConfig = JSON.parse(denoJsonContent) as DenoConfig;
-		if (denoConfig.imports) {
-			denoConfig.imports.yaml = originalYamlImport;
-			Deno.writeTextFileSync(
-				'./deno.json',
-				JSON.stringify(denoConfig, null, 2) + '\n',
-			);
-		}
-	}
+	Deno.writeTextFileSync('./deno.json', originalDenoJson);
 }

@@ -13,10 +13,10 @@
  * ```
  */
 
-import { parseArgs } from 'jsr:@std/cli@^1.0.24/parse-args';
-import { Spinner } from 'jsr:@std/cli@^1.0.24/unstable-spinner';
-import { bold, cyan, dim, green, red, yellow } from 'jsr:@std/fmt@^1.0.8/colors';
-import { basename, dirname } from 'jsr:@std/path@^1.1.3';
+import { parseArgs } from '@std/cli/parse-args';
+import { Spinner } from '@std/cli/unstable-spinner';
+import { bold, cyan, dim, green, red, yellow } from '@std/fmt/colors';
+import { basename, dirname } from '@std/path';
 
 // ============================================================================
 // Configuration flags

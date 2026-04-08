@@ -1,0 +1,14 @@
+{
+	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"paths": {
+			"github-labelmanager": ["./cli/main.ts"],
+			"~/": ["./src/"],
+			"~/*": ["./src/*"],
+			"$/": ["./"],
+			"$/*": ["./*"]
+		}
+	},
+	"include": ["src", "cli", "__tests__"],
+	"exclude": ["**/node_modules"]
+}

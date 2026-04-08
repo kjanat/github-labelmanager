@@ -15,15 +15,15 @@
 	"license": "MIT",
 	"author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
 	"imports": {
-		"@biomejs/biome": "npm:@biomejs/biome@^2.3.8",
+		"@biomejs/biome": "npm:@biomejs/biome@^2",
 		"@kjanat/dreamcli": "jsr:@kjanat/dreamcli@^2",
 		"@kjanat/dreamcli/testkit": "jsr:@kjanat/dreamcli@^2/testkit",
-		"@octokit/webhooks-types": "npm:@octokit/webhooks-types@^7.6.1",
+		"@octokit/webhooks-types": "npm:@octokit/webhooks-types@^7",
 		"~/": "./src/",
 		"$/": "./",
 		"github-labelmanager": "./cli/main.ts",
-		"@actions/core": "npm:@actions/core@^2",
-		"@actions/github": "npm:@actions/github@^6",
+		"@actions/core": "npm:@actions/core@^3",
+		"@actions/github": "npm:@actions/github@^9",
 		"@commitlint/cli": "npm:@commitlint/cli@^20",
 		"@commitlint/config-conventional": "npm:@commitlint/config-conventional@^20",
 		"@commitlint/types": "npm:@commitlint/types@^20",
@@ -33,6 +33,7 @@
 		"@std/cli": "jsr:@std/cli@^1",
 		"@std/fmt": "jsr:@std/fmt@^1",
 		"@std/path": "jsr:@std/path@^1",
+		"@std/path/glob-to-regexp": "jsr:@std/path@^1/glob-to-regexp",
 		"@std/json": "jsr:@std/json@^1",
 		"ajv": "npm:ajv@^8",
 		"lefthook": "npm:lefthook@^2",
@@ -54,7 +55,7 @@
 	"lint": {
 		"include": ["cli", "src", "__tests__"],
 		"exclude": ["npm"],
-		"rules": { "exclude": ["no-import-prefix"] }
+		"rules": { "exclude": [] }
 	},
 	"test": {
 		"include": ["__tests__"],
@@ -146,7 +147,7 @@
 		},
 		"fmt": {
 			"description": "Format source files",
-			"command": "deno fmt"
+			"command": "deno run -A npm:dprint fmt ."
 		},
 		"hooks": {
 			"description": "Install git hooks via lefthook",
@@ -181,9 +182,10 @@
 		"strict": true,
 		"skipLibCheck": true,
 		"paths": {
+			"github-labelmanager": ["./cli/main.ts"],
 			"~/*": ["./src/*"],
-			"$/*": ["./*"],
-			"github-labelmanager": ["./cli/main.ts"]
+			"$/*": ["./*"]
 		}
-	}
+	},
+	"allowScripts": ["npm:lefthook@2.1.5"]
 }

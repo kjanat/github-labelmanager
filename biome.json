@@ -4,40 +4,40 @@
 		"enabled": true,
 		"clientKind": "git",
 		"useIgnoreFile": true,
-		"defaultBranch": "master",
+		"defaultBranch": "master"
 	},
 	"files": {
-		"includes": ["**", "!!**/dist", "!!npm", "!!.github"],
+		"includes": ["**", "!!**/dist", "!!npm", "!!.github"]
 	},
 	"formatter": {
 		"enabled": false,
-		"indentStyle": "space",
+		"indentStyle": "space"
 	},
 	"linter": {
 		"enabled": true,
 		"rules": {
 			"recommended": true,
 			"correctness": {
-				// no package.json, a deno thing
 				"noUndeclaredDependencies": "off",
-			},
+				"noUnresolvedImports": "off"
+			}
 		},
 		"domains": {
 			"project": "all",
-			"test": "all",
-		},
+			"test": "all"
+		}
 	},
 	"javascript": {
 		"formatter": {
-			"quoteStyle": "double",
-		},
+			"quoteStyle": "double"
+		}
 	},
 	"assist": {
 		"enabled": true,
 		"actions": {
 			"source": {
-				"organizeImports": "on",
-			},
-		},
-	},
+				"organizeImports": "on"
+			}
+		}
+	}
 }
