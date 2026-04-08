@@ -5,12 +5,13 @@
  * @module
  */
 
+import denoJson from '$/deno.json' with { type: 'json' };
 import { cli } from '@kjanat/dreamcli';
 import { syncCommand } from './command.ts';
 
-const app = cli('github-labelmanager')
-	.version('2.0.0-alpha')
-	.description('Sync GitHub repository labels from YAML configuration')
+const app = cli(denoJson.name.split('/')[1])
+	.version(denoJson.version)
+	.description(denoJson.description)
 	.default(syncCommand)
 	.completions();
 

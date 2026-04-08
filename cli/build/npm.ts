@@ -2,33 +2,34 @@
 
 import { build, emptyDir } from '@deno/dnt';
 
-// Package information from deno.json
-import pkg from '$/deno.json' with { type: 'json' };
+type DenoJson = {
+	name: string;
+	version: string;
+	description?: string;
+	keywords?: string[];
+	bugs?: string | { url: string; email?: string };
+	repository?: string | { type: string; url: string; directory?: string };
+	license?: string;
+	author?: string | { name: string; email?: string; url?: string };
+	bin?: string | Record<string, string>;
+	imports?: Record<string, string>;
+};
 
-const mainPath = import.meta.resolve('github-labelmanager');
+const mainPath = new URL(import.meta.resolve('github-labelmanager'));
+const denoJsonPath = new URL(import.meta.resolve('$/deno.json'));
+const outDir = 'npm';
 
-await emptyDir('npm');
+// Read deno.json once as text + parsed JSON
+const originalDenoJsonText = await Deno.readTextFile(denoJsonPath);
+const pkg = JSON.parse(originalDenoJsonText) as DenoJson;
 
-// Strip shebang from main.ts before build (TypeScript parser can't handle it)
-const originalMain = await Deno.readTextFile(mainPath);
-const hasShebang = originalMain.startsWith('#!');
+const versionArg = Deno.args[0];
+const versionPkg = pkg.version;
+const version = versionArg ?? versionPkg;
+const name = pkg.name;
 
-if (hasShebang) {
-	const stripped = originalMain.replace(/^#!.*\n/, '');
-	await Deno.writeTextFile(mainPath, stripped);
-}
-
-const versionArg: string | undefined = Deno.args[0];
-const versionPkg: string = pkg.version;
-const version: string = versionArg ?? versionPkg;
-const name: string = pkg.name;
-
-// Detect JSR imports to swap for npm equivalents during build
-const originalYamlImport: string | undefined = pkg.imports?.yaml;
-const isJsrYaml = originalYamlImport?.startsWith('jsr:@eemeli/yaml');
-
-const originalDreamcliImport: string | undefined = pkg.imports?.['@kjanat/dreamcli'];
-const isJsrDreamcli = originalDreamcliImport?.startsWith('jsr:');
+if (!name) throw new Error('Missing "name" in deno.json');
+if (!versionPkg) throw new Error('Missing "version" in deno.json');
 
 console.info(`Package name:\t\t\t${name}`);
 console.info(`Package version from deno.json:\t${versionPkg}`);
@@ -36,81 +37,105 @@ console.info(`Package version from deno.json:\t${versionPkg}`);
 if (versionArg) {
 	console.info(`Version passed as argument:\t${versionArg}`);
 
-	if (versionArg !== undefined && versionPkg !== versionArg) {
-		console.error(
+	if (versionPkg !== versionArg) {
+		throw new Error(
 			`Version mismatch.\n\tjson:\t${versionPkg}\n\targ:\t${versionArg}`,
 		);
-	} else {
-		console.info(`Version match: ${versionPkg} == ${versionArg}`);
 	}
 
-	console.info(`Resolved version:\t\t${version}`);
+	console.info(`Version match:\t\t\t${versionPkg} == ${versionArg}`);
 }
 
-// Save original deno.json verbatim for restoration
-const originalDenoJson = await Deno.readTextFile('./deno.json');
+console.info(`Resolved version:\t\t${version}`);
 
-// Swap JSR imports -> npm equivalents for build
-let patchedDenoJson = originalDenoJson;
-if (isJsrYaml && originalYamlImport) {
-	patchedDenoJson = patchedDenoJson.replace(
-		originalYamlImport,
-		`npm:yaml${originalYamlImport.replace(/^jsr:@eemeli\/yaml/, '')}`,
+// Patch deno.json structurally, not with string replacement
+const patchedPkg: DenoJson = structuredClone(pkg);
+
+const yamlImport = patchedPkg.imports?.yaml;
+if (yamlImport?.startsWith('jsr:@eemeli/yaml')) {
+	patchedPkg.imports!.yaml = yamlImport.replace(
+		/^jsr:@eemeli\/yaml/,
+		'npm:yaml',
 	);
 }
-if (isJsrDreamcli && originalDreamcliImport) {
-	patchedDenoJson = patchedDenoJson.replace(
-		originalDreamcliImport,
-		originalDreamcliImport.replace(/^jsr:/, 'npm:'),
+
+const dreamcliImport = patchedPkg.imports?.['@kjanat/dreamcli'];
+if (dreamcliImport?.startsWith('jsr:')) {
+	patchedPkg.imports!['@kjanat/dreamcli'] = dreamcliImport.replace(
+		/^jsr:/,
+		'npm:',
 	);
 }
-await Deno.writeTextFile('./deno.json', patchedDenoJson);
+
+let originalMain = '';
+let hasShebang = false;
 
 try {
+	await emptyDir(outDir);
+
+	// Strip shebang from main.ts before build
+	originalMain = await Deno.readTextFile(mainPath);
+	hasShebang = originalMain.startsWith('#!');
+
+	if (hasShebang) {
+		const stripped = originalMain.replace(/^#!.*\r?\n/, '');
+		await Deno.writeTextFile(mainPath, stripped);
+	}
+
+	await Deno.writeTextFile(
+		denoJsonPath,
+		`${JSON.stringify(patchedPkg, null, 2)}\n`,
+	);
+
 	await build({
-		entryPoints: [mainPath],
-		outDir: 'npm',
-		importMap: 'deno.json',
+		entryPoints: [mainPath.href],
+		outDir,
+		importMap: denoJsonPath.href,
 		esModule: true,
 		typeCheck: 'both',
 		declaration: 'inline',
-		scriptModule: false, // default "cjs"
-		packageManager: 'bun@1.3.11',
+		scriptModule: false,
+		packageManager: 'bun',
 		test: false,
 		rootTestDir: '__tests__',
 		shims: {
-			// Shims Deno.* APIs for Node.js users
 			deno: true,
 		},
 		package: {
-			name: name,
-			version: version,
+			name,
+			version,
 			description: pkg.description,
 			keywords: pkg.keywords,
 			bugs: pkg.bugs,
 			repository: pkg.repository,
 			license: pkg.license,
 			author: pkg.author,
-			bin: pkg.bin,
+			bin: typeof pkg.bin === 'string' || pkg.bin
+				? pkg.bin
+				: { [name]: './esm/cli/main.js' },
 			type: 'module',
-			scripts: Object.fromEntries(
-				Object.entries(pkg.tasks).map(([k, v]) => [k, typeof v === 'string' ? v : v.command]),
-			),
 		},
-		postBuild(): void {
-			// Copy readme/license
-			Deno.copyFileSync('NPM_README.md', 'npm/README.md');
-			Deno.copyFileSync('LICENSE', 'npm/LICENSE');
+		postBuild() {
+			Deno.copyFileSync('NPM_README.md', `${outDir}/README.md`);
+			Deno.copyFileSync('LICENSE', `${outDir}/LICENSE`);
 
-			// Add Node.js shebang to bin entry for npx compatibility
-			const binPath = 'npm/esm/cli/main.js';
+			const binPath = `${outDir}/esm/cli/main.js`;
 			const binContent = Deno.readTextFileSync(binPath);
-			Deno.writeTextFileSync(binPath, `#!/usr/bin/env node\n${binContent}`);
+
+			if (!binContent.startsWith('#!/usr/bin/env node\n')) {
+				Deno.writeTextFileSync(
+					binPath,
+					`#!/usr/bin/env node\n${binContent}`,
+				);
+			}
 		},
 		filterDiagnostic(diagnostic) {
 			const fileName = diagnostic.file?.fileName;
 			if (
-				fileName?.includes('.github/') || fileName?.includes('node_modules/')
+				fileName?.includes('.github/')
+				|| fileName?.includes('.github\\')
+				|| fileName?.includes('node_modules/')
+				|| fileName?.includes('node_modules\\')
 			) {
 				return false;
 			}
@@ -118,9 +143,8 @@ try {
 		},
 	});
 } finally {
-	// Always restore original files verbatim
 	if (hasShebang) {
 		Deno.writeTextFileSync(mainPath, originalMain);
 	}
-	Deno.writeTextFileSync('./deno.json', originalDenoJson);
+	Deno.writeTextFileSync(denoJsonPath, originalDenoJsonText);
 }
