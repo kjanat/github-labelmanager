@@ -12,6 +12,15 @@ Started: 2026-04-08
 - Documentation drift is a trust risk; executable docs required.
 - v2 contract is hard-break: no shim period, explicit break matrix required in docs.
 - Core design types are anchored in specs/types.ts before implementation.
+- Legacy unresolved items moved to specs/backlog.md for visibility.
 
 ---
 <!-- Task logs below - APPEND ONLY -->
+
+## Task Log Template
+
+- Task: <task-id>
+- Date: <YYYY-MM-DD>
+- Evidence: <tests/commands/artifacts>
+- Result: <pass|fail>
+- Follow-ups: <items or none>

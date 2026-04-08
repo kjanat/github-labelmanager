@@ -50,6 +50,25 @@ export type Conflict =
 	| { code: 'case-collision'; labels: readonly string[] }
 	| { code: 'alias-cycle'; cycle: readonly string[] }
 	| { code: 'alias-target-collision'; alias: string; target: string };
+
+export type AppliedOp =
+	| { kind: 'applied'; op: ExecutablePlanOp; attempts: number; latencyMs: number }
+	| {
+		kind: 'failed';
+		op: ExecutablePlanOp;
+		attempts: number;
+		latencyMs: number;
+		failure: ApplyFailure;
+	};
+
+export type ApplyResult =
+	| { kind: 'ok'; summary: ApplySummary; operations: readonly AppliedOp[] }
+	| {
+		kind: 'failed';
+		summary: ApplySummary;
+		operations: readonly AppliedOp[];
+		failures: readonly ApplyFailure[];
+	};
 ```
 
 ## API Contract Sketch
@@ -69,6 +88,8 @@ export interface Diagnostics {
 }
 ```
 
+`specs/types.ts` is the contract source for planner, executor, and diagnostics.
+
 ## Breaking Surface and Migration Contract (v1 -> v2)
 
 | Surface | v1 behavior                                       | v2 behavior                               | Migration impact         |
@@ -83,6 +104,14 @@ export interface Diagnostics {
 - No shim period.
 - No compatibility wrapper package.
 - Release notes include exact break matrix and before/after examples.
+
+### Release-channel choreography
+
+- GitHub Action: cut `@v2` tag for new behavior and never retag existing `@v1`.
+- NPM: publish next major with v2 API surface and mark sync-first API as removed in release notes.
+- JSR: publish next major with matching break notes and examples.
+- Docker: publish new major tags in lockstep with package major.
+- Rollback: keep `@v1` and previous major package tags available until first stable v2 patch train is complete.
 
 ## Deliverables
 
@@ -105,10 +134,12 @@ export interface Diagnostics {
 
 #### MVP
 
-- Verify token present and has required scopes.
-- Verify repo reachability and label read access.
-- Verify config schema validity and conflict-free planability.
-- Return non-zero exit on hard failures.
+- Check `token-present`: token is non-empty.
+- Check `labels-read-access`: repo labels can be listed.
+- Check `labels-write-capability` when `mode=apply`.
+- Check `config-valid`: schema and semantic validation pass.
+- Check `plan-buildable`: planner can produce non-conflict plan.
+- Exit code is `0` only when all required checks pass, else `1`.
 
 #### Stretch
 
@@ -141,7 +172,7 @@ export interface Diagnostics {
 - D9 depends on D4 and D6.
 - D10 depends on D7, D8, and D9.
 - D11 depends on D7 and D8.
-- D12 depends on D3, D4, D6, and D9.
+- D12 depends on D3, D4, D6, D9, D10, and D11.
 
 ## Sequencing Rationale
 
@@ -149,21 +180,29 @@ export interface Diagnostics {
 - D5 before D4: executor must never run unvalidated plans.
 - D6 after D4 baseline: taxonomy is finalized using real planner/executor failure paths, avoiding speculative error models.
 - D7/D8 after D6: external surfaces should not expose unstable error contracts.
-- D12 last: org fan-out multiplies all core correctness flaws, so it ships only after single-repo core is hardened.
+- D12 after D10/D11: org fan-out multiplies all core correctness flaws, so it ships only after reliability gates and docs hardening are complete.
 
 ## Deliverable-Level Acceptance Criteria
 
-| Deliverable | Acceptance criteria                                                                                                     |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------- |
-| D1          | ADR set merged; invariants include determinism, idempotency, conflict-first semantics, destructive-op visibility.       |
-| D2          | `specs/types.ts` committed; all operation kinds and conflict variants are discriminated unions.                         |
-| D3          | Identical inputs produce byte-stable plan output and same `inputHash` in repeated runs.                                 |
-| D4          | Applying the same successful plan twice yields zero mutations on second run.                                            |
-| D5          | Duplicate target, case collision, alias cycle, and alias-target collisions all fail preflight before API calls.         |
-| D6          | Every failure maps to a stable code and remediation hint (`auth`, `permission`, `validation`, `conflict`, `transport`). |
-| D7          | `plan`, `apply`, `validate`, `doctor` commands implemented; `doctor` includes all MVP checks.                           |
-| D8          | Public API exports only planner/executor diagnostics contracts; legacy sync-first exports removed.                      |
-| D9          | JSON and markdown report outputs share identical summary counts and operation totals.                                   |
-| D10         | CI blocks on: line coverage >= 90%, branch coverage >= 80%, npm artifact smoke test, action smoke test.                 |
-| D11         | README, JSR README, and NPM README examples are executed in CI and have zero stale API names.                           |
-| D12         | Org runner supports explicit repo list with concurrency range `1..16` (default `4`) and per-repo isolation.             |
+| Deliverable | Acceptance criteria                                                                                                                                                   |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1          | ADR set merged; invariants include determinism, idempotency, conflict-first semantics, destructive-op visibility.                                                     |
+| D2          | `specs/types.ts` committed; `PlanOp`, `Conflict`, `AppliedOp`, and `ApplyResult` are discriminated unions with no illegal state combinations.                         |
+| D3          | Identical inputs produce byte-stable plan output and same `inputHash` in repeated runs.                                                                               |
+| D4          | Applying the same successful plan twice yields zero mutations on second run.                                                                                          |
+| D5          | Duplicate target, case collision, alias cycle, and alias-target collisions all fail preflight before API calls.                                                       |
+| D6          | Every failure maps to stable code (`auth`,`permission`,`validation`,`conflict`,`transport`) and remediation starts with `Try:`.                                       |
+| D7          | `doctor` emits checks `token-present`,`labels-read-access`,`labels-write-capability`,`config-valid`,`plan-buildable` and exits with `0/1` exactly per check outcomes. |
+| D8          | Public API exports only planner/executor diagnostics contracts; legacy sync-first exports removed.                                                                    |
+| D9          | JSON and markdown report outputs share identical summary counts and operation totals.                                                                                 |
+| D10         | CI blocks on: line coverage >= 90%, branch coverage >= 80%, npm artifact smoke test, action smoke test.                                                               |
+| D11         | README, JSR README, and NPM README examples are executed in CI and have zero stale API names.                                                                         |
+| D12         | Org runner executes only after D10 and D11 completion, supports explicit repo list with concurrency `1..16` (default `4`), and preserves per-repo isolation.          |
+
+## Carryover Backlog (From Legacy TODO Plan)
+
+Tracked in `specs/backlog.md`:
+
+- Add and maintain `CHANGELOG.md`.
+- Add release/version bump automation.
+- Optional: dedicated integration tests against a mock GitHub API server.

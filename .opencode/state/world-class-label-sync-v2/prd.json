@@ -38,7 +38,7 @@
 			"id": "add-preflight-conflicts",
 			"phase": 2,
 			"title": "Add preflight conflict detection",
-			"description": "Detect duplicate targets, case-collisions, alias cycles, and alias-target conflicts before execution. Acceptance: all conflict classes become typed Conflict variants and fail before any API call with actionable diagnostics.",
+			"description": "Detect duplicate targets, case-collisions, alias cycles, and alias-target conflicts before execution. Acceptance: planner emits exact conflict codes `duplicate-target`, `case-collision`, `alias-cycle`, and `alias-target-collision` before any API call.",
 			"depends": [
 				"build-deterministic-planner"
 			],
@@ -61,7 +61,7 @@
 			"id": "define-error-taxonomy",
 			"phase": 3,
 			"title": "Define typed error taxonomy",
-			"description": "Replace generic failures with typed, actionable errors across planner and executor. Acceptance: auth, permission, conflict, transport, and validation failures map to stable codes plus remediation hints.",
+			"description": "Replace generic failures with typed errors across planner and executor. Acceptance: auth, permission, conflict, transport, and validation failures map to stable codes and remediation messages prefixed with `Try:`.",
 			"depends": [
 				"build-deterministic-planner",
 				"build-idempotent-executor"
@@ -73,7 +73,7 @@
 			"id": "redesign-cli-plan-apply",
 			"phase": 4,
 			"title": "Redesign CLI around plan and apply",
-			"description": "Replace monolithic sync entrypoint with plan, apply, validate, and doctor commands. Acceptance: doctor MVP checks token scope, repo access, config validity, and preflight conflicts; destructive actions are visible before apply.",
+			"description": "Replace monolithic sync entrypoint with plan, apply, validate, and doctor commands. Acceptance: doctor emits checks `token-present`, `labels-read-access`, `labels-write-capability`, `config-valid`, `plan-buildable`; exit code is `0` only when all required checks pass.",
 			"depends": [
 				"build-deterministic-planner",
 				"build-idempotent-executor",
@@ -136,12 +136,14 @@
 			"id": "implement-org-runner",
 			"phase": 6,
 			"title": "Implement org-scale multi-repo runner",
-			"description": "Add repo fan-out execution with bounded concurrency, staged rollout controls, and per-repo isolation. Acceptance: MVP supports explicit repo list only, concurrency range 1..16 (default 4), and partial failures never abort unrelated repos.",
+			"description": "Add repo fan-out execution with bounded concurrency and per-repo isolation. Acceptance: MVP supports explicit repo list only, concurrency range 1..16 (default 4), partial failures never abort unrelated repos, and task starts only after D10 and D11 are complete.",
 			"depends": [
 				"build-deterministic-planner",
 				"build-idempotent-executor",
 				"define-error-taxonomy",
-				"add-structured-reports"
+				"add-structured-reports",
+				"expand-reliability-pipeline",
+				"rewrite-executable-docs"
 			],
 			"priority": "integration",
 			"passes": false

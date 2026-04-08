@@ -3,7 +3,6 @@
  *
  * This file is intentionally design-first and not imported by runtime code.
  * It anchors planner/executor contracts before implementation.
- * @internal
  */
 
 export interface RepoTarget {
@@ -29,9 +28,7 @@ export type DescriptionIntent =
 	| { readonly kind: 'set'; readonly value: string }
 	| { readonly kind: 'clear' };
 
-export type DeleteReason =
-	| 'not-in-config'
-	| 'explicit-policy';
+export type DeleteReason = 'not-in-config';
 
 export type PlanOp =
 	| {
@@ -110,13 +107,22 @@ export interface ApplyFailure {
 	readonly remediation: string;
 }
 
-export interface AppliedOp {
-	readonly op: PlanOp;
-	readonly success: boolean;
-	readonly attempts: number;
-	readonly latencyMs: number;
-	readonly failure?: ApplyFailure;
-}
+export type ExecutablePlanOp = Exclude<PlanOp, { readonly kind: 'conflict' }>;
+
+export type AppliedOp =
+	| {
+		readonly kind: 'applied';
+		readonly op: ExecutablePlanOp;
+		readonly attempts: number;
+		readonly latencyMs: number;
+	}
+	| {
+		readonly kind: 'failed';
+		readonly op: ExecutablePlanOp;
+		readonly attempts: number;
+		readonly latencyMs: number;
+		readonly failure: ApplyFailure;
+	};
 
 export interface ApplySummary {
 	readonly created: number;
@@ -128,11 +134,18 @@ export interface ApplySummary {
 	readonly failed: number;
 }
 
-export interface ApplyResult {
-	readonly success: boolean;
-	readonly summary: ApplySummary;
-	readonly operations: readonly AppliedOp[];
-}
+export type ApplyResult =
+	| {
+		readonly kind: 'ok';
+		readonly summary: ApplySummary;
+		readonly operations: readonly AppliedOp[];
+	}
+	| {
+		readonly kind: 'failed';
+		readonly summary: ApplySummary;
+		readonly operations: readonly AppliedOp[];
+		readonly failures: readonly ApplyFailure[];
+	};
 
 export interface ApplyOptions {
 	readonly dryRun?: boolean;
@@ -145,4 +158,42 @@ export interface Planner {
 
 export interface Executor {
 	applyPlan(plan: SyncPlan, options?: ApplyOptions): Promise<ApplyResult>;
+}
+
+export interface ValidationIssue {
+	readonly code: 'schema' | 'semantic' | 'conflict';
+	readonly message: string;
+	readonly path?: string;
+}
+
+export interface ValidationReport {
+	readonly valid: boolean;
+	readonly issues: readonly ValidationIssue[];
+}
+
+export interface DoctorOptions {
+	readonly mode?: 'plan' | 'apply';
+}
+
+export interface DoctorCheck {
+	readonly id:
+		| 'token-present'
+		| 'labels-read-access'
+		| 'labels-write-capability'
+		| 'config-valid'
+		| 'plan-buildable';
+	readonly passed: boolean;
+	readonly detail: string;
+}
+
+export interface DoctorReport {
+	readonly target: RepoTarget;
+	readonly checks: readonly DoctorCheck[];
+	readonly success: boolean;
+	readonly exitCode: 0 | 1;
+}
+
+export interface Diagnostics {
+	validateConfig(path: string): Promise<ValidationReport>;
+	doctor(target: RepoTarget, options?: DoctorOptions): Promise<DoctorReport>;
 }
