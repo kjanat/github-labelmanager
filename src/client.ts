@@ -4,20 +4,24 @@
  * @module
  */
 
-import type { GitHubLabel, IGitHubClient, LabelOptions } from './adapters/client/mod.ts';
-import type { ILogger } from './adapters/logger/mod.ts';
-import type { EnvConfig } from './domain/types.ts';
-import { createGitHubClient, createLogger } from './factory.ts';
+import type {
+  GitHubLabel,
+  IGitHubClient,
+  LabelOptions,
+} from "./adapters/client/mod.ts";
+import type { ILogger } from "./adapters/logger/mod.ts";
+import type { EnvConfig } from "./domain/types.ts";
+import { createGitHubClient, createLogger } from "./factory.ts";
 
 /**
  * Options for LabelManager constructor
  * Used for dependency injection and testing
  */
 export interface LabelManagerOptions {
-	/** Custom GitHub client implementation */
-	client?: IGitHubClient;
-	/** Custom logger implementation */
-	logger?: ILogger;
+  /** Custom GitHub client implementation */
+  client?: IGitHubClient;
+  /** Custom logger implementation */
+  logger?: ILogger;
 }
 
 /**
@@ -28,95 +32,96 @@ export interface LabelManagerOptions {
  * - Local CLI: Uses octokit with throttling and retry
  */
 export class LabelManager {
-	private client: IGitHubClient;
-	private logger: ILogger;
+  private client: IGitHubClient;
+  private logger: ILogger;
 
-	/**
-	 * Create a new LabelManager
-	 *
-	 * @param env - Environment configuration
-	 * @param options - Optional client and logger for testing/DI
-	 */
-	constructor(
-		env: EnvConfig,
-		options: LabelManagerOptions = {},
-	) {
-		this.logger = options.logger ?? createLogger();
-		this.client = options.client ?? createGitHubClient(
-			{
-				token: env.token,
-				owner: env.owner,
-				repo: env.repo,
-				dryRun: env.dryRun,
-			},
-			this.logger,
-		);
-	}
+  /**
+   * Create a new LabelManager
+   *
+   * @param env - Environment configuration
+   * @param options - Optional client and logger for testing/DI
+   */
+  constructor(
+    env: EnvConfig,
+    options: LabelManagerOptions = {},
+  ) {
+    this.logger = options.logger ?? createLogger();
+    this.client = options.client ?? createGitHubClient(
+      {
+        token: env.token,
+        owner: env.owner,
+        repo: env.repo,
+        dryRun: env.dryRun,
+      },
+      this.logger,
+    );
+  }
 
-	/** Get repository info */
-	get repoInfo(): { owner: string; repo: string } {
-		return { owner: this.client.owner, repo: this.client.repo };
-	}
+  /** Get repository info */
+  get repoInfo(): { owner: string; repo: string } {
+    return { owner: this.client.owner, repo: this.client.repo };
+  }
 
-	/** Check if running in dry-run mode */
-	get isDryRun(): boolean {
-		return this.client.isDryRun;
-	}
+  /** Check if running in dry-run mode */
+  get isDryRun(): boolean {
+    return this.client.isDryRun;
+  }
 
-	/** Get the underlying logger */
-	getLogger(): ILogger {
-		return this.logger;
-	}
+  /** Get the underlying logger */
+  getLogger(): ILogger {
+    return this.logger;
+  }
 
-	/**
-	 * List all labels in the repository using built-in pagination
-	 * @throws Error on API failure
-	 */
-	list(): Promise<GitHubLabel[]> {
-		return this.client.list();
-	}
+  /**
+   * List all labels in the repository using built-in pagination
+   * @throws Error on API failure
+   */
+  list(): Promise<GitHubLabel[]> {
+    return this.client.list();
+  }
 
-	/**
-	 * Get a single label by name
-	 */
-	get(name: string): Promise<GitHubLabel | null> {
-		return this.client.get(name);
-	}
+  /**
+   * Get a single label by name
+   */
+  get(name: string): Promise<GitHubLabel | null> {
+    return this.client.get(name);
+  }
 
-	/**
-	 * Create a new label
-	 */
-	create(options: LabelOptions): Promise<GitHubLabel | null> {
-		return this.client.create(options);
-	}
+  /**
+   * Create a new label
+   */
+  create(options: LabelOptions): Promise<GitHubLabel | null> {
+    return this.client.create(options);
+  }
 
-	/**
-	 * Update an existing label
-	 */
-	update(
-		currentName: string,
-		options: LabelOptions,
-	): Promise<GitHubLabel | null> {
-		return this.client.update(currentName, options);
-	}
+  /**
+   * Update an existing label
+   */
+  update(
+    currentName: string,
+    options: LabelOptions,
+  ): Promise<GitHubLabel | null> {
+    return this.client.update(currentName, options);
+  }
 
-	/**
-	 * Delete a label
-	 */
-	delete(name: string): Promise<void> {
-		return this.client.delete(name);
-	}
+  /**
+   * Delete a label
+   */
+  delete(name: string): Promise<void> {
+    return this.client.delete(name);
+  }
 
-	/**
-	 * Format error for logging
-	 */
-	static formatError(error: unknown): string {
-		if (error && typeof error === 'object') {
-			const e = error as Record<string, unknown>;
-			const status = e.status ?? 'unknown';
-			const message = e.message ?? JSON.stringify(error);
-			return `${status} - ${message}`;
-		}
-		return String(error);
-	}
+  /**
+   * Format error for logging
+   */
+  static formatError(error: unknown): string {
+    if (error && typeof error === "object") {
+      const status = "status" in error ? error.status : "unknown";
+      const message = "message" in error
+        ? error.message
+        : JSON.stringify(error);
+      return `${status} - ${message}`;
+    }
+    return String(error);
+  }
 }
