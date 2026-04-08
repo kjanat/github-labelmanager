@@ -1,129 +1,100 @@
 /**
- * Tests for main.ts CLI entry point
+ * Tests for CLI command via DreamCLI testkit
  *
- * Tests error handling paths via MockLogger injection and explicit env options.
+ * Tests error handling paths using runCommand() with injected env.
  * Happy paths are covered by sync_test.ts unit tests.
- *
- * Note: Tests use explicit args/envGet options to avoid global state mutation,
- * allowing safe parallel test execution.
  */
 
-import { assertEquals, assertStringIncludes } from '@std/assert';
-import { main } from 'github-labelmanager';
-import { createEnvGet, MockLogger } from '~/testing/mod.ts';
+import { runCommand } from '@kjanat/dreamcli/testkit';
+import { assertEquals, assertStringIncludes, assertThrows } from '@std/assert';
+import { parseRepository, syncCommand } from 'github-labelmanager';
 
 // =============================================================================
 // Missing token tests
 // =============================================================================
 
-Deno.test('main - fails when GITHUB_TOKEN is missing', async () => {
-	const logger = new MockLogger();
-
-	await main({
-		logger,
-		envOptions: {
-			args: ['owner/repo'],
-			envGet: createEnvGet({ GITHUB_TOKEN: undefined }),
-		},
+Deno.test('sync command - fails when GITHUB_TOKEN is missing', async () => {
+	const result = await runCommand(syncCommand, ['owner/repo'], {
+		env: {},
 	});
 
-	assertEquals(logger.failedMessages.length, 1);
-	assertStringIncludes(logger.failedMessages[0], 'GITHUB_TOKEN');
+	assertEquals(result.exitCode !== 0, true);
+	const stderr = result.stderr.join('\n');
+	assertStringIncludes(stderr, 'token');
 });
 
 // =============================================================================
 // Missing repository tests
 // =============================================================================
 
-Deno.test('main - fails when repository argument is missing', async () => {
-	const logger = new MockLogger();
-
-	await main({
-		logger,
-		envOptions: {
-			args: [],
-			envGet: createEnvGet({ GITHUB_TOKEN: 'token', REPO: undefined }),
-		},
+Deno.test('sync command - fails when repository argument is missing', async () => {
+	const result = await runCommand(syncCommand, [], {
+		env: { GITHUB_TOKEN: 'token' },
 	});
 
-	assertEquals(logger.failedMessages.length, 1);
-	assertStringIncludes(logger.failedMessages[0], 'Repository');
+	assertEquals(result.exitCode !== 0, true);
+	const stderr = result.stderr.join('\n');
+	assertStringIncludes(stderr, 'repository');
 });
 
 // =============================================================================
 // Invalid repository format tests
 // =============================================================================
 
-Deno.test('main - fails when repository format is invalid', async () => {
-	const logger = new MockLogger();
-
-	await main({
-		logger,
-		envOptions: {
-			args: ['invalid-repo-format'],
-			envGet: createEnvGet({ GITHUB_TOKEN: 'token' }),
-		},
+Deno.test('sync command - fails when repository format is invalid', async () => {
+	const result = await runCommand(syncCommand, ['invalid-repo-format'], {
+		env: { GITHUB_TOKEN: 'token' },
 	});
 
-	assertEquals(logger.failedMessages.length, 1);
-	assertStringIncludes(logger.failedMessages[0], 'Invalid repository format');
+	assertEquals(result.exitCode !== 0, true);
+	const stderr = result.stderr.join('\n');
+	assertStringIncludes(stderr, 'owner/repo');
 });
 
-Deno.test('main - fails when repository has empty owner', async () => {
-	const logger = new MockLogger();
-
-	await main({
-		logger,
-		envOptions: {
-			args: ['/repo'],
-			envGet: createEnvGet({ GITHUB_TOKEN: 'token' }),
-		},
+Deno.test('sync command - fails when repository has empty owner', async () => {
+	const result = await runCommand(syncCommand, ['/repo'], {
+		env: { GITHUB_TOKEN: 'token' },
 	});
 
-	assertEquals(logger.failedMessages.length, 1);
-	assertStringIncludes(logger.failedMessages[0], 'Invalid repository format');
+	assertEquals(result.exitCode !== 0, true);
+	const stderr = result.stderr.join('\n');
+	assertStringIncludes(stderr, 'owner/repo');
 });
 
 // =============================================================================
 // Config file not found tests
 // =============================================================================
 
-Deno.test('main - fails when config file not found', async () => {
-	const logger = new MockLogger();
+Deno.test('sync command - fails when config file not found', async () => {
+	const result = await runCommand(
+		syncCommand,
+		['owner/repo', '--config', 'nonexistent.yml'],
+		{ env: { GITHUB_TOKEN: 'token' } },
+	);
 
-	await main({
-		logger,
-		envOptions: {
-			args: ['owner/repo', '--config', 'nonexistent.yml'],
-			envGet: createEnvGet({ GITHUB_TOKEN: 'token' }),
-		},
-	});
-
-	assertEquals(logger.failedMessages.length, 1);
-	assertStringIncludes(logger.failedMessages[0], 'Config file not found');
+	assertEquals(result.exitCode !== 0, true);
+	const stderr = result.stderr.join('\n');
+	assertStringIncludes(stderr, 'Config file not found');
 });
 
 // =============================================================================
 // Invalid YAML tests
 // =============================================================================
 
-Deno.test('main - fails when config has invalid YAML', async () => {
+Deno.test('sync command - fails when config has invalid YAML', async () => {
 	const tempFile = await Deno.makeTempFile({ suffix: '.yml' });
 	await Deno.writeTextFile(tempFile, 'invalid: yaml: content: [');
 
-	const logger = new MockLogger();
-
 	try {
-		await main({
-			logger,
-			envOptions: {
-				args: ['owner/repo', '--config', tempFile],
-				envGet: createEnvGet({ GITHUB_TOKEN: 'token' }),
-			},
-		});
+		const result = await runCommand(
+			syncCommand,
+			['owner/repo', '--config', tempFile],
+			{ env: { GITHUB_TOKEN: 'token' } },
+		);
 
-		assertEquals(logger.failedMessages.length, 1);
-		assertStringIncludes(logger.failedMessages[0], 'YAML parse error');
+		assertEquals(result.exitCode !== 0, true);
+		const stderr = result.stderr.join('\n');
+		assertStringIncludes(stderr, 'YAML parse error');
 	} finally {
 		await Deno.remove(tempFile);
 	}
@@ -133,24 +104,61 @@ Deno.test('main - fails when config has invalid YAML', async () => {
 // Invalid schema tests
 // =============================================================================
 
-Deno.test('main - fails when config has invalid schema', async () => {
+Deno.test('sync command - fails when config has invalid schema', async () => {
 	const tempFile = await Deno.makeTempFile({ suffix: '.yml' });
 	await Deno.writeTextFile(tempFile, 'wrong: schema\nno_labels: true');
 
-	const logger = new MockLogger();
-
 	try {
-		await main({
-			logger,
-			envOptions: {
-				args: ['owner/repo', '--config', tempFile],
-				envGet: createEnvGet({ GITHUB_TOKEN: 'token' }),
-			},
-		});
+		const result = await runCommand(
+			syncCommand,
+			['owner/repo', '--config', tempFile],
+			{ env: { GITHUB_TOKEN: 'token' } },
+		);
 
-		assertEquals(logger.failedMessages.length, 1);
-		assertStringIncludes(logger.failedMessages[0], 'Invalid');
+		assertEquals(result.exitCode !== 0, true);
+		const stderr = result.stderr.join('\n');
+		assertStringIncludes(stderr, 'Invalid');
 	} finally {
 		await Deno.remove(tempFile);
 	}
+});
+
+// =============================================================================
+// parseRepository unit tests
+// =============================================================================
+
+Deno.test('parseRepository - parses valid owner/repo', () => {
+	const result = parseRepository('my-org/my-repo');
+	assertEquals(result, { owner: 'my-org', repo: 'my-repo' });
+});
+
+Deno.test('parseRepository - throws on missing slash', () => {
+	assertThrows(() => parseRepository('invalid'), Error, 'owner/repo');
+});
+
+Deno.test('parseRepository - throws on empty owner', () => {
+	assertThrows(() => parseRepository('/repo'), Error, 'owner/repo');
+});
+
+Deno.test('parseRepository - throws on empty repo', () => {
+	assertThrows(() => parseRepository('owner/'), Error, 'owner/repo');
+});
+
+// =============================================================================
+// Actions compatibility (env-only resolution)
+// =============================================================================
+
+Deno.test('sync command - env-only path works (Actions compat)', async () => {
+	const result = await runCommand(syncCommand, [], {
+		env: {
+			GITHUB_TOKEN: 'token',
+			REPO: 'owner/repo',
+			CONFIG_PATH: 'nonexistent.yml',
+		},
+	});
+
+	// Config file won't exist, but it should get past arg resolution
+	assertEquals(result.exitCode !== 0, true);
+	const stderr = result.stderr.join('\n');
+	assertStringIncludes(stderr, 'Config file not found');
 });

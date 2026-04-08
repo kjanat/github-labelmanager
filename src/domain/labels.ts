@@ -11,7 +11,7 @@ type Brand<T, B extends string> = T & { readonly [__brand]: B };
 /**
  * Hex Color Type (compile-time validation)
  */
-type HexDigit = // deno-fmt-ignore
+type HexDigit =
 	| '0'
 	| '1'
 	| '2'

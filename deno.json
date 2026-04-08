@@ -16,6 +16,8 @@
 	"author": "Kaj Kowalski <dev@kajkowalski.nl> (https://github.com/kjanat)",
 	"imports": {
 		"@biomejs/biome": "npm:@biomejs/biome@^2.3.8",
+		"@kjanat/dreamcli": "jsr:@kjanat/dreamcli@^2",
+		"@kjanat/dreamcli/testkit": "jsr:@kjanat/dreamcli@^2/testkit",
 		"@octokit/webhooks-types": "npm:@octokit/webhooks-types@^7.6.1",
 		"~/": "./src/",
 		"$/": "./",

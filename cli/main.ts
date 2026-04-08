@@ -5,98 +5,17 @@
  * @module
  */
 
-import type { ILogger } from '~/adapters/logger/mod.ts';
-import { LabelManager } from '~/client.ts';
-import { ConfigError, getEnv, type GetEnvOptions, HelpRequested, loadConfig } from '~/config.ts';
-import { createLogger } from '~/factory.ts';
-import { syncLabels } from '~/sync.ts';
-import { printHelp } from './help.ts';
+import { cli } from '@kjanat/dreamcli';
+import { syncCommand } from './command.ts';
 
-/** Options for main() to enable testing without global state mutation */
-export interface MainOptions {
-	/** Logger instance (uses environment-appropriate logger if not provided) */
-	logger?: ILogger;
-	/** Options for getEnv (allows explicit args/env for testing) */
-	envOptions?: GetEnvOptions;
-}
+const app = cli('github-labelmanager')
+	.version('2.0.0-alpha')
+	.description('Sync GitHub repository labels from YAML configuration')
+	.default(syncCommand);
 
-/**
- * Main entry point for the CLI
- *
- * @param options - Optional configuration for testing
- */
-export async function main(options?: MainOptions): Promise<number> {
-	let exitCode = 0;
-	// Create logger first so we can report errors
-	const log = options?.logger ?? createLogger({
-		exitFn: (code = 1) => {
-			exitCode = code;
-		},
-	});
+export type { RepoArg } from './command.ts';
+export { parseRepository, syncCommand } from './command.ts';
 
-	try {
-		const env = getEnv(options?.envOptions);
-		const config = await loadConfig(env.configPath);
-		const manager = new LabelManager(env, { logger: log });
-		const result = await syncLabels(manager, config);
-
-		// Print summary
-		const { summary } = result;
-		log.info(
-			`Summary: ${summary.created} created, ${summary.updated} updated, `
-				+ `${summary.renamed} renamed, ${summary.deleted} deleted, `
-				+ `${summary.skipped} skipped, ${summary.failed} failed`,
-		);
-
-		// Write step summary (for Actions - no-op in CLI)
-		await log.writeSummary(result);
-
-		// Exit with error if any operations failed
-		if (!result.success) {
-			exitCode = 1;
-			log.setFailed('One or more operations failed');
-		}
-	} catch (err) {
-		if (err instanceof HelpRequested) {
-			printHelp();
-			return exitCode;
-		}
-
-		if (err instanceof ConfigError) {
-			exitCode = 1;
-			log.setFailed(err.message);
-			if (err.showHelp) {
-				printHelp();
-			}
-			return exitCode;
-		}
-
-		if (err instanceof Deno.errors.NotFound) {
-			exitCode = 1;
-			log.setFailed(err.message);
-			return exitCode;
-		}
-
-		if (err instanceof Deno.errors.InvalidData) {
-			exitCode = 1;
-			log.setFailed(err.message);
-			return exitCode;
-		}
-
-		// Unknown error - rethrow
-		throw err;
-	}
-
-	return exitCode;
-}
-
-// Handle errors with single exit boundary
 if (import.meta.main) {
-	const code = await main().catch((err) => {
-		// Unknown error - show full stack
-		console.error(err);
-		return 1;
-	});
-
-	Deno.exit(code);
+	app.run();
 }
