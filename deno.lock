@@ -3,6 +3,8 @@
   "specifiers": {
     "jsr:@david/code-block-writer@^13.0.3": "13.0.3",
     "jsr:@deno/dnt@0.42": "0.42.3",
+    "jsr:@eemeli/yaml@2": "2.8.2",
+    "jsr:@kjanat/dreamcli@2": "2.0.1",
     "jsr:@std/cli@1": "1.0.28",
     "jsr:@std/fmt@1": "1.0.9",
     "jsr:@std/fs@1": "1.0.23",
@@ -39,6 +41,12 @@
         "jsr:@std/path@1",
         "jsr:@ts-morph/bootstrap"
       ]
+    },
+    "@eemeli/yaml@2.8.2": {
+      "integrity": "58f95e7b82f2717963d31f350a9c7cdc098a7b481a3f64c58e979e2e999db0b0"
+    },
+    "@kjanat/dreamcli@2.0.1": {
+      "integrity": "f3b868fd91019544e07300ae886a2c5bfdc038b088cabb7980debdbf6aa96312"
     },
     "@std/cli@1.0.28": {
       "integrity": "74ef9b976db59ca6b23a5283469c9072be6276853807a83ec6c7ce412135c70a"

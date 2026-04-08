@@ -84,7 +84,7 @@ pre-commit:
       priority: 4
       glob: "*.ts"
       exclude: ".github/actions/**/*.ts"
-      run: deno check {staged_files}
+      run: deno check {staged_files} && git add deno.lock
 
     test:
       priority: 4
