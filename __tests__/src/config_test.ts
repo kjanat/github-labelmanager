@@ -11,8 +11,8 @@ import {
   assertRejects,
   assertThrows,
 } from "@std/assert";
-import { parse } from "yaml";
 import { Ajv, type ValidateFunction } from "ajv";
+import { parse } from "yaml";
 import { ConfigError, getEnv, isLabelConfig, loadConfig } from "~/config.ts";
 import { stubEnv } from "~/testing/mod.ts";
 

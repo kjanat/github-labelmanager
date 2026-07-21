@@ -1,8 +1,8 @@
 /**
  * @actions/core mock for bun:test
  */
-import { type Mock, mock } from "bun:test";
 import type * as core from "@actions/core";
+import { type Mock, mock } from "bun:test";
 import config from "root/bun-test.yaml" with { type: "yaml" };
 
 // Fetch codeblock content from web source if configured
@@ -148,12 +148,10 @@ function createMockSummary(): MockSummary {
           finalContent = `\n\n\`\`\`json\n${webSourceContent}\n\`\`\`\n\n`;
         } else if (content.includes('<pre lang="json">')) {
           // HTML pre/code format
-          finalContent =
-            `<pre lang="json"><code>${webSourceContent}</code></pre>`;
+          finalContent = `<pre lang="json"><code>${webSourceContent}</code></pre>`;
         }
       }
-      buffer +=
-        `<details><summary>${label}</summary>${finalContent}</details>\n`;
+      buffer += `<details><summary>${label}</summary>${finalContent}</details>\n`;
       summary._buffer = buffer;
       return summary as unknown as SummaryInstance;
     }),

@@ -3,11 +3,11 @@
  * @module
  */
 
-import type { LabelConfig, SyncOperation, SyncResult } from "./domain/types.ts";
 import type { GitHubLabel } from "./adapters/client/mod.ts";
 import type { AnnotationProperties } from "./adapters/logger/mod.ts";
 import { LabelManager } from "./client.ts";
 import { LabelColorUtils } from "./domain/labels.ts";
+import type { LabelConfig, SyncOperation, SyncResult } from "./domain/types.ts";
 
 /**
  * Build annotation properties for a label operation

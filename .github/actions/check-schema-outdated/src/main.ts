@@ -1,7 +1,3 @@
-import { readFileSync } from "fs";
-import { generateSchema } from "./generateSchema.ts";
-import { checkSchemaDiff } from "./checkSchemaDiff.ts";
-import { codeFence } from "./codeFence.ts";
 import {
   getInput,
   setFailed,
@@ -10,6 +6,10 @@ import {
   toPlatformPath,
 } from "@actions/core";
 import { context } from "@actions/github";
+import { readFileSync } from "fs";
+import { checkSchemaDiff } from "./checkSchemaDiff.ts";
+import { codeFence } from "./codeFence.ts";
+import { generateSchema } from "./generateSchema.ts";
 
 /** Function type for reading file contents */
 type ReadFileFn = (path: string, encoding: BufferEncoding) => string;
@@ -42,8 +42,7 @@ export async function run(
   try {
     const { owner, repo } = context.repo;
     if (commitHash && owner && repo) {
-      permalink =
-        `${serverUrl}/${owner}/${repo}/blob/${commitHash}/${schemafile}`;
+      permalink = `${serverUrl}/${owner}/${repo}/blob/${commitHash}/${schemafile}`;
     }
   } catch {
     // context.repo throws if GITHUB_REPOSITORY is not set
@@ -72,9 +71,8 @@ export async function run(
   setOutput("up-to-date", !outdated);
 
   // Format file display - link if permalink available, otherwise just filename
-  const fileDisplay = permalink
-    ? `[\`${schemafile}\`](${permalink})`
-    : `\`${schemafile}\``;
+  const fileDisplay =
+    permalink ? `[\`${schemafile}\`](${permalink})` : `\`${schemafile}\``;
 
   if (!outdated) {
     summary.addHeading(":white_check_mark: Schema is up-to-date", 3);

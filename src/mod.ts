@@ -41,10 +41,10 @@ export * from "./adapters/logger/mod.ts";
 
 // Application
 export * from "./client.ts";
-export * from "./sync.ts";
 export * from "./config.ts";
 export * from "./factory.ts";
 export * from "./schema.ts";
+export * from "./sync.ts";
 
 // Testing (separate export in deno.json, but also available here)
 export * from "./testing/mod.ts";

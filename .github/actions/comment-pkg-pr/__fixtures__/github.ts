@@ -2,9 +2,9 @@
  * Type-safe @actions/github mock for bun:test
  * Uses actual GitHub API types from @octokit/openapi-types
  */
-import { type Mock, mock } from "bun:test";
 import type { getOctokit as getOctokitType } from "@actions/github";
 import type { components } from "@octokit/openapi-types";
+import { type Mock, mock } from "bun:test";
 
 // ============================================================================
 // GitHub API Types (from @octokit/openapi-types)
@@ -141,10 +141,10 @@ function createMockOctokit(): MockOctokit {
       issues: {
         listComments: mock(() => Promise.resolve({ data: [] })),
         createComment: mock(() =>
-          Promise.resolve({ data: { ...defaultComment } })
+          Promise.resolve({ data: { ...defaultComment } }),
         ),
         updateComment: mock(() =>
-          Promise.resolve({ data: { ...defaultComment } })
+          Promise.resolve({ data: { ...defaultComment } }),
         ),
       },
       pulls: { list: mock(() => Promise.resolve({ data: [] })) },
@@ -192,16 +192,16 @@ function clearOctokitMocks(): void {
 
   // Reset default implementations
   mockOctokit.rest.issues.listComments.mockImplementation(() =>
-    Promise.resolve({ data: [] })
+    Promise.resolve({ data: [] }),
   );
   mockOctokit.rest.issues.createComment.mockImplementation(() =>
-    Promise.resolve({ data: { ...defaultComment } })
+    Promise.resolve({ data: { ...defaultComment } }),
   );
   mockOctokit.rest.issues.updateComment.mockImplementation(() =>
-    Promise.resolve({ data: { ...defaultComment } })
+    Promise.resolve({ data: { ...defaultComment } }),
   );
   mockOctokit.rest.pulls.list.mockImplementation(() =>
-    Promise.resolve({ data: [] })
+    Promise.resolve({ data: [] }),
   );
 }
 

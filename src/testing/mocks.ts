@@ -3,13 +3,13 @@
  * @module
  */
 
+import type { SyncResult } from "~/domain/types.ts";
 import type {
   GitHubLabel,
   IGitHubClient,
   LabelOptions,
 } from "~/ports/github.ts";
 import type { AnnotationProperties, ILogger } from "~/ports/logger.ts";
-import type { SyncResult } from "~/domain/types.ts";
 
 /** Recorded API call for assertions */
 export interface ApiCall {

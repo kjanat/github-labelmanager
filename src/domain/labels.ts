@@ -11,31 +11,50 @@ type Brand<T, B extends string> = T & { readonly [__brand]: B };
 /**
  * Hex Color Type (compile-time validation)
  */
-type HexDigit = // deno-fmt-ignore
-  | "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
-  | "a" | "b" | "c" | "d" | "e" | "f"
-  | "A" | "B" | "C" | "D" | "E" | "F";
+type HexDigit =
+  | "0"
+  | "1"
+  | "2"
+  | "3"
+  | "4"
+  | "5"
+  | "6"
+  | "7"
+  | "8"
+  | "9"
+  | "a"
+  | "b"
+  | "c"
+  | "d"
+  | "e"
+  | "f"
+  | "A"
+  | "B"
+  | "C"
+  | "D"
+  | "E"
+  | "F";
 
-type HexChars<S extends string> = // deno-fmt-ignore
-  S extends `${infer A}${infer B}${infer C}${infer D}${infer E}${infer F}${infer Rest}`
-    ? Rest extends "" ? [A, B, C, D, E, F] : never
-    : never;
+type HexChars<S extends string> = S extends
+  `${infer A}${infer B}${infer C}${infer D}${infer E}${infer F}${infer Rest}`
+  ? Rest extends "" ? [A, B, C, D, E, F] : never
+  : never;
 
-type InvalidChar<T extends string[], I extends number = 0> = // deno-fmt-ignore
-  T extends [infer H extends string, ...infer R extends string[]]
-    ? H extends HexDigit ? InvalidChar<R, [...[0], ...Array<I>]["length"] & number> : I
-    : -1;
+type InvalidChar<T extends string[], I extends number = 0> = T extends
+  [infer H extends string, ...infer R extends string[]]
+  ? H extends HexDigit
+    ? InvalidChar<R, [...[0], ...Array<I>]["length"] & number>
+  : I
+  : -1;
 
 /**
  * Validates a hex color string at compile time.
  * Returns the string if valid, or an error message type if invalid.
  */
-type ValidateHex<S extends string> = // deno-fmt-ignore
-  HexChars<S> extends never
-    ? "Must be exactly 6 characters"
-    : InvalidChar<HexChars<S>> extends -1
-      ? S
-      : `Invalid char at position ${InvalidChar<HexChars<S>>}`;
+type ValidateHex<S extends string> = HexChars<S> extends never
+  ? "Must be exactly 6 characters"
+  : InvalidChar<HexChars<S>> extends -1 ? S
+  : `Invalid char at position ${InvalidChar<HexChars<S>>}`;
 
 /**
  * A valid 6-character hexadecimal color code (without `#`).

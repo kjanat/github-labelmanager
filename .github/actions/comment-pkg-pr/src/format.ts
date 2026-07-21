@@ -62,8 +62,9 @@ export function buildStepSummary(
   commitUrl: string,
   prFound: boolean,
 ): string {
-  const prStatus = prFound
-    ? ":white_check_mark: Comment posted to PR"
+  const prStatus =
+    prFound ?
+      ":white_check_mark: Comment posted to PR"
     : ":information_source: No PR found, logged to console only";
 
   return `# pkg-pr-new Publish Results

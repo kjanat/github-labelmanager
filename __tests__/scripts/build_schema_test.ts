@@ -4,16 +4,16 @@
  */
 
 import {
+  DEFAULT_SCHEMA_ID,
+  generateSchema,
+  OUTPUT_PATH,
+} from "$/cli/build/schema.ts";
+import {
   assertArrayIncludes,
   assertEquals,
   assertExists,
   assertStringIncludes,
 } from "@std/assert";
-import {
-  DEFAULT_SCHEMA_ID,
-  generateSchema,
-  OUTPUT_PATH,
-} from "$/cli/build/schema.ts";
 
 async function loadCommittedSchema(): Promise<Record<string, unknown>> {
   const content = await Deno.readTextFile(OUTPUT_PATH);

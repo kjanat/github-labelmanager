@@ -21,8 +21,8 @@ export function getInputs(): ActionInputs {
   return {
     githubToken: core.getInput("github-token", { required: true }),
     outputFile: core.getInput("output-file") || "output.json",
-    commentIdentifier: core.getInput("comment-identifier") ||
-      "## pkg-pr-new publish",
+    commentIdentifier:
+      core.getInput("comment-identifier") || "## pkg-pr-new publish",
   };
 }
 

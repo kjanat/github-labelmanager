@@ -3,14 +3,14 @@
  */
 
 import { assertEquals, assertInstanceOf } from "@std/assert";
+import { ActionsGitHubClient } from "~/adapters/client/mod.ts";
+import { ActionsLogger, ConsoleLogger } from "~/adapters/logger/mod.ts";
 import {
   createGitHubClient,
   createLogger,
   createServices,
   isGitHubActions,
 } from "~/factory.ts";
-import { ActionsLogger, ConsoleLogger } from "~/adapters/logger/mod.ts";
-import { ActionsGitHubClient } from "~/adapters/client/mod.ts";
 import { stubEnv } from "~/testing/mod.ts";
 
 // =============================================================================

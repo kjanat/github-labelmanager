@@ -3,9 +3,9 @@
  * @module
  */
 
-import type { Octokit } from "octokit";
 import type { getOctokit } from "@actions/github";
 import type { components } from "@octokit/openapi-types";
+import type { Octokit } from "octokit";
 
 // ============================================================================
 // API Schema Types (from @octokit/openapi-types - auto-updated with GitHub API)

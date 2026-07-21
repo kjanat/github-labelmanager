@@ -4,8 +4,8 @@
 
 import { assertEquals } from "@std/assert";
 import { OctokitClient } from "~/adapters/client/octokit.ts";
-import { createMockOctokit, NullLogger } from "~/testing/mod.ts";
 import type { GitHubClientConfig } from "~/ports/github.ts";
+import { createMockOctokit, NullLogger } from "~/testing/mod.ts";
 
 const testConfig = {
   token: "test-token",

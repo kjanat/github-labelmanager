@@ -223,8 +223,7 @@ describe("main.ts (bun:test)", () => {
     it("adds file info with permalink to summary", async () => {
       await run(mockReadFile);
 
-      const expectedPermalink =
-        `${mockContext.serverUrl}/${mockContext.repo.owner}/${mockContext.repo.repo}/blob/${mockContext.sha}/${testFile}`;
+      const expectedPermalink = `${mockContext.serverUrl}/${mockContext.repo.owner}/${mockContext.repo.repo}/blob/${mockContext.sha}/${testFile}`;
       expect(mockSummary.addRaw).toHaveBeenCalledWith(
         `**File:** [\`${testFile}\`](${expectedPermalink})`,
         true,

@@ -5,6 +5,8 @@
  * @module
  */
 
+import type { ILogger } from "~/adapters/logger/mod.ts";
+import { LabelManager } from "~/client.ts";
 import {
   ConfigError,
   getEnv,
@@ -12,10 +14,8 @@ import {
   HelpRequested,
   loadConfig,
 } from "~/config.ts";
-import { LabelManager } from "~/client.ts";
-import { syncLabels } from "~/sync.ts";
 import { createLogger } from "~/factory.ts";
-import type { ILogger } from "~/adapters/logger/mod.ts";
+import { syncLabels } from "~/sync.ts";
 import { printHelp } from "./help.ts";
 
 /** Options for main() to enable testing without global state mutation */

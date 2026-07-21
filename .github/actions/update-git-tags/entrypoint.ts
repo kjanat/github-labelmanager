@@ -30,11 +30,11 @@
  * CI:  Runs automatically via action.yml
  */
 
-import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { appendFileSync, existsSync, readFileSync } from "node:fs";
+import process from "node:process";
 import * as readline from "node:readline";
 import { parseArgs as utilParseArgs } from "node:util";
-import process from "node:process";
 import stripJsonComments from "strip-json-comments";
 
 // === Mode Detection ===
@@ -441,9 +441,8 @@ async function main(): Promise<void> {
   // Create release branch for major releases (optional)
   if (createBranch && isMajorRelease) {
     const branchName = `releases/${majorTag}`;
-    const branchExists =
-      git("show-ref", "--verify", "--quiet", `refs/heads/${branchName}`)
-        .success;
+    const branchExists = git("show-ref", "--verify", "--quiet", `refs/heads/${branchName}`)
+      .success;
 
     if (branchExists) {
       warn(`Branch ${branchName} already exists`);

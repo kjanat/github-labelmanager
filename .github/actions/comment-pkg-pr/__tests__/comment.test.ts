@@ -70,12 +70,7 @@ describe("findBotComment", () => {
       data: [otherComment, existingComment],
     });
 
-    const result = await findBotComment(
-      octokit,
-      ctx,
-      1,
-      identifier,
-    );
+    const result = await findBotComment(octokit, ctx, 1, identifier);
 
     expect(result).toEqual({ id: 123, url: existingComment.html_url });
   });
@@ -85,12 +80,7 @@ describe("findBotComment", () => {
       data: [otherComment],
     });
 
-    const result = await findBotComment(
-      octokit,
-      ctx,
-      1,
-      identifier,
-    );
+    const result = await findBotComment(octokit, ctx, 1, identifier);
 
     expect(result).toBeNull();
   });
@@ -98,12 +88,7 @@ describe("findBotComment", () => {
   it("returns null for empty comment list", async () => {
     mockOctokit.rest.issues.listComments.mockResolvedValueOnce({ data: [] });
 
-    const result = await findBotComment(
-      octokit,
-      ctx,
-      1,
-      identifier,
-    );
+    const result = await findBotComment(octokit, ctx, 1, identifier);
 
     expect(result).toBeNull();
   });
@@ -113,12 +98,7 @@ describe("findBotComment", () => {
       data: [commentWithUndefinedBody],
     });
 
-    const result = await findBotComment(
-      octokit,
-      ctx,
-      1,
-      identifier,
-    );
+    const result = await findBotComment(octokit, ctx, 1, identifier);
 
     expect(result).toBeNull();
   });
@@ -152,12 +132,7 @@ describe("createComment", () => {
       data: newComment,
     });
 
-    const result = await createComment(
-      octokit,
-      ctx,
-      1,
-      commentBody,
-    );
+    const result = await createComment(octokit, ctx, 1, commentBody);
 
     expect(result).toEqual({ commentId: 999, commentUrl: newComment.html_url });
   });
@@ -190,12 +165,7 @@ describe("updateComment", () => {
       data: updatedComment,
     });
 
-    const result = await updateComment(
-      octokit,
-      ctx,
-      123,
-      commentBody,
-    );
+    const result = await updateComment(octokit, ctx, 123, commentBody);
 
     expect(result).toEqual({
       commentId: 123,
@@ -298,11 +268,7 @@ describe("findPrForPush", () => {
       data: [{ number: 42 }],
     });
 
-    const result = await findPrForPush(
-      octokit,
-      ctx,
-      "refs/heads/feature/test",
-    );
+    const result = await findPrForPush(octokit, ctx, "refs/heads/feature/test");
 
     expect(result).toBe(42);
   });
@@ -310,11 +276,7 @@ describe("findPrForPush", () => {
   it("returns null when no PR found", async () => {
     mockOctokit.rest.pulls.list.mockResolvedValueOnce({ data: [] });
 
-    const result = await findPrForPush(
-      octokit,
-      ctx,
-      "refs/heads/feature/test",
-    );
+    const result = await findPrForPush(octokit, ctx, "refs/heads/feature/test");
 
     expect(result).toBeNull();
   });
@@ -324,11 +286,7 @@ describe("findPrForPush", () => {
       data: [{ number: 42 }, { number: 43 }],
     });
 
-    const result = await findPrForPush(
-      octokit,
-      ctx,
-      "refs/heads/feature/test",
-    );
+    const result = await findPrForPush(octokit, ctx, "refs/heads/feature/test");
 
     expect(result).toBe(42);
   });
@@ -349,11 +307,7 @@ describe("findPrForPush", () => {
   it("handles branch names with slashes", async () => {
     mockOctokit.rest.pulls.list.mockResolvedValueOnce({ data: [] });
 
-    await findPrForPush(
-      octokit,
-      ctx,
-      "refs/heads/feature/nested/branch",
-    );
+    await findPrForPush(octokit, ctx, "refs/heads/feature/nested/branch");
 
     expect(mockOctokit.rest.pulls.list).toHaveBeenCalledWith(
       expect.objectContaining({ head: "test-owner:feature/nested/branch" }),
